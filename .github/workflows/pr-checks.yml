@@ -1,12 +1,13 @@
-name: CI
+name: PR Checks
 
 on:
-  push:
+  pull_request:
     branches: ["main", "master"]
 
 jobs:
-  build:
+  quality:
     runs-on: ubuntu-latest
+    name: Code Quality Checks
 
     steps:
       - name: Checkout code
@@ -23,8 +24,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Check formatting
+        run: pnpm format:check
+
       - name: Lint
         run: pnpm lint
 
-      - name: Build
+      - name: Type check (via build)
         run: pnpm build
+
