@@ -1,0 +1,131 @@
+---
+alwaysApply: true
+---
+
+10x K Factor (PWA)
+
+## Project Goals
+
+- Ship **PWA-first** viral growth system with **≥4 closed-loop viral mechanics** and **≥4 agentic actions**.
+- Prove lift with **K ≥ 1.20** for at least one loop over a 14-day cohort.
+- Deliver **results-page share cards, smart links, presence/leaderboards, rewards, and dashboards**.
+
+## Tech Stack
+
+- **App:** Next.js (App Router) + TypeScript + Tailwind + shadcn/ui
+- **PWA:** `next-pwa` + Workbox SW, Web Push (VAPID)
+- **DB/ORM:** Postgres (Neon/Supabase) + **Drizzle ORM**
+- **Cache/Realtime:** Upstash Redis (presence, leaderboards, rate limits)
+- **Agents (MCP):** Node + Fastify (JSON Schema contracts)
+- **Analytics:** **Tinybird** (ingest + pipes) _(ClickHouse optional later)_
+- **Validation:** Zod
+- **State:** React (Context/Zustand minimal)
+
+## Packages
+
+- Runtime: `next`, `react`, `react-dom`, `@tanstack/react-table` (admin), `drizzle-orm`, `postgres`/`pg`, `zod`, `next-pwa`, `workbox-window`, `web-push`, `lucide-react`, `class-variance-authority`, `clsx`
+- UI: `tailwindcss`, `postcss`, `autoprefixer`, `shadcn/ui`
+- Agents: `fastify`, `zod`, `undici`
+- Dev: `drizzle-kit`, `typescript`, `eslint`, `prettier`, `turbo`, `@types/node`
+
+## File Structure
+
+```
+.
+├─ apps/
+│  ├─ web/                        # Next.js PWA
+│  │  ├─ app/
+│  │  │  ├─ (public)/             # public routes
+│  │  │  ├─ (app)/                # authed routes
+│  │  │  ├─ results/[id]/page.tsx
+│  │  │  ├─ cohort/[id]/page.tsx
+│  │  │  ├─ fvm/skill/[deckId]/page.tsx
+│  │  │  ├─ api/
+│  │  │  │  ├─ events/route.ts
+│  │  │  │  ├─ og/route.ts
+│  │  │  │  ├─ presence/
+│  │  │  │  │  ├─ ping/route.ts
+│  │  │  │  │  └─ stream/route.ts
+│  │  │  │  ├─ rewards/route.ts
+│  │  │  │  └─ summaries/route.ts
+│  │  │  ├─ sl/[code]/route.ts    # smart link resolver
+│  │  │  └─ admin/metrics/page.tsx
+│  │  ├─ db/
+│  │  │  ├─ schema.ts
+│  │  │  └─ index.ts
+│  │  ├─ lib/                      # helpers
+│  │  │  ├─ analytics.ts           # track()
+│  │  │  ├─ signing.ts             # HMAC
+│  │  │  ├─ attrib.ts
+│  │  │  ├─ presence.ts
+│  │  │  └─ safety.ts
+│  │  ├─ types/                    # shared types
+│  │  ├─ public/manifest.json
+│  │  ├─ public/sw.js
+│  │  └─ styles/globals.css
+│  └─ agents/                      # MCP agents (Fastify)
+│     ├─ src/
+│     │  ├─ orchestrator.ts
+│     │  ├─ personalization.ts
+│     │  ├─ incentives.ts
+│     │  ├─ experimentation.ts
+│     │  ├─ safety.ts
+│     │  └─ index.ts               # server bootstrap
+│     └─ package.json
+├─ packages/
+│  ├─ ui/                          # optional shared UI
+│  └─ lib/                         # shared schemas/utilities
+├─ drizzle.config.ts
+├─ turbo.json
+├─ pnpm-workspace.yaml
+├─ .env.example
+└─ README.md
+```
+
+## Conventions & Constraints
+
+- **No `any`**; strict TS. Keep files **≤ 350 LOC**.
+- **Types in `types/`**, helpers in `lib/`.
+- **Ask if unsure**; prefer small, focused PRs.
+- **Security:** never store raw PII; hash with salted SHA-256 for signals.
+- **Privacy:** share cards are **PII-free**; minors require consent before external shares.
+
+## Implementation Priorities
+
+1. **PWA shell + SW + manifest**; routes for **results**, **cohort**, **FVM**.
+2. **Drizzle + Postgres** schema & migrations; seed script.
+3. **Events pipeline** (`/api/events`) dual-write: Postgres + Tinybird ingest.
+4. **Smart links** (HMAC, TTL, attribution cookie) + **results share cards** (`@vercel/og`).
+5. **FVM micro-deck** (5Q) deep-link landing; log `FVM_reached`.
+6. **Presence (SSE) + leaderboards (Redis ZSET)**.
+7. **MCP agents** (orchestrator, personalization) with **<150ms** SLA & rationale.
+8. **Rewards & ledger**; **Trust & Safety** caps & gating.
+9. **Dashboards** via Tinybird Pipes (K, funnels, retention).
+
+## Scripts (suggested)
+
+- `pnpm dev` — run Next + agents locally (assume dev server already running elsewhere; **don’t auto-start**).
+- `pnpm build` / `pnpm lint` / `pnpm format`
+- `pnpm drizzle:gen` / `pnpm drizzle:push` / `pnpm seed`
+
+## Environment (.env.example)
+
+```
+DATABASE_URL=postgres://user:pass@host/db
+REDIS_URL=...
+TINYBIRD_TOKEN=...
+TB_EVENTS_ENDPOINT=https://api.tinybird.co/v0/events?name=events_raw
+SMARTLINK_HMAC_SECRET=changeme
+VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+## Definition of Done (MVP)
+
+- **4 loops** working end-to-end (trigger → share → join → FVM → reward).
+- **4 agentic actions** wired (≥2 student, ≥2 tutor).
+- **Presence + leaderboards** visible; **signed smart links + attribution** functional.
+- **Tinybird dashboards** show K and funnels; **compliance memo** added.
+
+> Assume a dev server is already running. Do **not** start a dev server from tasks.
