@@ -73,7 +73,6 @@ alwaysApply: true
 │     │  └─ index.ts               # server bootstrap
 │     └─ package.json
 ├─ packages/
-│  ├─ ui/                          # optional shared UI
 │  └─ lib/                         # shared schemas/utilities
 ├─ drizzle.config.ts
 ├─ turbo.json
