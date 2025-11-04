@@ -45,4 +45,4 @@ yarn-error.log*
 **/public/swe-worker*
 
 # pnpm
-pnpm-lock.yaml
+# pnpm-lock.yaml should be committed
