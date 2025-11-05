@@ -3,6 +3,13 @@ import postgres from "postgres";
 import { Pool } from "pg";
 import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
+import * as authSchema from "./auth-schema";
+
+// Combine schemas for Drizzle adapter
+const combinedSchema = {
+  ...schema,
+  ...authSchema,
+};
 
 type DbInstance = ReturnType<typeof drizzle> | ReturnType<typeof drizzlePg>;
 
@@ -30,13 +37,13 @@ function getDb(): DbInstance {
     const client = postgres(databaseUrl, {
       max: 1, // Neon serverless works best with max 1 connection
     });
-    dbInstance = drizzle(client, { schema });
+    dbInstance = drizzle(client, { schema: combinedSchema });
   } else {
     // Use pg Pool for standard Postgres
     const pool = new Pool({
       connectionString: databaseUrl,
     });
-    dbInstance = drizzlePg(pool, { schema });
+    dbInstance = drizzlePg(pool, { schema: combinedSchema });
   }
 
   return dbInstance;
@@ -49,4 +56,9 @@ export const db = new Proxy({} as DbInstance, {
   },
 });
 
-export { schema };
+// Export function to get the actual db instance for adapters that need it
+export function getDbInstance(): DbInstance {
+  return getDb();
+}
+
+export { schema, authSchema, combinedSchema };

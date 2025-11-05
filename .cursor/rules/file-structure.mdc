@@ -111,13 +111,20 @@ alwaysApply: true
 
 ```
 DATABASE_URL=postgres://user:pass@host/db
-REDIS_URL=...
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
 TINYBIRD_TOKEN=...
 TB_EVENTS_ENDPOINT=https://api.tinybird.co/v0/events?name=events_raw
 SMARTLINK_HMAC_SECRET=changeme
 VAPID_PUBLIC_KEY=...
 VAPID_PRIVATE_KEY=...
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+GOOGLE_CLIENT_ID=
+# node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+GOOGLE_CLIENT_SECRET=
+AUTH_SECRET=
+AUTH_URL=http://localhost:3000
 ```
 
 ## Definition of Done (MVP)

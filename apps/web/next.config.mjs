@@ -1,5 +1,17 @@
 // @ts-check
 import withSerwistInit from "@serwist/next";
+import { config } from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
+
+// Load .env from root directory (for monorepo setup)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+config({ path: resolve(__dirname, "../../.env") });
+config({ path: resolve(__dirname, "../../.env.local") });
+// Also load from local directory as fallback
+config({ path: resolve(__dirname, ".env") });
+config({ path: resolve(__dirname, ".env.local") });
 
 // You may want to use a more robust revision to cache
 // files more efficiently.

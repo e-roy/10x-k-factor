@@ -9,7 +9,11 @@ import {
 
 export const users = pgTable("users", {
   id: varchar("id", { length: 36 }).primaryKey(),
-  persona: varchar("persona", { length: 12 }).notNull(), // 'student'|'parent'|'tutor'
+  name: varchar("name", { length: 255 }),
+  email: varchar("email", { length: 255 }),
+  emailVerified: timestamp("email_verified", { withTimezone: true }),
+  image: varchar("image", { length: 255 }),
+  persona: varchar("persona", { length: 12 }).notNull().default("student"), // 'student'|'parent'|'tutor'
   minor: boolean("minor").default(false),
   guardianId: varchar("guardian_id", { length: 36 }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -41,4 +45,3 @@ export const cohorts = pgTable("cohorts", {
   createdBy: varchar("created_by", { length: 36 }).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
-
