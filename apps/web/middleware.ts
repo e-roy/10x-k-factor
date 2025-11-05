@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getAttribution, trackInviteOpened } from "@/lib/smart-links";
+import { getAttribution, trackInviteOpened } from "@/lib/smart-links/attrib";
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
