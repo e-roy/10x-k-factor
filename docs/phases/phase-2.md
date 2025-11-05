@@ -1,6 +1,6 @@
-Phase 2 — Event Schema & Ingest (Postgres + Tinybird)
+Phase 2 — Event Schema & Ingest (Postgres-only)
 
-**Goal**: Typed event pipeline with dual‑write to Postgres and Tinybird.
+**Goal**: Typed event pipeline writing to Postgres only, with materialized views refreshed by Vercel Cron Jobs.
 
 **Tasks**
 
@@ -13,28 +13,27 @@ Phase 2 — Event Schema & Ingest (Postgres + Tinybird)
 
    - `apps/web/lib/track.ts`: `track(name, payload)` → POST `/api/events` with `visitor_id` cookie.
 
-3. **API route**
+3. **Materialized view (daily rollup)**
 
-   - `apps/web/app/api/events/route.ts`: validate body, write to Postgres `events` table, and `fetch` Tinybird ingest endpoint.
+   - Migration SQL for `mv_loop_daily` materialized view
+   - Vercel Cron Job to refresh view every 5 minutes
 
-4. **Tinybird**
+4. **API route**
 
-   - Create Data Source `events_raw` with column types; add Pipe `k_factor_by_loop` (SQL) and publish API endpoint.
+   - `apps/web/app/api/events/route.ts`: validate body with Zod, insert into `events` table, return `201`.
 
-**Deliverables**: Events visible in DB; Tinybird endpoint returns aggregates.
+5. **Server action for dashboards**
+
+   - `apps/web/app/admin/metrics/actions.ts`: `getKByLoop(from, to)` function to query materialized view.
+
+6. **Vercel Cron Job**
+
+   - `/api/cron/refresh-rollups` route that refreshes materialized view.
+
+**Deliverables**: Events table + indices; MV `mv_loop_daily`; `/api/events` insert path; cron endpoint to refresh MV; server action to fetch K.
 
 **Acceptance Tests**
 
-- `curl -XPOST /api/events -d '{...}'` returns 200 and row appears.
-- `GET https://api.tinybird.co/v0/pipes/k_factor_by_loop.json?...` returns JSON with `k_est`.
-
-**Pipe Example (Tinybird SQL)**
-
-```sql
-SELECT loop,
-       AVG(invites_per_user) * AVG(invite_to_fvm_rate) AS k_est
-FROM   loop_daily_metrics
-WHERE  cohort_date BETWEEN {{d1}} AND {{d2}}
-GROUP BY loop
-ORDER BY k_est DESC;
-```
+- `curl -XPOST /api/events -d '{...}'` returns 201 and row appears.
+- Manual call to `/api/cron/refresh-rollups` succeeds and MV row count increases.
+- `/admin/metrics` page renders K by loop for a date range directly from Postgres.
