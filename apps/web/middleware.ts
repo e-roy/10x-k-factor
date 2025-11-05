@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getAttribution, trackInviteOpened } from "@/lib/smart-links";
 
 export async function middleware(request: NextRequest) {
+  const response = NextResponse.next();
+
   // Check for NextAuth session cookie (works in Edge Runtime)
   // NextAuth v5 uses 'authjs.session-token' or 'next-auth.session-token' cookie
   const sessionToken =
@@ -26,10 +29,31 @@ export async function middleware(request: NextRequest) {
 
   // Allow auth API routes to pass through
   if (request.nextUrl.pathname.startsWith("/api/auth")) {
-    return NextResponse.next();
+    return response;
   }
 
-  return NextResponse.next();
+  // Check for attribution cookie and track invite.opened event
+  // Skip if already processed (check for processed flag in cookie)
+  const attribProcessed = request.cookies.get("vt_attrib_processed");
+  if (!attribProcessed) {
+    const attribution = getAttribution(request);
+    if (attribution) {
+      // Track invite.opened event (fire and forget)
+      trackInviteOpened(attribution, request);
+
+      // Mark as processed to avoid duplicate events
+      // Set cookie that expires in 1 hour (enough time for session)
+      response.cookies.set("vt_attrib_processed", "1", {
+        path: "/",
+        maxAge: 60 * 60, // 1 hour
+        sameSite: "lax",
+        httpOnly: false,
+        secure: process.env.NODE_ENV === "production",
+      });
+    }
+  }
+
+  return response;
 }
 
 export const config = {
@@ -38,5 +62,7 @@ export const config = {
     "/cohort/:path*",
     "/fvm/:path*",
     "/admin/:path*",
+    "/sl/:path*",
+    "/",
   ],
 };
