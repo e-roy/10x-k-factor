@@ -13,4 +13,4 @@ Phase 5 — FVM Micro‑Task Landing
 
 **Acceptance Tests**
 
-- Median completion < 90s in test cohort; events appear in Tinybird `events_raw`.
+- Median completion < 90s in test cohort; events appear in Postgres rollups `events_raw`.
