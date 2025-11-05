@@ -43,7 +43,7 @@ export const authConfig = {
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account: _account }) {
       if (user) {
         token.id = user.id;
         // Fetch persona from database if user exists
