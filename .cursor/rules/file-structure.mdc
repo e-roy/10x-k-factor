@@ -2,110 +2,116 @@
 alwaysApply: true
 ---
 
-10x K Factor (PWA)
+
+# 10x K Factor (PWA)
 
 ## Project Goals
 
-- Ship **PWA-first** viral growth system with **≥4 closed-loop viral mechanics** and **≥4 agentic actions**.
-- Prove lift with **K ≥ 1.20** for at least one loop over a 14-day cohort.
-- Deliver **results-page share cards, smart links, presence/leaderboards, rewards, and dashboards**.
+* Ship **PWA-first** viral system with **≥4 closed-loop viral mechanics** and **≥4 agentic actions**.
+* Prove lift with **K ≥ 1.20** on a 14-day cohort.
+* Deliver **results share cards, smart links, presence/leaderboards, rewards, dashboards**.
 
 ## Tech Stack
 
-- **App:** Next.js (App Router) + TypeScript + Tailwind + shadcn/ui
-- **PWA:** `next-pwa` + Workbox SW, Web Push (VAPID)
-- **DB/ORM:** Postgres (Neon/Supabase) + **Drizzle ORM**
-- **Cache/Realtime:** Upstash Redis (presence, leaderboards, rate limits)
-- **Agents (MCP):** Node + Fastify (JSON Schema contracts)
-- **Analytics:** **Tinybird** (ingest + pipes) _(ClickHouse optional later)_
-- **Validation:** Zod
-- **State:** React (Context/Zustand minimal)
+* **App:** Next.js (App Router) + TypeScript + Tailwind + shadcn/ui
+* **PWA:** `next-pwa` + Workbox SW, Web Push (VAPID)
+* **Auth:** next-auth + Postgres (Neon)
+* **DB/ORM:** Postgres + **Drizzle ORM**
+* **Cache/Realtime:** Upstash Redis (presence, leaderboards, rate limits)
+* **Agents:** **shared package** (`packages/agents`) imported by the Next.js app (no separate service)
+* **LLM/Tools:** Vercel AI SDK (tool calling) — only from server routes/agents
+* **Validation:** Zod
 
-## Packages
+## Packages to Use
 
-- Runtime: `next`, `react`, `react-dom`, `@tanstack/react-table` (admin), `drizzle-orm`, `postgres`/`pg`, `zod`, `next-pwa`, `workbox-window`, `web-push`, `lucide-react`, `class-variance-authority`, `clsx`
-- UI: `tailwindcss`, `postcss`, `autoprefixer`, `shadcn/ui`
-- Agents: `fastify`, `zod`, `undici`
-- Dev: `drizzle-kit`, `typescript`, `eslint`, `prettier`, `turbo`, `@types/node`
+* Runtime: `next`, `react`, `react-dom`, `drizzle-orm`, `postgres`/`pg`, `zod`, `next-pwa`, `workbox-window`, `web-push`, `lucide-react`, `class-variance-authority`, `clsx`, `@vercel/og`, `ai` (Vercel AI SDK)
+* UI: `tailwindcss`, `postcss`, `autoprefixer`, `shadcn/ui`
+* Dev: `drizzle-kit`, `typescript`, `eslint`, `prettier`, `turbo`, `@types/node`
 
-## File Structure
+## Monorepo Structure (pnpm)
 
 ```
 .
 ├─ apps/
-│  ├─ web/                        # Next.js PWA
-│  │  ├─ app/
-│  │  │  ├─ (public)/             # public routes
-│  │  │  ├─ (app)/                # authed routes
-│  │  │  ├─ results/[id]/page.tsx
-│  │  │  ├─ cohort/[id]/page.tsx
-│  │  │  ├─ fvm/skill/[deckId]/page.tsx
-│  │  │  ├─ api/
-│  │  │  │  ├─ events/route.ts
-│  │  │  │  ├─ og/route.ts
-│  │  │  │  ├─ presence/
-│  │  │  │  │  ├─ ping/route.ts
-│  │  │  │  │  └─ stream/route.ts
-│  │  │  │  ├─ rewards/route.ts
-│  │  │  │  └─ summaries/route.ts
-│  │  │  ├─ sl/[code]/route.ts    # smart link resolver
-│  │  │  └─ admin/metrics/page.tsx
-│  │  ├─ db/
-│  │  │  ├─ schema.ts
-│  │  │  └─ index.ts
-│  │  ├─ lib/                      # helpers
-│  │  │  ├─ analytics.ts           # track()
-│  │  │  ├─ signing.ts             # HMAC
-│  │  │  ├─ attrib.ts
-│  │  │  ├─ presence.ts
-│  │  │  └─ safety.ts
-│  │  ├─ types/                    # shared types
-│  │  ├─ public/manifest.json
-│  │  ├─ public/sw.js
-│  │  └─ styles/globals.css
-│  └─ agents/                      # MCP agents (Fastify)
-│     ├─ src/
-│     │  ├─ orchestrator.ts
-│     │  ├─ personalization.ts
-│     │  ├─ incentives.ts
-│     │  ├─ experimentation.ts
-│     │  ├─ safety.ts
-│     │  └─ index.ts               # server bootstrap
-│     └─ package.json
+│  └─ web/                         # Next.js PWA (UI + API + worker route)
+│     ├─ app/
+│     │  ├─ (public)/              # public routes
+│     │  ├─ (app)/                 # authed routes
+│     │  ├─ results/[id]/page.tsx
+│     │  ├─ cohort/[id]/page.tsx
+│     │  ├─ fvm/skill/[deckId]/page.tsx
+│     │  ├─ api/
+│     │  │  ├─ events/route.ts            # ingest → plan → inline/queue
+│     │  │  ├─ agent-worker/route.ts      # Cron hits this every minute
+│     │  │  ├─ og/route.ts                # share card generator
+│     │  │  ├─ presence/ping/route.ts
+│     │  │  └─ sl/[code]/route.ts         # smart link resolver
+│     │  └─ admin/metrics/page.tsx
+│     ├─ lib/
+│     │  ├─ db/ (drizzle schema + client)
+│     │  ├─ events/ (router + planners)
+│     │  ├─ tools/ (email/sms/links/rewards/img)
+│     │  ├─ presence.ts
+│     │  └─ safety.ts
+│     ├─ types/
+│     ├─ public/manifest.json
+│     ├─ public/sw.js
+│     └─ styles/globals.css
 ├─ packages/
-│  └─ lib/                         # shared schemas/utilities
+│  ├─ agents/                      # <-- shared agents package (no Next imports)
+│  │  ├─ src/
+│  │  │  ├─ types.ts
+│  │  │  ├─ share-loop.agent.ts
+│  │  │  ├─ referral-scoring.agent.ts
+│  │  │  ├─ presence-feed.agent.ts
+│  │  │  ├─ progress-nudge.agent.ts
+│  │  │  └─ index.ts               # export catalog + Agent interface
+│  │  └─ package.json
+│  └─ core/                        # shared types/utilities (optional)
 ├─ drizzle.config.ts
 ├─ turbo.json
 ├─ pnpm-workspace.yaml
+├─ tsconfig.base.json
+├─ vercel.json                     # cron config
 ├─ .env.example
 └─ README.md
 ```
 
+> **Do not create** `apps/agents` or any separate agent server.
+
 ## Conventions & Constraints
 
-- **No `any`**; strict TS. Keep files **≤ 350 LOC**.
-- **Types in `types/`**, helpers in `lib/`.
-- **Ask if unsure**; prefer small, focused PRs.
-- **Security:** never store raw PII; hash with salted SHA-256 for signals.
-- **Privacy:** share cards are **PII-free**; minors require consent before external shares.
+* **No `any`**; strict TS. Keep files **≤ 350 LOC**.
+* **Types in `types/`**, helpers in `lib/`.
+* **Ask if unsure**; prefer small, focused PRs.
+* **Security:** never store raw PII; hash where needed (salted SHA-256) and minimize payloads.
+* **Privacy:** share cards are **PII-free**; minors require consent before external shares.
+* **Runtime:** Agents execute **inside Next.js** (inline or via job worker route).
+
+## Agent Runtime (must follow)
+
+* **Events:** `POST /api/events` persists `events` and plans agent runs.
+* **Jobs:** enqueue background work into `jobs` (idempotent via `dedupe_key`).
+* **Worker:** `POST /api/agent-worker` selects jobs `FOR UPDATE SKIP LOCKED`, runs agents, writes `agent_runs`.
+* **Scheduling:** Vercel Cron calls `/api/agent-worker` every minute.
+* **Inline path:** UI-critical actions may run synchronously within `/api/events`.
 
 ## Implementation Priorities
 
-1. **PWA shell + SW + manifest**; routes for **results**, **cohort**, **FVM**.
+1. **PWA shell** (SW + manifest) and primary routes: **results**, **cohort**, **FVM micro-deck**.
 2. **Drizzle + Postgres** schema & migrations; seed script.
-3. **Events pipeline** (`/api/events`) dual-write: Postgres + Tinybird ingest.
-4. **Smart links** (HMAC, TTL, attribution cookie) + **results share cards** (`@vercel/og`).
-5. **FVM micro-deck** (5Q) deep-link landing; log `FVM_reached`.
-6. **Presence (SSE) + leaderboards (Redis ZSET)**.
-7. **MCP agents** (orchestrator, personalization) with **<150ms** SLA & rationale.
-8. **Rewards & ledger**; **Trust & Safety** caps & gating.
-9. **Dashboards** via Tinybird Pipes (K, funnels, retention).
+3. **Events pipeline** (`/api/events`) → agent planning (import from `packages/agents`).
+4. **Smart links** (HMAC, TTL, attribution cookie) + **share cards** (`@vercel/og`).
+5. **Presence (SSE) + leaderboards** (Redis ZSET).
+6. **Rewards & ledger**; trust & safety caps, rate limits.
+7. **Admin metrics page** (basic funnels/leaderboard snapshots via SQL views).
+8. **A/B flags** persisted on events and recorded in `agent_runs`.
 
-## Scripts (suggested)
+## Scripts
 
-- `pnpm dev` — run Next + agents locally (assume dev server already running elsewhere; **don’t auto-start**).
-- `pnpm build` / `pnpm lint` / `pnpm format`
-- `pnpm drizzle:gen` / `pnpm drizzle:push` / `pnpm seed`
+* `pnpm dev` — run Next locally (**assume a dev server is already running; do not auto-start others**)
+* `pnpm build` / `pnpm lint` / `pnpm format`
+* `pnpm drizzle:gen` / `pnpm drizzle:push` / `pnpm seed`
 
 ## Environment (.env.example)
 
@@ -113,23 +119,35 @@ alwaysApply: true
 DATABASE_URL=postgres://user:pass@host/db
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
-SMARTLINK_HMAC_SECRET=changeme
-VAPID_PUBLIC_KEY=...
-VAPID_PRIVATE_KEY=...
-NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-GOOGLE_CLIENT_ID=
-# node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
-GOOGLE_CLIENT_SECRET=
-AUTH_SECRET=
 AUTH_URL=http://localhost:3000
+AUTH_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+SMARTLINK_HMAC_SECRET=changeme
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+```
+
+## Vercel Cron
+
+`vercel.json`
+
+```json
+{
+  "crons": [
+    { "path": "/api/agent-worker", "schedule": "*/1 * * * *" }
+  ]
+}
 ```
 
 ## Definition of Done (MVP)
 
-- **4 loops** working end-to-end (trigger → share → join → FVM → reward).
-- **4 agentic actions** wired (≥2 student, ≥2 tutor).
-- **Presence + leaderboards** visible; **signed smart links + attribution** functional.
-- **Tinybird dashboards** show K and funnels; **compliance memo** added.
+* **4 viral loops** working end-to-end (trigger → share → join → FVM → reward).
+* **4 agentic actions** wired (≥2 student, ≥2 tutor) using the **shared agents package**.
+* **Presence + leaderboards** visible; **smart links + attribution** functional.
+* **Admin metrics** show K and funnel snapshots (SQL views; no external analytics service).
 
-> Assume a dev server is already running. Do **not** start a dev server from tasks.
+

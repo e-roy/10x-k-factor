@@ -15,6 +15,7 @@
     "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
+    "@10x-k-factor/agents": "workspace:*",
     "@10x-k-factor/lib": "workspace:*",
     "@auth/drizzle-adapter": "^1.11.1",
     "@radix-ui/react-accordion": "^1.2.12",

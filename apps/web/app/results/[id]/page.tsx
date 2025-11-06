@@ -7,6 +7,8 @@ import { ShareButton } from "@/components/ShareButton";
 import { PresenceWidget } from "@/components/PresenceWidget";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
+import { chooseLoop, compose } from "@10x-k-factor/agents";
+import { getCooldowns } from "@/lib/agents/cooldowns";
 
 interface ResultsPageProps {
   params: Promise<{ id: string }>;
@@ -92,6 +94,40 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
 
   // Check if current user is the result owner
   const isOwner = session?.user?.id === result?.userId;
+
+  // Get orchestrator and personalization data (only for owner)
+  let loopData = null;
+  let personalizeData = null;
+
+  if (isOwner && session?.user?.id) {
+    try {
+      // Get cooldowns for the user
+      const cooldowns = await getCooldowns(session.user.id);
+
+      // Call orchestrator to choose loop
+      const orchestratorResult = chooseLoop({
+        event: "results_viewed",
+        persona: (result.persona || "student") as "student" | "parent" | "tutor",
+        subject: result.subject || undefined,
+        cooldowns,
+      });
+
+      loopData = orchestratorResult;
+
+      // Call personalization to get copy
+      const personalizeResult = compose({
+        intent: "share_results",
+        persona: (result.persona || "student") as "student" | "parent" | "tutor",
+        subject: result.subject || undefined,
+        loop: orchestratorResult.loop,
+      });
+
+      personalizeData = personalizeResult;
+    } catch (error) {
+      console.error("[ResultsPage] Error calling agents:", error);
+      // Continue with fallback - loopData and personalizeData remain null
+    }
+  }
 
   // Extract metadata
   const metadata = (result?.metadata || {}) as Record<string, unknown>;
@@ -227,6 +263,55 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
             </ul>
           </CardContent>
         </Card>
+
+        {/* Personalized Viral Loop CTA (only for owner) */}
+        {isOwner && loopData && personalizeData && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Share Your Success</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-lg">{personalizeData.copy}</p>
+              {personalizeData.reward_preview && (
+                <div className="bg-muted p-3 rounded-lg">
+                  <p className="text-sm font-medium">
+                    Reward: {personalizeData.reward_preview.description ||
+                      `${personalizeData.reward_preview.type}${
+                        personalizeData.reward_preview.amount
+                          ? ` (${personalizeData.reward_preview.amount})`
+                          : ""
+                      }`}
+                  </p>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <ShareButton
+                  resultId={result.id}
+                  userId={result.userId}
+                  persona={result.persona || "student"}
+                  subject={result.subject}
+                />
+              </div>
+              {process.env.NODE_ENV === "development" && (
+                <details className="text-xs text-muted-foreground">
+                  <summary>Debug Info</summary>
+                  <pre className="mt-2 p-2 bg-muted rounded overflow-auto">
+                    {JSON.stringify(
+                      {
+                        loop: loopData.loop,
+                        eligibility_reason: loopData.eligibility_reason,
+                        rationale: loopData.rationale,
+                        personalize_rationale: personalizeData.rationale,
+                      },
+                      null,
+                      2
+                    )}
+                  </pre>
+                </details>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
