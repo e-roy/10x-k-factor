@@ -1,4 +1,4 @@
-Phase 8 — MCP Agents (Orchestrator + Personalization)
+Phase 8 — MCP Agents (Orchestrator + Personalization) ✅
 
 **Goal**: Decisioning APIs with sub‑150ms SLA.
 
