@@ -1,4 +1,4 @@
-Phase 5 — FVM Micro‑Task Landing
+Phase 5 — FVM Micro‑Task Landing ✅
 
 **Goal**: Bite‑size first value (≤90s) with analytics and reward preview.
 

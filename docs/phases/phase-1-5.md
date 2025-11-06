@@ -1,4 +1,4 @@
-### Phase 1.5 — Auth.js Minimal Sign‑in Flow (NextAuth + Drizzle + Neon)
+### Phase 1.5 — Auth.js Minimal Sign‑in Flow (NextAuth + Drizzle + Neon) ✅
 
 **Goal:** Replace the auth stub with a real sign‑in that (a) shows a **Login** button on the landing page, (b) routes to a provider login, and (c) **redirects into the app** after success.
 

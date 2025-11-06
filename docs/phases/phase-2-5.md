@@ -1,4 +1,4 @@
-Phase 2 — Event Schema & Ingest (Postgres‑only)
+Phase 2 — Event Schema & Ingest (Postgres‑only) ✅
 
 **Goal**: Typed analytics pipeline writing to **Postgres only**, with **materialized views** refreshed by **Vercel Cron Jobs**.
 

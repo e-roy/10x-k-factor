@@ -1,4 +1,4 @@
-Phase 7 — Leaderboards & Cohort Rooms
+Phase 7 — Leaderboards & Cohort Rooms ✅
 
 **Goal**: Competition & social rooms.
 

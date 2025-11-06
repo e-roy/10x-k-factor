@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import type { Deck } from "@/lib/decks";
 import { RewardPreview } from "@/components/RewardPreview";
 import { track } from "@/lib/track";
+import { incrementLeaderboard } from "@/lib/leaderboard";
 
 interface MicroDeckProps {
   deck: Deck;
@@ -100,6 +101,17 @@ export function MicroDeck({ deck, attribution, onComplete }: MicroDeckProps) {
         deck_id: deck.id,
         completion_time_ms: completionTime,
       });
+
+      // Increment leaderboard for inviter (non-blocking)
+      // Use deck subject as the leaderboard subject
+      if (deck.subject) {
+        incrementLeaderboard(deck.subject, attribution.inviter_id, 1).catch(
+          (error) => {
+            console.error("[MicroDeck] Failed to increment leaderboard:", error);
+            // Non-blocking - don't throw
+          }
+        );
+      }
     } else {
       console.warn("[MicroDeck] No attribution data available for event");
     }
@@ -108,7 +120,7 @@ export function MicroDeck({ deck, attribution, onComplete }: MicroDeckProps) {
     if (onComplete) {
       onComplete(completionTime);
     }
-  }, [isCompleted, allAnswered, startTime, attribution, deck.id, onComplete]);
+  }, [isCompleted, allAnswered, startTime, attribution, deck.id, deck.subject, onComplete]);
 
   // Keyboard navigation
   useEffect(() => {

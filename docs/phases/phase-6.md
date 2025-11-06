@@ -1,4 +1,4 @@
-Phase 6 — Presence (Alive v1)
+Phase 6 — Presence (Alive v1) ✅
 
 **Goal**: Real‑time presence counts per subject.
 

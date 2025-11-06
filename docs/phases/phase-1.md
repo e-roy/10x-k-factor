@@ -1,4 +1,4 @@
-Phase 1 — Drizzle + Postgres Wiring
+Phase 1 — Drizzle + Postgres Wiring ✅
 
 **Goal**: OLTP database ready with migrations, connection pooling, and health checks.
 
@@ -7,22 +7,18 @@ Phase 1 — Drizzle + Postgres Wiring
 **Tasks**
 
 1. **Install & init**
-
    - `pnpm add drizzle-orm pg postgres` ; `pnpm add -D drizzle-kit`
    - `apps/web/db/schema.ts`: define tables (see §B snapshot below).
    - `apps/web/db/index.ts` create client with `neon` or `pg` pool.
 
 2. **Drizzle Kit**
-
    - `drizzle.config.ts` at repo root pointing to `apps/web/db/schema.ts` and output `drizzle/`.
    - Scripts: `pnpm drizzle:gen`, `pnpm drizzle:push`.
 
 3. **Health route**
-
    - `apps/web/app/api/health/route.ts` → `SELECT 1` and Redis ping.
 
 4. **Seeds**
-
    - `apps/web/scripts/seed.ts` to insert sample users, results, cohorts.
 
 **Deliverables**: Migrations applied; seed data present.
