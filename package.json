@@ -12,6 +12,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "drizzle:gen": "pnpm --filter @10x-k-factor/web drizzle:gen",
     "drizzle:push": "pnpm --filter @10x-k-factor/web drizzle:push",
+    "drizzle:studio": "pnpm --filter @10x-k-factor/web drizzle:studio",
     "seed": "pnpm --filter @10x-k-factor/web seed"
   },
   "devDependencies": {
