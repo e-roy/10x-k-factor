@@ -4,6 +4,7 @@ import { db } from "@/db/index";
 import { results, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ShareButton } from "@/components/ShareButton";
+import { PresenceWidget } from "@/components/PresenceWidget";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
 
@@ -90,18 +91,18 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
   }
 
   // Check if current user is the result owner
-  const isOwner = session?.user?.id === result.userId;
+  const isOwner = session?.user?.id === result?.userId;
 
   // Extract metadata
-  const metadata = (result.metadata || {}) as Record<string, unknown>;
+  const metadata = (result?.metadata || {}) as Record<string, unknown>;
   const skills = (metadata.skills as Record<string, number>) || {};
   const recommendations =
     (metadata.recommendations as string[]) ||
-    (result.subject
+    (result?.subject
       ? [
-          `Practice more ${result.subject} problems`,
-          `Review ${result.subject} concepts`,
-          `Try the ${result.subject} challenge`,
+          `Practice more ${result?.subject} problems`,
+          `Review ${result?.subject} concepts`,
+          `Try the ${result?.subject} challenge`,
         ]
       : ["Keep practicing!", "Review your notes", "Try more exercises"]);
 
@@ -115,10 +116,10 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
         }))
       : // Fallback: generate from score
         [
-          { name: "Understanding", score: result.score || 0 },
-          { name: "Application", score: (result.score || 0) - 10 },
-          { name: "Analysis", score: (result.score || 0) - 5 },
-          { name: "Problem Solving", score: (result.score || 0) + 5 },
+          { name: "Understanding", score: result?.score || 0 },
+          { name: "Application", score: (result?.score || 0) - 10 },
+          { name: "Analysis", score: (result?.score || 0) - 5 },
+          { name: "Problem Solving", score: (result?.score || 0) + 5 },
         ].map((s) => ({ ...s, score: Math.max(0, Math.min(100, s.score)) }));
 
   const getScoreColor = (score: number) => {
@@ -134,8 +135,11 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Results</h1>
-            {result.subject && (
-              <p className="text-muted-foreground mt-1">{result.subject}</p>
+            {result?.subject && (
+              <div className="mt-1">
+                <p className="text-muted-foreground">{result?.subject}</p>
+                <PresenceWidget subject={result?.subject} />
+              </div>
             )}
           </div>
           {/* Only show share button if user is the owner */}
@@ -156,20 +160,20 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
-              <div className="text-6xl font-bold">{result.score ?? 0}%</div>
+              <div className="text-6xl font-bold">{result?.score ?? 0}%</div>
               <div className="flex-1">
                 <div className="w-full bg-muted rounded-full h-4 mb-2">
                   <div
                     className={`h-4 rounded-full transition-all ${getScoreColor(
-                      result.score || 0
+                      result?.score || 0
                     )}`}
-                    style={{ width: `${result.score || 0}%` }}
+                    style={{ width: `${result?.score || 0}%` }}
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {result.score && result.score >= 80
+                  {result?.score && result?.score >= 80
                     ? "Excellent work!"
-                    : result.score && result.score >= 60
+                    : result?.score && result?.score >= 60
                       ? "Good progress!"
                       : "Keep practicing!"}
                 </p>
