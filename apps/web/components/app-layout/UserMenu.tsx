@@ -54,7 +54,7 @@ export function UserMenu({ name, email, image }: UserMenuProps) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/app/settings/rewards" className="flex items-center">
+          <Link href="/app/settings" className="flex items-center">
             <User className="mr-2 h-4 w-4" />
             Settings
           </Link>

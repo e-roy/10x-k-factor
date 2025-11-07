@@ -1,0 +1,4 @@
+- [ ] cohort selection in signup
+- [ ] padding/margin in signup right sheet
+- [ ] hide persona selection for users when ready2go
+- [ ] 

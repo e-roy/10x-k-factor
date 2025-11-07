@@ -1,0 +1,353 @@
+/**
+ * Persona-Specific Theme Variables
+ * 
+ * These CSS custom properties are applied based on user persona (student/parent/tutor)
+ * and work seamlessly with both light and dark modes.
+ */
+
+/* ============================================
+   BASE THEME (Student - Default)
+   ============================================ */
+:root {
+  /* Student Primary Colors */
+  --persona-primary: 139 92 246; /* purple-500 */
+  --persona-primary-foreground: 255 255 255;
+  --persona-secondary: 236 72 153; /* pink-500 */
+  --persona-secondary-foreground: 255 255 255;
+  --persona-accent: 245 158 11; /* amber-500 */
+  --persona-accent-foreground: 255 255 255;
+
+  /* Persona-specific gradients (as strings for use in linear-gradient) */
+  --persona-gradient-from: 139 92 246; /* purple-500 */
+  --persona-gradient-to: 236 72 153; /* pink-500 */
+  --persona-gradient: linear-gradient(135deg, rgb(139 92 246) 0%, rgb(236 72 153) 100%);
+  
+  /* Background overlays (10% opacity for cards/widgets) */
+  --persona-bg-overlay: 139 92 246 / 0.1;
+  --persona-bg-overlay-hover: 139 92 246 / 0.15;
+  
+  /* Border colors */
+  --persona-border: 139 92 246 / 0.3;
+  --persona-border-strong: 139 92 246 / 0.5;
+
+  /* Shadow colors (for colorful drop-shadows) */
+  --persona-shadow: 139 92 246 / 0.5;
+  
+  /* Icon/badge style */
+  --persona-style: "playful"; /* Used in JS, not directly in CSS */
+}
+
+/* ============================================
+   PARENT PERSONA THEME
+   ============================================ */
+[data-persona="parent"] {
+  /* Parent Primary Colors */
+  --persona-primary: 59 130 246; /* blue-500 */
+  --persona-primary-foreground: 255 255 255;
+  --persona-secondary: 6 182 212; /* cyan-500 */
+  --persona-secondary-foreground: 255 255 255;
+  --persona-accent: 16 185 129; /* green-500 */
+  --persona-accent-foreground: 255 255 255;
+
+  /* Gradients */
+  --persona-gradient-from: 59 130 246; /* blue-500 */
+  --persona-gradient-to: 6 182 212; /* cyan-500 */
+  --persona-gradient: linear-gradient(135deg, rgb(59 130 246) 0%, rgb(6 182 212) 100%);
+  
+  /* Background overlays */
+  --persona-bg-overlay: 59 130 246 / 0.1;
+  --persona-bg-overlay-hover: 59 130 246 / 0.15;
+  
+  /* Border colors */
+  --persona-border: 59 130 246 / 0.3;
+  --persona-border-strong: 59 130 246 / 0.5;
+
+  /* Shadow colors */
+  --persona-shadow: 59 130 246 / 0.5;
+  
+  --persona-style: "professional";
+}
+
+/* ============================================
+   TUTOR PERSONA THEME
+   ============================================ */
+[data-persona="tutor"] {
+  /* Tutor Primary Colors */
+  --persona-primary: 16 185 129; /* green-500 */
+  --persona-primary-foreground: 255 255 255;
+  --persona-secondary: 5 150 105; /* green-600 */
+  --persona-secondary-foreground: 255 255 255;
+  --persona-accent: 99 102 241; /* indigo-500 */
+  --persona-accent-foreground: 255 255 255;
+
+  /* Gradients */
+  --persona-gradient-from: 16 185 129; /* green-500 */
+  --persona-gradient-to: 5 150 105; /* green-600 */
+  --persona-gradient: linear-gradient(135deg, rgb(16 185 129) 0%, rgb(5 150 105) 100%);
+  
+  /* Background overlays */
+  --persona-bg-overlay: 16 185 129 / 0.1;
+  --persona-bg-overlay-hover: 16 185 129 / 0.15;
+  
+  /* Border colors */
+  --persona-border: 16 185 129 / 0.3;
+  --persona-border-strong: 16 185 129 / 0.5;
+
+  /* Shadow colors */
+  --persona-shadow: 16 185 129 / 0.5;
+  
+  --persona-style: "professional";
+}
+
+/* ============================================
+   DARK MODE ADJUSTMENTS
+   ============================================ */
+.dark:root,
+.dark [data-persona="parent"],
+.dark [data-persona="tutor"] {
+  /* Slightly adjust opacity in dark mode for better contrast */
+  --persona-bg-overlay: var(--persona-gradient-from) / 0.15;
+  --persona-bg-overlay-hover: var(--persona-gradient-from) / 0.2;
+  --persona-border: var(--persona-gradient-from) / 0.4;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Backgrounds */
+.bg-persona-primary {
+  background-color: rgb(var(--persona-primary));
+}
+
+.bg-persona-secondary {
+  background-color: rgb(var(--persona-secondary));
+}
+
+.bg-persona-gradient {
+  background: var(--persona-gradient);
+}
+
+.bg-persona-overlay {
+  background-color: rgb(var(--persona-bg-overlay));
+}
+
+.hover\:bg-persona-overlay-hover:hover {
+  background-color: rgb(var(--persona-bg-overlay-hover));
+}
+
+/* Text colors */
+.text-persona-primary {
+  color: rgb(var(--persona-primary));
+}
+
+.text-persona-secondary {
+  color: rgb(var(--persona-secondary));
+}
+
+.text-persona-accent {
+  color: rgb(var(--persona-accent));
+}
+
+/* Border colors */
+.border-persona {
+  border-color: rgb(var(--persona-border));
+}
+
+.border-persona-strong {
+  border-color: rgb(var(--persona-border-strong));
+}
+
+/* Ring colors (for focus states) */
+.ring-persona {
+  --tw-ring-color: rgb(var(--persona-primary));
+}
+
+/* Shadow utilities */
+.shadow-persona {
+  box-shadow: 0 10px 30px -5px rgb(var(--persona-shadow));
+}
+
+.shadow-persona-lg {
+  box-shadow: 0 20px 50px -10px rgb(var(--persona-shadow));
+}
+
+/* Gradient backgrounds for cards */
+.card-persona {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--persona-gradient-from) / 0.05) 0%,
+    rgb(var(--persona-gradient-to) / 0.05) 100%
+  );
+  border-color: rgb(var(--persona-border));
+}
+
+.card-persona:hover {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--persona-gradient-from) / 0.1) 0%,
+    rgb(var(--persona-gradient-to) / 0.1) 100%
+  );
+  border-color: rgb(var(--persona-border-strong));
+}
+
+/* Button with persona gradient */
+.btn-persona {
+  background: var(--persona-gradient);
+  color: rgb(var(--persona-primary-foreground));
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.btn-persona:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 5px 20px -5px rgb(var(--persona-shadow));
+}
+
+.btn-persona:active {
+  filter: brightness(0.95);
+}
+
+/* Outline button variant */
+.btn-persona-outline {
+  background: transparent;
+  color: rgb(var(--persona-primary));
+  border: 2px solid rgb(var(--persona-border));
+}
+
+.btn-persona-outline:hover {
+  background: rgb(var(--persona-bg-overlay));
+  border-color: rgb(var(--persona-border-strong));
+}
+
+/* Badge/pill with persona color */
+.badge-persona {
+  background-color: rgb(var(--persona-bg-overlay));
+  color: rgb(var(--persona-primary));
+  border: 1px solid rgb(var(--persona-border));
+}
+
+/* Progress bar */
+.progress-persona {
+  background-color: rgb(var(--persona-primary));
+}
+
+.progress-persona-track {
+  background-color: rgb(var(--persona-bg-overlay));
+}
+
+/* Glow effect (for hover states, agent buddy, etc.) */
+.glow-persona {
+  position: relative;
+}
+
+.glow-persona::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: var(--persona-gradient);
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glow-persona:hover::before {
+  opacity: 1;
+}
+
+/* Animated gradient border (for special cards) */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.border-persona-animated {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--persona-gradient-from)),
+    rgb(var(--persona-gradient-to)),
+    rgb(var(--persona-gradient-from))
+  );
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Speech bubble tail (for agent buddy) */
+.speech-bubble-tail {
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  background: linear-gradient(
+    135deg,
+    rgb(var(--persona-gradient-from) / 0.1) 0%,
+    rgb(var(--persona-gradient-to) / 0.1) 100%
+  );
+  transform: rotate(45deg);
+  border-right: 1px solid rgb(var(--persona-border));
+  border-bottom: 1px solid rgb(var(--persona-border));
+}
+
+/* Radial progress ring colors */
+.progress-ring-outer {
+  stroke: rgb(var(--persona-primary));
+  filter: drop-shadow(0 0 6px rgb(var(--persona-primary)));
+}
+
+.progress-ring-inner {
+  stroke: rgb(var(--persona-secondary));
+  filter: drop-shadow(0 0 4px rgb(var(--persona-secondary)));
+}
+
+/* Celebration/confetti colors (use with JS animations) */
+:root {
+  --persona-confetti-1: rgb(var(--persona-primary));
+  --persona-confetti-2: rgb(var(--persona-secondary));
+  --persona-confetti-3: rgb(var(--persona-accent));
+}
+
+/* Focus-visible states with persona colors */
+.focus-persona:focus-visible {
+  outline: 2px solid rgb(var(--persona-primary));
+  outline-offset: 2px;
+}
+
+/* Selection color (highlight text) */
+::selection {
+  background-color: rgb(var(--persona-primary) / 0.3);
+  color: inherit;
+}
+
+/* Scrollbar theming (webkit browsers) */
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--persona-primary) / 0.3);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--persona-primary) / 0.5);
+}
+
+/* Loading spinner with persona colors */
+@keyframes persona-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner-persona {
+  border: 3px solid rgb(var(--persona-bg-overlay));
+  border-top-color: rgb(var(--persona-primary));
+  border-radius: 50%;
+  animation: persona-spin 0.8s linear infinite;
+}
+
