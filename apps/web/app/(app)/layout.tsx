@@ -71,6 +71,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
                 userName={session.user.name}
                 userEmail={session.user.email}
                 userImage={session.user.image}
+                persona={persona}
               />
             </header>
             <main className="flex-1 overflow-auto p-4">{children}</main>

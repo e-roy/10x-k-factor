@@ -1,0 +1,24 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Active Agent Buddy - Excited robot face -->
+  <circle cx="32" cy="32" r="28" fill="#EC4899" opacity="0.2"/>
+  <circle cx="32" cy="32" r="24" fill="#8B5CF6"/>
+  
+  <!-- Eyes (wider, excited) -->
+  <circle cx="24" cy="26" r="5" fill="white"/>
+  <circle cx="40" cy="26" r="5" fill="white"/>
+  <circle cx="25" cy="26" r="2.5" fill="#1F2937"/>
+  <circle cx="41" cy="26" r="2.5" fill="#1F2937"/>
+  
+  <!-- Big smile -->
+  <path d="M 18 36 Q 32 46 46 36" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+  
+  <!-- Antenna (glowing) -->
+  <line x1="32" y1="8" x2="32" y2="4" stroke="#EC4899" stroke-width="3"/>
+  <circle cx="32" cy="4" r="3" fill="#EC4899"/>
+  <circle cx="32" cy="4" r="4" fill="#EC4899" opacity="0.3"/>
+  
+  <!-- Sparkle effect -->
+  <circle cx="12" cy="20" r="2" fill="#F59E0B"/>
+  <circle cx="52" cy="20" r="2" fill="#F59E0B"/>
+</svg>
+
