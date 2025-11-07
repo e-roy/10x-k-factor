@@ -61,7 +61,7 @@ export function Navbar() {
               </Link>
             ))}
             <Button asChild variant="default">
-              <Link href="/signup">{brand.ctaPrimary}</Link>
+              <Link href="/login">{brand.ctaPrimary}</Link>
             </Button>
           </div>
 
@@ -92,7 +92,7 @@ export function Navbar() {
                   </Link>
                 ))}
                 <Button asChild variant="default" className="mt-4">
-                  <Link href="/signup" onClick={() => setOpen(false)}>
+                  <Link href="/login" onClick={() => setOpen(false)}>
                     {brand.ctaPrimary}
                   </Link>
                 </Button>

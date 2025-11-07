@@ -1,6 +1,6 @@
 export const brand = {
   name: "10x K Factor",
-  ctaPrimary: "Get Started Free",
+  ctaPrimary: "Get Started",
   ctaSecondary: "See a Live Demo",
 };
 

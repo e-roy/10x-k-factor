@@ -27,7 +27,7 @@ export function Hero() {
                 variant="default"
                 className="min-w-[160px]"
               >
-                <Link href="/signup">{hero.primaryCta}</Link>
+                <Link href="/login">{hero.primaryCta}</Link>
               </Button>
               <Button
                 asChild
@@ -35,7 +35,7 @@ export function Hero() {
                 variant="outline"
                 className="min-w-[160px]"
               >
-                <Link href="/signup">{hero.secondaryCta}</Link>
+                <Link href="/login">{hero.secondaryCta}</Link>
               </Button>
             </div>
             <p className="mt-8 text-sm font-medium text-muted-foreground">

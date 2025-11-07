@@ -17,10 +17,10 @@ export function CTA() {
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button asChild size="lg" variant="default" className="min-w-[160px]">
-            <Link href="/signup">{cta.primaryCta}</Link>
+            <Link href="/login">{cta.primaryCta}</Link>
           </Button>
           <Button asChild size="lg" variant="outline" className="min-w-[160px]">
-            <Link href="/signup">{cta.secondaryCta}</Link>
+            <Link href="/login">{cta.secondaryCta}</Link>
           </Button>
         </div>
       </div>
