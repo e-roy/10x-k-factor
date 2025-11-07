@@ -117,6 +117,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  html {
+    scroll-padding-top: 4rem; /* Account for sticky navbar (h-16 = 4rem) */
+  }
 }
 
 @layer base {
