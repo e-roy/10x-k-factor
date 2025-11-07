@@ -12,7 +12,7 @@ const PRODUCT = "10x K Factor";
 const CONTACT_EMAIL = "privacy@10xkfactor.com";
 const POSTAL_ADDR = "123 Product Ave, Suite 100, Austin, TX 78701, USA";
 const DPO_EMAIL = "dpo@10xkfactor.com";
-const GOVERNING_LAW = "State of Texas, USA";
+const _GOVERNING_LAW = "State of Texas, USA";
 const EFFECTIVE_DATE = "November 7, 2025";
 const SUBPROCESSORS_URL = "https://example.com/subprocessors";
 const COOKIE_SETTINGS_URL = "/cookie-settings";
@@ -71,7 +71,7 @@ export default function PrivacyPage() {
               We collect the minimum data needed to run {PRODUCT}, improve
               learning features (including AI), keep accounts secure, and enable
               social/viral mechanics (presence, invites, leaderboards, rewards).
-              We don't sell personal information. You control your data and can
+              We don&apos;t sell personal information. You control your data and can
               access, export, or delete it subject to applicable law.
             </p>
             <UpdatedBadge date={EFFECTIVE_DATE} />
@@ -91,7 +91,7 @@ export default function PrivacyPage() {
 
           <LegalSection id="who-we-are" title="Who We Are">
             <p>
-              {PRODUCT} is provided by {ORG} ("we," "us"). Contact:{" "}
+              {PRODUCT} is provided by {ORG} (&quot;we,&quot; &quot;us&quot;). Contact:{" "}
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
                 className="text-primary underline hover:no-underline"
@@ -192,7 +192,7 @@ export default function PrivacyPage() {
               use customer content to train foundation models. We may use{" "}
               <strong>aggregated or de-identified</strong> telemetry to improve
               features. Where optional fine-tuning on your data is available,
-              we'll present a clear <strong>opt-in</strong> control.
+              we&apos;ll present a clear <strong>opt-in</strong> control.
             </p>
             <p className="mt-4">
               <strong>Third-party AI:</strong> If we use third-party models or
@@ -228,12 +228,12 @@ export default function PrivacyPage() {
 
           <LegalSection
             id="selling-sharing"
-            title='"Selling" or "Sharing" (US State Laws)'
+            title={'"Selling" or "Sharing" (US State Laws)'}
           >
             <p>
               We do <strong>not</strong> sell personal information for money.
               Certain analytics/advertising disclosures could be considered
-              "sharing" under CPRA. You can opt out at{" "}
+              &quot;sharing&quot; under CPRA. You can opt out at{" "}
               <Link
                 href={OPT_OUT_SALE_SHARE_URL}
                 className="text-primary underline hover:no-underline"
@@ -271,7 +271,7 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>Business transfers:</strong> in a merger/acquisition;
-                we'll provide notice and choices as required.
+                we&apos;ll provide notice and choices as required.
               </li>
             </ul>
             <p className="mt-4">
@@ -322,7 +322,7 @@ export default function PrivacyPage() {
             <ul>
               <li>Access/know, correct, delete, and port your data.</li>
               <li>
-                Opt out of targeted advertising/"sharing" and certain profiling.
+                Opt out of targeted advertising/&quot;sharing&quot; and certain profiling.
               </li>
               <li>Object or restrict certain processing; withdraw consent.</li>
               <li>Appeal a decision (US state laws).</li>
@@ -388,7 +388,7 @@ export default function PrivacyPage() {
           <LegalSection id="third-party" title="Third-Party Services">
             <p>
               Links/integrations are governed by their own policies. Review
-              those policies; we're not responsible for third-party practices.
+              those policies; we&apos;re not responsible for third-party practices.
             </p>
           </LegalSection>
 

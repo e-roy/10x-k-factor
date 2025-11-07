@@ -65,8 +65,8 @@ export default function TermsPage() {
             <h1 className="mb-4 text-4xl font-bold">Terms of Service</h1>
             <p className="mb-4 text-lg text-muted-foreground">
               These terms form a contract between you and {ORG}. By accessing or
-              using 10x K Factor, you agree to them. If you don't agree, do not
-              use the Service.
+              using 10x K Factor, you agree to them. If you don&apos;t agree, do
+              not use the Service.
             </p>
             <UpdatedBadge date={EFFECTIVE_DATE} />
           </div>
@@ -74,10 +74,11 @@ export default function TermsPage() {
           <LegalSection id="acceptance" title="Acceptance of Terms">
             <p>
               By accessing or using the websites, mobile/web apps, extensions,
-              APIs, or services offered by {ORG} (the "Service"), you agree to
-              these Terms of Service ("Terms") and our Privacy Policy. If you
-              use the Service on behalf of an organization, you represent that
-              you have authority to bind that organization to these Terms.
+              APIs, or services offered by {ORG} (the &quot;Service&quot;), you
+              agree to these Terms of Service (&quot;Terms&quot;) and our
+              Privacy Policy. If you use the Service on behalf of an
+              organization, you represent that you have authority to bind that
+              organization to these Terms.
             </p>
           </LegalSection>
 
@@ -139,19 +140,20 @@ export default function TermsPage() {
           >
             <p>
               You retain ownership of content you submit (e.g., text, images,
-              answers, study sets, feedback) ("User Content"). To operate and
-              improve the Service, you grant {ORG} a worldwide, non-exclusive,
-              royalty-free license to host, process, transmit, display, and
-              create non-identifying derivatives of your User Content, solely to
-              provide and enhance the Service. You are responsible for having
-              the necessary rights to submit User Content.
+              answers, study sets, feedback) (&quot;User Content&quot;). To
+              operate and improve the Service, you grant {ORG} a worldwide,
+              non-exclusive, royalty-free license to host, process, transmit,
+              display, and create non-identifying derivatives of your User
+              Content, solely to provide and enhance the Service. You are
+              responsible for having the necessary rights to submit User
+              Content.
             </p>
           </LegalSection>
 
           <LegalSection id="prohibited" title="Prohibited Conduct">
             <p>You agree not to:</p>
             <ul>
-              <li>Break the law or infringe others' rights.</li>
+              <li>Break the law or infringe others&apos; rights.</li>
               <li>
                 Upload unlawful, harmful, or deceptive content; attempt to
                 de-anonymize minors or other users.
@@ -253,11 +255,12 @@ export default function TermsPage() {
 
           <LegalSection id="disclaimers" title="Disclaimers">
             <p className="font-semibold uppercase">
-              THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE." {ORG}{" "}
-              DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
-              MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
-              NON-INFRINGEMENT. WE DO NOT WARRANT ACCURACY, RELIABILITY, OR
-              AVAILABILITY, NOR THAT THE SERVICE WILL BE ERROR-FREE OR SECURE.
+              THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS
+              AVAILABLE.&quot; {ORG} DISCLAIMS ALL WARRANTIES, EXPRESS OR
+              IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR
+              PURPOSE, AND NON-INFRINGEMENT. WE DO NOT WARRANT ACCURACY,
+              RELIABILITY, OR AVAILABILITY, NOR THAT THE SERVICE WILL BE
+              ERROR-FREE OR SECURE.
             </p>
           </LegalSection>
 
@@ -277,8 +280,8 @@ export default function TermsPage() {
             <p>
               You agree to defend, indemnify, and hold harmless {ORG} and its
               affiliates from any claims, losses, and expenses (including
-              attorneys' fees) arising from your use of the Service, your User
-              Content, or your violation of these Terms.
+              attorneys&apos; fees) arising from your use of the Service, your
+              User Content, or your violation of these Terms.
             </p>
           </LegalSection>
 
