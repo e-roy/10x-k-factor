@@ -2,16 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Share2, Check, AlertCircle } from "lucide-react";
+import { Share2, Check, AlertCircle, Mail } from "lucide-react";
 import { createSmartLink } from "@/lib/smart-links/create";
 import { track } from "@/lib/track";
 
 interface ShareButtonProps {
-  resultId: string;
+  resultId?: string;
   userId: string;
   persona: string;
   subject?: string | null;
   deckId?: string;
+  loop: string; // Required: buddy_challenge, results_rally, proud_parent, tutor_spotlight
+  shareCopy?: string; // Optional personalized copy from personalize agent
+  tutorId?: string; // For tutor spotlight OG cards
 }
 
 export function ShareButton({
@@ -20,6 +23,9 @@ export function ShareButton({
   persona: _persona,
   subject,
   deckId,
+  loop,
+  shareCopy,
+  tutorId,
 }: ShareButtonProps) {
   const [isSharing, setIsSharing] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -28,9 +34,44 @@ export function ShareButton({
     null
   );
 
-  // Generate deckId if not provided (use resultId as deckId for now)
-  // In production, this might come from result metadata or be generated
-  const finalDeckId = deckId || `deck-${resultId.slice(0, 8)}`;
+  // Generate deckId if not provided
+  // Priority: provided deckId > resultId-based > default deck
+  const finalDeckId = deckId || (resultId ? `deck-${resultId.slice(0, 8)}` : "deck-default");
+
+  // Loop-specific share copy and titles
+  const getLoopShareCopy = (): { title: string; text: string } => {
+    if (shareCopy) {
+      return {
+        title: shareCopy,
+        text: shareCopy,
+      };
+    }
+
+    // Fallback loop-specific copy
+    const loopCopy: Record<string, { title: string; text: string }> = {
+      buddy_challenge: {
+        title: `I just completed a ${subject || "practice"} session! Challenge me? 🎯`,
+        text: `I just completed a ${subject || "practice"} session! Challenge me to beat your score? 🎯`,
+      },
+      results_rally: {
+        title: `Check out my ${subject || "latest"} results!`,
+        text: `Check out my ${subject || "latest"} results! Can you beat this? 💪`,
+      },
+      proud_parent: {
+        title: `My child just aced their ${subject || "practice"}! So proud! 🎉`,
+        text: `My child just aced their ${subject || "practice"}! So proud! 🎉 Check out their progress!`,
+      },
+      tutor_spotlight: {
+        title: `New ${subject || "learning"} challenge ready! Join my students 🚀`,
+        text: `New ${subject || "learning"} challenge ready! Join my students and level up 🚀`,
+      },
+    };
+
+    return loopCopy[loop] || {
+      title: "Check this out! 🎯",
+      text: "Check this out! 🎯",
+    };
+  };
 
   // Check rate limit on mount
   useEffect(() => {
@@ -74,14 +115,19 @@ export function ShareButton({
         setRateLimitRemaining(rateLimitData.remaining);
       }
 
-      // Create smart link
+      // Build smart link params - always include deckId for FVM routing
+      const linkParams: Record<string, unknown> = {
+        deckId: finalDeckId,
+      };
+      if (resultId) linkParams.resultId = resultId;
+      if (tutorId) linkParams.tutorId = tutorId;
+      if (subject) linkParams.subject = subject;
+
+      // Create smart link with the selected loop
       const { code, url } = await createSmartLink({
         inviterId: userId,
-        loop: "results_rally",
-        params: {
-          resultId,
-          deckId: finalDeckId,
-        },
+        loop,
+        params: linkParams,
       });
 
       // Update remaining count after successful creation
@@ -89,19 +135,38 @@ export function ShareButton({
         setRateLimitRemaining(Math.max(0, rateLimitRemaining - 1));
       }
 
+      const shareCopy = getLoopShareCopy();
+
+      // For Proud Parent, try email first (mailto: fallback)
+      if (loop === "proud_parent" && !navigator.share) {
+        const emailSubject = encodeURIComponent(shareCopy.title);
+        const emailBody = encodeURIComponent(`${shareCopy.text}\n\n${url}`);
+        const mailtoUrl = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+        window.location.href = mailtoUrl;
+        
+        // Track invite.sent event
+        await track("invite.sent", {
+          inviter_id: userId,
+          loop,
+          smart_link_code: code,
+          subject: subject || undefined,
+        });
+        return;
+      }
+
       // Try Web Share API first
       if (navigator.share) {
         try {
           await navigator.share({
-            title: `My ${subject || "test"} results`,
-            text: `Check out my results!`,
+            title: shareCopy.title,
+            text: shareCopy.text,
             url,
           });
 
           // Track invite.sent event
           await track("invite.sent", {
             inviter_id: userId,
-            loop: "results_rally",
+            loop,
             smart_link_code: code,
             subject: subject || undefined,
           });
@@ -123,7 +188,7 @@ export function ShareButton({
       // Track invite.sent event
       await track("invite.sent", {
         inviter_id: userId,
-        loop: "results_rally",
+        loop,
         smart_link_code: code,
         subject: subject || undefined,
       });
@@ -145,6 +210,21 @@ export function ShareButton({
     }
   };
 
+  // Get button text based on loop
+  const getButtonText = (): string => {
+    if (copied) return "Copied!";
+    if (isSharing) return "Sharing...";
+    
+    const buttonTexts: Record<string, string> = {
+      buddy_challenge: "Challenge a Friend",
+      results_rally: "Share Results",
+      proud_parent: "Share Progress",
+      tutor_spotlight: "Share Challenge",
+    };
+    
+    return buttonTexts[loop] || "Share";
+  };
+
   return (
     <div className="flex flex-col gap-2">
       <Button
@@ -160,8 +240,12 @@ export function ShareButton({
           </>
         ) : (
           <>
-            <Share2 className="size-4" />
-            {isSharing ? "Sharing..." : "Share Results"}
+            {loop === "proud_parent" && !navigator.share ? (
+              <Mail className="size-4" />
+            ) : (
+              <Share2 className="size-4" />
+            )}
+            {getButtonText()}
           </>
         )}
       </Button>

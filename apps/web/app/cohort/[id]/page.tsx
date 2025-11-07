@@ -76,6 +76,7 @@ export default async function CohortPage({ params }: CohortPageProps) {
                 userId={cohort.createdBy}
                 persona="tutor"
                 subject={cohort.subject}
+                loop="results_rally"
               />
             </div>
           )}

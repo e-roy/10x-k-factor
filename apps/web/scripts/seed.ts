@@ -1,15 +1,34 @@
+import { config } from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
 import { db } from "../db/index";
 import { users, smartLinks, results, cohorts } from "../db/schema";
 import { randomUUID } from "crypto";
+import { inArray } from "drizzle-orm";
+
+// Load .env files (monorepo root and local)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+config({ path: resolve(__dirname, "../../../.env") });
+config({ path: resolve(__dirname, "../../../.env.local") });
+config({ path: resolve(__dirname, "../.env") });
+config({ path: resolve(__dirname, "../.env.local") });
 
 async function seed() {
   console.log("Starting seed...");
 
   try {
-    // Check if data already exists
-    const existingUsers = await db.select().from(users).limit(1);
-    if (existingUsers.length > 0) {
+    // Check if seed data already exists by looking for seed-specific smart links
+    const seedSmartLinkCodes = ["abc123xyz", "def456uvw"];
+    const existingSeedLinks = await db
+      .select()
+      .from(smartLinks)
+      .where(inArray(smartLinks.code, seedSmartLinkCodes))
+      .limit(1);
+
+    if (existingSeedLinks.length > 0) {
       console.log("Seed data already exists. Skipping seed.");
+      console.log("To re-seed, delete the seed smart links (codes: abc123xyz, def456uvw) first.");
       return;
     }
 

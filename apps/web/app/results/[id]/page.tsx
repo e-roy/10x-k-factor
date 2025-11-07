@@ -185,6 +185,8 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
               userId={result.userId}
               persona={result.persona || "student"}
               subject={result.subject}
+              loop={loopData?.loop || "results_rally"}
+              shareCopy={personalizeData?.copy}
             />
           )}
         </div>
@@ -290,6 +292,8 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
                   userId={result.userId}
                   persona={result.persona || "student"}
                   subject={result.subject}
+                  loop={loopData.loop}
+                  shareCopy={personalizeData.copy}
                 />
               </div>
               {process.env.NODE_ENV === "development" && (

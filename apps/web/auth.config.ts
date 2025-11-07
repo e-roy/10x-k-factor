@@ -67,7 +67,7 @@ export const authConfig = {
       }
       return session;
     },
-    async signIn({ user }) {
+    async signIn({ user, account: _account, profile: _profile }) {
       // Ensure persona is set for users (adapter creates user, but we ensure persona default)
       if (user.id) {
         const [existingUser] = await db
@@ -83,6 +83,11 @@ export const authConfig = {
             .set({ persona: "student" })
             .where(eq(users.id, user.id));
         }
+
+        // Track invite.joined event if this is a new user with attribution
+        // Note: We can't access cookies directly in signIn callback, so we'll track this
+        // in a client component or API route that runs after sign-in
+        // For now, we'll create an API route that can be called after sign-in
       }
       return true;
     },

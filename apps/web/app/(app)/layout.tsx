@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { InviteJoinedTracker } from "@/components/InviteJoinedTracker";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   let session;
@@ -15,5 +16,10 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     redirect("/login");
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <InviteJoinedTracker />
+      {children}
+    </>
+  );
 }
