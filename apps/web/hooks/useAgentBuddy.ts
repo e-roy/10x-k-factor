@@ -39,6 +39,49 @@ export function useAgentBuddy(options: UseAgentBuddyOptions) {
   const [error, setError] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(true);
 
+  // Load pending challenges on mount
+  useEffect(() => {
+    const loadPendingChallenges = async () => {
+      try {
+        const response = await fetch('/api/challenges/pending');
+        if (!response.ok) return;
+        
+        const pendingChallenges = await response.json();
+        
+        // Create speech bubbles for each pending challenge
+        const bubbles: SpeechBubble[] = pendingChallenges.map((challenge: any) => ({
+          id: `challenge-${challenge.id}`,
+          copy: `Great session! I generated a ${challenge.difficulty} challenge with ${challenge.questions.length} questions to reinforce what you learned in ${challenge.subject}. Ready to test your knowledge? 🎯`,
+          action: {
+            type: "modal",
+            target: "ChallengeModal",
+            label: "Take Challenge",
+            data: {
+              challengeId: challenge.id,
+              subject: challenge.subject,
+              questionCount: challenge.questions.length,
+              difficulty: challenge.difficulty,
+            },
+          },
+          rewardPreview: {
+            type: "xp",
+            amount: 50,
+            description: "Complete the challenge to earn XP and solidify your learning!",
+          },
+          priority: "high",
+          challengeId: challenge.id,
+          expiresAt: new Date(challenge.expiresAt),
+        }));
+        
+        setSpeechBubbles(bubbles);
+      } catch (err) {
+        console.error("[useAgentBuddy] Error loading pending challenges:", err);
+      }
+    };
+    
+    loadPendingChallenges();
+  }, [userId]);
+
   // Fetch agent decision when context changes
   useEffect(() => {
     if (!currentContext?.recentEvent) return;

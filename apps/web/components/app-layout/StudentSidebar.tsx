@@ -38,7 +38,7 @@ interface StudentSidebarProps {
 
 export function StudentSidebar({ userId, persona, data }: StudentSidebarProps) {
   return (
-    <aside className="max-w-[260px] flex-shrink-0 overflow-y-auto p-4 space-y-6 bg-background/50 border-l">
+    <aside className="max-w-[260px] flex-shrink-0 overflow-visible p-4 space-y-6 bg-background/50 border-l">
       {/* Agent Buddy Section */}
       <div className="space-y-3">
         <div className="flex items-center justify-center">

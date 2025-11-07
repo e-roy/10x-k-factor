@@ -106,7 +106,29 @@ Creates a tutor session record and triggers challenge generation.
 
 Fetches a specific challenge by ID (verifies user authorization).
 
-#### 4. Update Challenge
+#### 4. Get Pending Challenges
+`GET /api/challenges/pending`
+
+Fetches all pending or active challenges for the current user that haven't expired.
+
+**Response:**
+```json
+[
+  {
+    "id": "uuid",
+    "userId": "user-123",
+    "subject": "Algebra",
+    "questions": [...],
+    "difficulty": "medium",
+    "status": "pending",
+    "expiresAt": "2025-11-14T..."
+  }
+]
+```
+
+**Purpose:** Called on page load to restore pending challenges and show notification badges.
+
+#### 5. Update Challenge
 `PATCH /api/challenges/[id]`
 
 Updates challenge status and score.
@@ -122,6 +144,11 @@ Updates challenge status and score.
 ### User Flow
 
 ```
+0. On ANY page load (if student persona)
+   → useAgentBuddy fetches pending challenges
+   → Creates speech bubbles for each
+   → Shows notification badge with count
+   ↓
 1. User visits /app/demos/transcript-challenge
    ↓
 2. Selects enrolled subject from dropdown
@@ -197,6 +224,8 @@ Visual States:
 **File:** `apps/web/hooks/useAgentBuddy.ts`
 
 New Capabilities:
+- **Loads pending challenges on mount** via `/api/challenges/pending`
+- **Persists across page refreshes** by fetching from database
 - Listens for `challengeGenerated` custom event
 - Fetches challenge details when event fires
 - Creates speech bubble with challenge info
@@ -421,6 +450,7 @@ SELECT * FROM challenges ORDER BY created_at DESC LIMIT 1;
 - `apps/web/app/api/challenges/generate-transcript/route.ts`
 - `apps/web/app/api/tutor-sessions/create/route.ts`
 - `apps/web/app/api/challenges/[id]/route.ts`
+- `apps/web/app/api/challenges/pending/route.ts` ⭐ **Enables persistence across refreshes**
 - `apps/web/app/(app)/app/demos/transcript-challenge/page.tsx`
 - `apps/web/components/ModalManager.tsx`
 - `docs/ui/08-transcript-challenge-system.md`

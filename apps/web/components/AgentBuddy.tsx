@@ -92,18 +92,22 @@ export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
         <div
           className={cn(
             "absolute top-0 right-full mr-3 w-72 p-4 rounded-2xl shadow-persona z-50",
-            "border border-persona bg-persona-overlay",
+            "border-2 border-persona",
+            "bg-background/95 backdrop-blur-md",
             "animate-in slide-in-from-right-5 fade-in duration-300"
           )}
+          style={{
+            boxShadow: "0 0 0 1px hsl(var(--persona-primary) / 0.1), 0 10px 40px -10px hsl(var(--persona-primary) / 0.3)",
+          }}
         >
-          {/* Dismiss button */}
+          {/* Close button (hides but doesn't dismiss) */}
           <button
             onClick={(e) => {
               e.stopPropagation();
-              dismissBubble(currentBubble.id);
+              setBubbleVisible(false);
             }}
             className="absolute top-2 right-2 p-1 rounded-full hover:bg-muted transition-colors"
-            title="Dismiss message"
+            title="Close (click buddy to reopen)"
           >
             <X className="w-4 h-4" />
           </button>
@@ -114,7 +118,7 @@ export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
 
             {/* Reward preview */}
             {currentBubble.rewardPreview && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-background/50 p-2 rounded">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/80 p-2 rounded border border-border/50">
                 <span className="text-base">
                   {currentBubble.rewardPreview.type === "streak_shield"
                     ? "🛡️"
