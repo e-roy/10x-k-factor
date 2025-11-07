@@ -18,14 +18,14 @@ function buildDeepRoute(params?: Record<string, unknown> | null): string {
     return SAFE_REDIRECT;
   }
 
+  // Check for resultId -> results route (prioritize over deckId)
+  if (params.resultId && typeof params.resultId === "string") {
+    return `/results/${params.resultId}`;
+  }
+
   // Check for deckId -> FVM route
   if (params.deckId && typeof params.deckId === "string") {
     return `/fvm/skill/${params.deckId}`;
-  }
-
-  // Check for resultId -> results route
-  if (params.resultId && typeof params.resultId === "string") {
-    return `/results/${params.resultId}`;
   }
 
   // Check for cohortId -> cohort route

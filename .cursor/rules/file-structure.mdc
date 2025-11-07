@@ -35,44 +35,132 @@ alwaysApply: true
 ├─ apps/
 │  └─ web/                         # Next.js PWA (UI + API + worker route)
 │     ├─ app/
-│     │  ├─ (public)/              # public routes
 │     │  ├─ (app)/                 # authed routes
-│     │  ├─ results/[id]/page.tsx
+│     │  │  ├─ admin/
+│     │  │  │  ├─ metrics/         # admin metrics page
+│     │  │  │  │  ├─ page.tsx
+│     │  │  │  │  ├─ form.tsx
+│     │  │  │  │  └─ actions.ts
+│     │  │  │  └─ test-data/page.tsx
+│     │  │  ├─ cohorts/
+│     │  │  │  ├─ new/page.tsx
+│     │  │  │  └─ page.tsx
+│     │  │  ├─ results/
+│     │  │  │  ├─ new/page.tsx
+│     │  │  │  └─ page.tsx
+│     │  │  ├─ settings/
+│     │  │  │  └─ rewards/page.tsx
+│     │  │  └─ layout.tsx
+│     │  ├─ api/
+│     │  │  ├─ attribution/track-joined/route.ts
+│     │  │  ├─ auth/[...nextauth]/route.ts
+│     │  │  ├─ cohort/[id]/feed/route.ts
+│     │  │  ├─ cohorts/route.ts
+│     │  │  ├─ cron/refresh-rollups/route.ts
+│     │  │  ├─ debug-env/route.ts
+│     │  │  ├─ events/route.ts            # ingest → plan → inline/queue
+│     │  │  ├─ health/route.ts
+│     │  │  ├─ leaderboard/[subject]/route.ts
+│     │  │  ├─ og/route.tsx                # share card generator
+│     │  │  ├─ orchestrator/choose_loop/route.ts
+│     │  │  ├─ personalize/compose/route.ts
+│     │  │  ├─ presence/ping/route.ts
+│     │  │  ├─ presence/stream/route.ts
+│     │  │  ├─ rate-limit/invite/route.ts
+│     │  │  ├─ results/route.ts
+│     │  │  ├─ rewards/balances/route.ts
+│     │  │  ├─ rewards/grant/route.ts
+│     │  │  ├─ rewards/ledger/route.ts
+│     │  │  └─ sl/[code]/route.ts         # smart link resolver
+│     │  ├─ badge/[id]/page.tsx
 │     │  ├─ cohort/[id]/page.tsx
 │     │  ├─ fvm/skill/[deckId]/page.tsx
-│     │  ├─ api/
-│     │  │  ├─ events/route.ts            # ingest → plan → inline/queue
-│     │  │  ├─ agent-worker/route.ts      # Cron hits this every minute
-│     │  │  ├─ og/route.ts                # share card generator
-│     │  │  ├─ presence/ping/route.ts
-│     │  │  └─ sl/[code]/route.ts         # smart link resolver
-│     │  └─ admin/metrics/page.tsx
+│     │  ├─ login/page.tsx
+│     │  ├─ results/[id]/page.tsx
+│     │  ├─ session/complete/page.tsx
+│     │  ├─ ~offline/page.tsx
+│     │  ├─ layout.tsx
+│     │  ├─ page.tsx
+│     │  └─ sw.ts
+│     ├─ components/               # React components
+│     │  ├─ ui/                    # shadcn/ui components
+│     │  ├─ CohortFeed.tsx
+│     │  ├─ InviteJoinedTracker.tsx
+│     │  ├─ LeaderboardWidget.tsx
+│     │  ├─ LoginButton.tsx
+│     │  ├─ LogoutButton.tsx
+│     │  ├─ MicroDeck.tsx
+│     │  ├─ PresenceWidget.tsx
+│     │  ├─ RewardBadge.tsx
+│     │  ├─ RewardPreview.tsx
+│     │  ├─ RewardsLedger.tsx
+│     │  └─ ShareButton.tsx
+│     ├─ db/                       # Drizzle schema + client
+│     │  ├─ schema.ts
+│     │  ├─ auth-schema.ts
+│     │  ├─ index.ts
+│     │  └─ utils.ts
+│     ├─ hooks/
+│     │  └─ usePresence.ts
 │     ├─ lib/
-│     │  ├─ db/ (drizzle schema + client)
-│     │  ├─ events/ (router + planners)
-│     │  ├─ tools/ (email/sms/links/rewards/img)
+│     │  ├─ agents/                # agent orchestration & personalization
+│     │  │  ├─ cooldowns.ts
+│     │  │  ├─ orchestrator.ts
+│     │  │  └─ personalize.ts
+│     │  ├─ smart-links/           # smart link creation & attribution
+│     │  │  ├─ attrib.ts
+│     │  │  ├─ create.ts
+│     │  │  ├─ index.ts
+│     │  │  └─ signing.ts
+│     │  ├─ rewards/
+│     │  │  └─ policies.ts
+│     │  ├─ auth.ts
+│     │  ├─ decks.ts
+│     │  ├─ leaderboard.ts
 │     │  ├─ presence.ts
-│     │  └─ safety.ts
+│     │  ├─ rate-limit.ts
+│     │  ├─ safety.ts
+│     │  ├─ track.ts
+│     │  └─ utils.ts
+│     ├─ scripts/
+│     │  ├─ create-mv.ts
+│     │  └─ seed.ts
 │     ├─ types/
-│     ├─ public/manifest.json
-│     ├─ public/sw.js
-│     └─ styles/globals.css
+│     │  └─ next-auth.d.ts
+│     ├─ public/
+│     │  ├─ manifest.json
+│     │  ├─ sw.js
+│     │  ├─ robots.txt
+│     │  └─ icons/
+│     ├─ styles/
+│     │  └─ global.css
+│     ├─ auth.config.ts
+│     ├─ drizzle.config.ts
+│     ├─ middleware.ts
+│     ├─ next.config.mjs
+│     ├─ postcss.config.mjs
+│     ├─ components.json
+│     └─ tsconfig.json
 ├─ packages/
-│  ├─ agents/                      # <-- shared agents package (no Next imports)
+│  ├─ agents/                      # shared agents package (no Next imports)
 │  │  ├─ src/
 │  │  │  ├─ types.ts
-│  │  │  ├─ share-loop.agent.ts
-│  │  │  ├─ referral-scoring.agent.ts
-│  │  │  ├─ presence-feed.agent.ts
-│  │  │  ├─ progress-nudge.agent.ts
-│  │  │  └─ index.ts               # export catalog + Agent interface
-│  │  └─ package.json
-│  └─ core/                        # shared types/utilities (optional)
-├─ drizzle.config.ts
+│  │  │  ├─ orchestrator.agent.ts
+│  │  │  ├─ personalize.agent.ts
+│  │  │  └─ index.ts               # export catalog
+│  │  ├─ package.json
+│  │  └─ tsconfig.json
+│  └─ lib/                         # shared types/utilities
+│     ├─ events.ts
+│     ├─ index.ts
+│     └─ package.json
+├─ docs/
+│  ├─ architecture.md
+│  ├─ spec.md
+│  ├─ sequence.md
+│  └─ phases/
 ├─ turbo.json
 ├─ pnpm-workspace.yaml
-├─ tsconfig.base.json
-├─ vercel.json                     # cron config
 ├─ .env.example
 └─ README.md
 ```
@@ -92,8 +180,8 @@ alwaysApply: true
 
 * **Events:** `POST /api/events` persists `events` and plans agent runs.
 * **Jobs:** enqueue background work into `jobs` (idempotent via `dedupe_key`).
-* **Worker:** `POST /api/agent-worker` selects jobs `FOR UPDATE SKIP LOCKED`, runs agents, writes `agent_runs`.
-* **Scheduling:** Vercel Cron calls `/api/agent-worker` every minute.
+* **Worker:** Background jobs are processed via cron routes (e.g., `/api/cron/refresh-rollups`).
+* **Scheduling:** Vercel Cron calls cron routes as configured.
 * **Inline path:** UI-critical actions may run synchronously within `/api/events`.
 
 ## Implementation Priorities
@@ -133,12 +221,12 @@ VAPID_PRIVATE_KEY=
 
 ## Vercel Cron
 
-`vercel.json`
+Configure cron jobs in `vercel.json` at the root (if needed). Example:
 
 ```json
 {
   "crons": [
-    { "path": "/api/agent-worker", "schedule": "*/1 * * * *" }
+    { "path": "/api/cron/refresh-rollups", "schedule": "*/1 * * * *" }
   ]
 }
 ```
