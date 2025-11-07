@@ -177,8 +177,8 @@ export const cta = {
 
 export const footer = {
   links: [
-    { label: "Privacy", href: "/legal/privacy" },
-    { label: "Terms", href: "/legal/terms" },
+    { label: "Privacy", href: "/privacy" },
+    { label: "Terms", href: "/terms" },
   ],
   tagline:
     "© " + new Date().getFullYear() + " 10x K Factor. All rights reserved.",
