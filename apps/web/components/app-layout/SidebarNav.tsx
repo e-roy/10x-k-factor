@@ -9,9 +9,12 @@ import {
   Trophy,
   Gift,
   Settings,
-  Shield,
+  TrendingUp,
+  PlusCircle,
+  Database,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
 interface NavItem {
   href: string;
@@ -28,6 +31,12 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/app/settings/profile", label: "Settings", icon: Settings },
 ];
 
+const ADMIN_ITEMS: NavItem[] = [
+  { href: "/app/admin/metrics", label: "Metrics", icon: TrendingUp },
+  { href: "/app/admin/results/new", label: "New Result", icon: PlusCircle },
+  { href: "/app/admin/test-data", label: "Test Data", icon: Database },
+];
+
 interface SidebarNavProps {
   showAdmin?: boolean;
 }
@@ -35,28 +44,29 @@ interface SidebarNavProps {
 export function SidebarNav({ showAdmin = false }: SidebarNavProps) {
   const pathname = usePathname();
 
-  const navItems = [
-    ...NAV_ITEMS,
-    ...(showAdmin
-      ? [{ href: "/app/admin/metrics", label: "Admin", icon: Shield }]
-      : []),
-  ];
+  const isActive = (href: string) => {
+    if (href === "/app") {
+      return pathname === "/app";
+    }
+    // For nested routes, check if pathname starts with the href
+    // Special handling for /app/admin/results/new to not match /app/admin/results
+    if (href === "/app/admin/results/new") {
+      return pathname === "/app/admin/results/new";
+    }
+    return pathname.startsWith(href);
+  };
 
   return (
     <nav className="space-y-1">
-      {navItems.map((item) => {
+      {NAV_ITEMS.map((item) => {
         const Icon = item.icon;
-        const isActive =
-          item.href === "/app"
-            ? pathname === "/app"
-            : pathname.startsWith(item.href);
         return (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
               "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
-              isActive
+              isActive(item.href)
                 ? "bg-accent text-accent-foreground font-medium"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             )}
@@ -66,7 +76,33 @@ export function SidebarNav({ showAdmin = false }: SidebarNavProps) {
           </Link>
         );
       })}
+
+      {showAdmin && (
+        <>
+          <Separator className="my-2" />
+          <div className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Admin
+          </div>
+          {ADMIN_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
+                  isActive(item.href)
+                    ? "bg-accent text-accent-foreground font-medium"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
+              >
+                <Icon className="w-4 h-4" aria-hidden />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </>
+      )}
     </nav>
   );
 }
-

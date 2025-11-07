@@ -48,6 +48,25 @@ export function FVMCompletionHandler({
         });
 
         if (!response.ok) {
+          // If unauthorized, user needs to log in first
+          if (response.status === 401) {
+            // Store completion data in sessionStorage to complete after login
+            const completionData = {
+              deckId,
+              deckSubject: deckSubject || undefined,
+              score,
+              completionTimeMs,
+              correctAnswers,
+              totalQuestions,
+            };
+            sessionStorage.setItem("fvm_completion", JSON.stringify(completionData));
+            
+            // Redirect to login with current page as next param
+            const currentPath = window.location.pathname;
+            router.push(`/login?next=${encodeURIComponent(currentPath)}&from_smart_link=1`);
+            return;
+          }
+
           const errorData = await response.json();
           console.error("[FVMCompletionHandler] Failed to create result:", errorData);
           // Still redirect to dashboard even if result creation fails

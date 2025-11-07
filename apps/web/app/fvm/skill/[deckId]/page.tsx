@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { getDeck } from "@/lib/decks";
-import { MicroDeck } from "@/components/MicroDeck";
-import { FVMCompletionHandler } from "@/components/FVMCompletionHandler";
+import { FVMDeckWrapper } from "@/components/FVMDeckWrapper";
+import { FVMCompletionRestore } from "@/components/FVMCompletionRestore";
 
 interface FVMPageProps {
   params: Promise<{ deckId: string }>;
@@ -74,6 +74,7 @@ export default async function FVMPage({ params, searchParams }: FVMPageProps) {
 
   return (
     <div className="container mx-auto p-4 md:p-8 max-w-3xl">
+      <FVMCompletionRestore />
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">Quick Practice</h1>
         <p className="text-muted-foreground">
@@ -81,15 +82,11 @@ export default async function FVMPage({ params, searchParams }: FVMPageProps) {
         </p>
       </div>
       
-      <FVMCompletionHandler deckId={deck.id} deckSubject={deck.subject}>
-        {(onComplete) => (
-          <MicroDeck
-            deck={deck}
-            attribution={attribution}
-            onComplete={onComplete}
-          />
-        )}
-      </FVMCompletionHandler>
+      <FVMDeckWrapper
+        deck={deck}
+        deckSubject={deck.subject}
+        attribution={attribution}
+      />
     </div>
   );
 }

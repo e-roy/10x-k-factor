@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; from_smart_link?: string }>;
 }) {
   let session;
   try {
@@ -30,23 +30,26 @@ export default async function LoginPage({
   }
 
   const params = await searchParams;
-  
+  const isFromSmartLink = params.from_smart_link === "1";
+
   // If already logged in, determine redirect destination
   if (session) {
-    // Priority: next param > attribution cookie > default /app
+    // Priority: next param > attribution cookie (only if from smart link) > default /app
     if (params.next) {
       redirect(params.next);
     }
-    
-    // Check for attribution cookie
-    const cookieStore = await cookies();
-    const attribCookie = cookieStore.get("vt_attrib");
-    const attribution = parseAttribCookie(attribCookie?.value);
-    
-    if (attribution) {
-      redirect("/session/complete");
+
+    // Only check attribution cookie if this is a smart link flow
+    if (isFromSmartLink) {
+      const cookieStore = await cookies();
+      const attribCookie = cookieStore.get("vt_attrib");
+      const attribution = parseAttribCookie(attribCookie?.value);
+
+      if (attribution) {
+        redirect("/session/complete");
+      }
     }
-    
+
     // Default to dashboard
     redirect("/app");
   }
@@ -55,12 +58,12 @@ export default async function LoginPage({
   let nextUrl = "/app";
   if (params.next) {
     nextUrl = params.next;
-  } else {
-    // Check for attribution cookie to redirect to session/complete after login
+  } else if (isFromSmartLink) {
+    // Only check for attribution cookie if this is a smart link flow
     const cookieStore = await cookies();
     const attribCookie = cookieStore.get("vt_attrib");
     const attribution = parseAttribCookie(attribCookie?.value);
-    
+
     if (attribution) {
       nextUrl = "/session/complete";
     }

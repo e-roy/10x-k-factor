@@ -3,8 +3,19 @@
  * Run this after schema changes: pnpm tsx scripts/create-mv.ts
  */
 
+import { config } from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
 import { db } from "../db/index";
 import { sql } from "drizzle-orm";
+
+// Load .env files (monorepo root and local)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+config({ path: resolve(__dirname, "../../../.env") });
+config({ path: resolve(__dirname, "../../../.env.local") });
+config({ path: resolve(__dirname, "../.env") });
+config({ path: resolve(__dirname, "../.env.local") });
 
 async function createMaterializedView() {
   try {
@@ -45,4 +56,3 @@ async function createMaterializedView() {
 }
 
 createMaterializedView();
-

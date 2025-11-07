@@ -18,7 +18,10 @@ export async function middleware(request: NextRequest) {
   }
 
   // Allow other API routes and public paths to pass through
-  if (pathname.startsWith("/api") || PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p))) {
+  if (
+    pathname.startsWith("/api") ||
+    PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p))
+  ) {
     // Still process attribution for public paths (but not auth routes)
     const attribProcessed = request.cookies.get("vt_attrib_processed");
     if (!attribProcessed) {
@@ -46,6 +49,13 @@ export async function middleware(request: NextRequest) {
       // Preserve deep-link intent with next param
       const url = new URL("/login", request.url);
       url.searchParams.set("next", pathname + search);
+
+      // If user has attribution cookie, mark this as a smart link flow
+      const attribution = getAttribution(request);
+      if (attribution) {
+        url.searchParams.set("from_smart_link", "1");
+      }
+
       return NextResponse.redirect(url);
     }
 
