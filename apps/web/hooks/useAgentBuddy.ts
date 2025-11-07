@@ -1,7 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { OrchestratorOutput, PersonalizeOutput } from "@10x-k-factor/agents";
+import type {
+  OrchestratorOutput,
+  PersonalizeOutput,
+} from "@10x-k-factor/agents";
+
+interface ChallengeQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation?: string;
+}
+
+interface PendingChallenge {
+  id: string;
+  subject: string;
+  questions: ChallengeQuestion[];
+  difficulty: string;
+  expiresAt: string | Date | null;
+}
 
 export interface SpeechBubble {
   id: string;
@@ -43,13 +61,13 @@ export function useAgentBuddy(options: UseAgentBuddyOptions) {
   useEffect(() => {
     const loadPendingChallenges = async () => {
       try {
-        const response = await fetch('/api/challenges/pending');
+        const response = await fetch("/api/challenges/pending");
         if (!response.ok) return;
-        
-        const pendingChallenges = await response.json();
-        
+
+        const pendingChallenges = (await response.json()) as PendingChallenge[];
+
         // Create speech bubbles for each pending challenge
-        const bubbles: SpeechBubble[] = pendingChallenges.map((challenge: any) => ({
+        const bubbles: SpeechBubble[] = pendingChallenges.map((challenge) => ({
           id: `challenge-${challenge.id}`,
           copy: `Great session! I generated a ${challenge.difficulty} challenge with ${challenge.questions.length} questions to reinforce what you learned in ${challenge.subject}. Ready to test your knowledge? 🎯`,
           action: {
@@ -66,19 +84,22 @@ export function useAgentBuddy(options: UseAgentBuddyOptions) {
           rewardPreview: {
             type: "xp",
             amount: 50,
-            description: "Complete the challenge to earn XP and solidify your learning!",
+            description:
+              "Complete the challenge to earn XP and solidify your learning!",
           },
           priority: "high",
           challengeId: challenge.id,
-          expiresAt: new Date(challenge.expiresAt),
+          ...(challenge.expiresAt && {
+            expiresAt: new Date(challenge.expiresAt),
+          }),
         }));
-        
+
         setSpeechBubbles(bubbles);
       } catch (err) {
         console.error("[useAgentBuddy] Error loading pending challenges:", err);
       }
     };
-    
+
     loadPendingChallenges();
   }, [userId]);
 
@@ -156,16 +177,19 @@ export function useAgentBuddy(options: UseAgentBuddyOptions) {
   // Listen for challenge generation events
   useEffect(() => {
     const handleChallengeGenerated = async (event: Event) => {
-      const customEvent = event as CustomEvent<{ challengeId: string; subject: string }>;
+      const customEvent = event as CustomEvent<{
+        challengeId: string;
+        subject: string;
+      }>;
       const { challengeId, subject } = customEvent.detail;
-      
+
       // Fetch challenge details
       try {
         const response = await fetch(`/api/challenges/${challengeId}`);
         if (!response.ok) throw new Error("Failed to fetch challenge");
-        
-        const challenge = await response.json();
-        
+
+        const challenge = (await response.json()) as PendingChallenge;
+
         // Create speech bubble for the challenge
         const bubble: SpeechBubble = {
           id: `challenge-${challengeId}`,
@@ -184,13 +208,16 @@ export function useAgentBuddy(options: UseAgentBuddyOptions) {
           rewardPreview: {
             type: "xp",
             amount: 50,
-            description: "Complete the challenge to earn XP and solidify your learning!",
+            description:
+              "Complete the challenge to earn XP and solidify your learning!",
           },
           priority: "high",
           challengeId,
-          expiresAt: new Date(challenge.expiresAt),
+          ...(challenge.expiresAt && {
+            expiresAt: new Date(challenge.expiresAt),
+          }),
         };
-        
+
         addBubble(bubble);
       } catch (err) {
         console.error("[useAgentBuddy] Error fetching challenge:", err);
@@ -200,19 +227,25 @@ export function useAgentBuddy(options: UseAgentBuddyOptions) {
     const handleChallengeCompleted = (event: Event) => {
       const customEvent = event as CustomEvent<{ challengeId: string }>;
       const { challengeId } = customEvent.detail;
-      
+
       // Remove the bubble for this challenge
-      setSpeechBubbles((prev) => 
+      setSpeechBubbles((prev) =>
         prev.filter((b) => b.challengeId !== challengeId)
       );
     };
 
     window.addEventListener("challengeGenerated", handleChallengeGenerated);
     window.addEventListener("challengeCompleted", handleChallengeCompleted);
-    
+
     return () => {
-      window.removeEventListener("challengeGenerated", handleChallengeGenerated);
-      window.removeEventListener("challengeCompleted", handleChallengeCompleted);
+      window.removeEventListener(
+        "challengeGenerated",
+        handleChallengeGenerated
+      );
+      window.removeEventListener(
+        "challengeCompleted",
+        handleChallengeCompleted
+      );
     };
   }, []);
 
