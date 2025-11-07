@@ -9,6 +9,7 @@ import { InviteButton } from "@/components/InviteButton";
 import { HeaderContent } from "@/components/app-layout/HeaderContent";
 import { CohortProvider } from "@/components/app-layout/CohortContext";
 import { PersonaProvider } from "@/components/PersonaProvider";
+import { ModalProvider } from "@/components/ModalManager";
 import { StudentSidebar } from "@/components/app-layout/StudentSidebar";
 import type { Persona } from "@/lib/persona-utils";
 import { cn } from "@/lib/utils";
@@ -51,8 +52,9 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       secondaryColor={user?.secondaryColor}
     >
       <CohortProvider>
-        <InviteJoinedTracker />
-        <CommandPalette />
+        <ModalProvider>
+          <InviteJoinedTracker />
+          <CommandPalette />
         <div className="grid grid-cols-[260px_1fr] min-h-screen">
           {/* Left Sidebar */}
           <aside className="border-r bg-background p-4 flex flex-col">
@@ -99,6 +101,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             </div>
           </div>
         </div>
+        </ModalProvider>
       </CohortProvider>
     </PersonaProvider>
   );

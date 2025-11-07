@@ -10,6 +10,7 @@ export interface SpeechBubble {
     type: "navigate" | "modal";
     target: string;
     label?: string;
+    data?: Record<string, unknown>; // Additional data for modal/navigation
   };
   rewardPreview?: {
     type: string;
@@ -18,6 +19,7 @@ export interface SpeechBubble {
   };
   priority: "high" | "normal" | "low";
   expiresAt?: Date;
+  challengeId?: string; // Link to challenge if applicable
 }
 
 interface UseAgentBuddyOptions {
@@ -35,6 +37,7 @@ export function useAgentBuddy(options: UseAgentBuddyOptions) {
   const [speechBubbles, setSpeechBubbles] = useState<SpeechBubble[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isVisible, setIsVisible] = useState(true);
 
   // Fetch agent decision when context changes
   useEffect(() => {
@@ -107,6 +110,67 @@ export function useAgentBuddy(options: UseAgentBuddyOptions) {
     fetchAgentDecision();
   }, [currentContext?.recentEvent, persona, userId, currentContext?.subject]);
 
+  // Listen for challenge generation events
+  useEffect(() => {
+    const handleChallengeGenerated = async (event: CustomEvent) => {
+      const { challengeId, subject } = event.detail;
+      
+      // Fetch challenge details
+      try {
+        const response = await fetch(`/api/challenges/${challengeId}`);
+        if (!response.ok) throw new Error("Failed to fetch challenge");
+        
+        const challenge = await response.json();
+        
+        // Create speech bubble for the challenge
+        const bubble: SpeechBubble = {
+          id: `challenge-${challengeId}`,
+          copy: `Great session! I generated a ${challenge.difficulty} challenge with ${challenge.questions.length} questions to reinforce what you learned in ${subject}. Ready to test your knowledge? 🎯`,
+          action: {
+            type: "modal",
+            target: "ChallengeModal",
+            label: "Take Challenge",
+            data: {
+              challengeId,
+              subject,
+              questionCount: challenge.questions.length,
+              difficulty: challenge.difficulty,
+            },
+          },
+          rewardPreview: {
+            type: "xp",
+            amount: 50,
+            description: "Complete the challenge to earn XP and solidify your learning!",
+          },
+          priority: "high",
+          challengeId,
+          expiresAt: new Date(challenge.expiresAt),
+        };
+        
+        addBubble(bubble);
+      } catch (err) {
+        console.error("[useAgentBuddy] Error fetching challenge:", err);
+      }
+    };
+
+    const handleChallengeCompleted = (event: CustomEvent) => {
+      const { challengeId } = event.detail;
+      
+      // Remove the bubble for this challenge
+      setSpeechBubbles((prev) => 
+        prev.filter((b) => b.challengeId !== challengeId)
+      );
+    };
+
+    window.addEventListener("challengeGenerated", handleChallengeGenerated as EventListener);
+    window.addEventListener("challengeCompleted", handleChallengeCompleted as EventListener);
+    
+    return () => {
+      window.removeEventListener("challengeGenerated", handleChallengeGenerated as EventListener);
+      window.removeEventListener("challengeCompleted", handleChallengeCompleted as EventListener);
+    };
+  }, []);
+
   const dismissBubble = (id: string) => {
     setSpeechBubbles((prev) => prev.filter((b) => b.id !== id));
   };
@@ -121,12 +185,19 @@ export function useAgentBuddy(options: UseAgentBuddyOptions) {
     ]);
   };
 
+  const toggleVisibility = () => {
+    setIsVisible((prev) => !prev);
+  };
+
   return {
     currentBubble: speechBubbles[0] || null,
     bubbleQueue: speechBubbles,
+    bubbleCount: speechBubbles.length,
+    isVisible,
     isLoading,
     error,
     dismissBubble,
     addBubble,
+    toggleVisibility,
   };
 }

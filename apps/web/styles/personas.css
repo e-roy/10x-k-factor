@@ -32,6 +32,7 @@
 
   /* Shadow colors (for colorful drop-shadows) */
   --persona-shadow: 139 92 246 / 0.5;
+  --persona-shadow-xl: 139 92 246 / 0.3;
   
   /* Icon/badge style */
   --persona-style: "playful"; /* Used in JS, not directly in CSS */
@@ -64,6 +65,7 @@
 
   /* Shadow colors */
   --persona-shadow: 59 130 246 / 0.5;
+  --persona-shadow-xl: 59 130 246 / 0.3;
   
   --persona-style: "professional";
 }
@@ -95,6 +97,7 @@
 
   /* Shadow colors */
   --persona-shadow: 16 185 129 / 0.5;
+  --persona-shadow-xl: 16 185 129 / 0.3;
   
   --persona-style: "professional";
 }
@@ -225,6 +228,19 @@
   background-color: rgb(var(--persona-bg-overlay));
   color: rgb(var(--persona-primary));
   border: 1px solid rgb(var(--persona-border));
+}
+
+/* Shadows */
+.shadow-persona {
+  box-shadow: 0 4px 12px -2px rgb(var(--persona-shadow));
+}
+
+.shadow-persona-lg {
+  box-shadow: 0 10px 30px -5px rgb(var(--persona-shadow));
+}
+
+.shadow-persona-xl {
+  box-shadow: 0 20px 50px -12px rgb(var(--persona-shadow-xl));
 }
 
 /* Progress bar */

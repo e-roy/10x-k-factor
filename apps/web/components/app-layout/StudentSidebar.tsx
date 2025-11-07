@@ -42,7 +42,11 @@ export function StudentSidebar({ userId, persona, data }: StudentSidebarProps) {
       {/* Agent Buddy Section */}
       <div className="space-y-3">
         <div className="flex items-center justify-center">
-          <AgentBuddy userId={userId} persona={persona} className="scale-125" />
+          <AgentBuddy 
+            userId={userId} 
+            persona={persona} 
+            className="scale-125"
+          />
         </div>
         
         {/* XP & Level */}
