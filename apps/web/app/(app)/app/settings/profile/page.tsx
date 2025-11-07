@@ -281,11 +281,12 @@ export default function ProfileSettingsPage() {
           <div className="space-y-2">
             <Label>Preview</Label>
             <div
-              className="h-16 rounded-lg"
+              className="h-16 rounded-lg mb-4"
               style={{
                 background: `linear-gradient(135deg, ${currentPrimaryColor} 0%, ${currentSecondaryColor} 100%)`,
               }}
             />
+            <Link href="/app/theme-demo" className="text-sm text-muted-foreground hover:text-foreground">🔗 Admin: Preview persona theme system demo &gt;</Link>
           </div>
 
           {/* Reset Button */}
@@ -327,4 +328,3 @@ export default function ProfileSettingsPage() {
     </div>
   );
 }
-

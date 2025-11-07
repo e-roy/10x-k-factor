@@ -120,7 +120,7 @@ async function fetchDashboardData(
     const subjects = ["Algebra", "Geometry", "Calculus"]; // Mock for now
     
     return {
-      subjects: subjects.map((subject, index) => ({
+      subjects: subjects.map((subject) => ({
         name: subject,
         progress: Math.floor(Math.random() * 100),
         level: Math.floor(Math.random() * 10) + 1,

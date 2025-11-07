@@ -339,7 +339,7 @@ export function PersonaThemeDemo() {
             <CardContent className="text-sm space-y-2">
               <p>Use pre-built utility classes:</p>
               <code className="block bg-muted p-2 rounded text-xs">
-                className="btn-persona"
+                className=&quot;btn-persona&quot;
               </code>
             </CardContent>
           </Card>
@@ -351,7 +351,7 @@ export function PersonaThemeDemo() {
             <CardContent className="text-sm space-y-2">
               <p>Combine with Tailwind:</p>
               <code className="block bg-muted p-2 rounded text-xs">
-                className="rounded-lg shadow-persona-lg"
+                className=&quot;rounded-lg shadow-persona-lg&quot;
               </code>
             </CardContent>
           </Card>

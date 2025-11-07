@@ -3,7 +3,6 @@
 import { CohortSwitcher } from "@/components/CohortSwitcher";
 import { PresencePill } from "@/components/PresencePill";
 import { UserMenu } from "@/components/app-layout/UserMenu";
-import { AgentBuddy } from "@/components/AgentBuddy";
 import { Command } from "lucide-react";
 import { useCohort } from "@/components/app-layout/CohortContext";
 
@@ -12,7 +11,6 @@ interface HeaderContentProps {
   userName: string | null | undefined;
   userEmail: string | null | undefined;
   userImage: string | null | undefined;
-  persona: "student" | "parent" | "tutor";
 }
 
 export function HeaderContent({
@@ -20,7 +18,6 @@ export function HeaderContent({
   userName,
   userEmail,
   userImage,
-  persona,
 }: HeaderContentProps) {
   const { selectedCohortSubject } = useCohort();
 
@@ -37,12 +34,8 @@ export function HeaderContent({
         </button>
         <PresencePill subject={selectedCohortSubject || "algebra"} />
         
-        {/* Agent Buddy */}
-        <AgentBuddy userId={userId} persona={persona} />
-        
         <UserMenu name={userName} email={userEmail} image={userImage} />
       </div>
     </>
   );
 }
-
