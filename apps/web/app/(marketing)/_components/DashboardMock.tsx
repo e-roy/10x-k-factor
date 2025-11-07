@@ -2,6 +2,7 @@
 
 import { ScrollReveal } from "./ScrollReveal";
 import { dashboardMock } from "../_data/copy";
+import Image from "next/image";
 
 export function DashboardMock() {
   return (
@@ -26,8 +27,10 @@ export function DashboardMock() {
             ))}
           </div>
           <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-            <img
+            <Image
               src="/images/placeholder-dashboard.png"
+              width={1000}
+              height={1000}
               alt="Abstract visualization of growth and viral connections"
               className="h-full w-full object-cover"
             />

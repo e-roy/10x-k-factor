@@ -2,7 +2,7 @@ import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db, getDbInstance } from "@/db";
-import { users } from "@/db/schema";
+import { users, usersProfiles } from "@/db/schema";
 import { accounts, sessions, verificationTokens } from "@/db/auth-schema";
 import { eq } from "drizzle-orm";
 
@@ -46,16 +46,16 @@ export const authConfig = {
     async jwt({ token, user, account: _account }) {
       if (user) {
         token.id = user.id;
-        // Fetch persona and role from database if user exists
+        // Fetch persona and role from users_profiles if user exists
         if (user.id) {
-          const [dbUser] = await db
+          const [profile] = await db
             .select()
-            .from(users)
-            .where(eq(users.id, user.id))
+            .from(usersProfiles)
+            .where(eq(usersProfiles.userId, user.id))
             .limit(1);
-          if (dbUser) {
-            token.persona = dbUser.persona;
-            token.role = dbUser.role || null;
+          if (profile) {
+            token.persona = profile.persona;
+            token.role = profile.role || null;
           }
         }
       }
@@ -82,20 +82,26 @@ export const authConfig = {
       return `${baseUrl}/app`;
     },
     async signIn({ user, account: _account, profile: _profile }) {
-      // Ensure persona is set for users (adapter creates user, but we ensure persona default)
+      // Ensure user profile exists (adapter creates user in users table, but we need to create profile)
       if (user.id) {
-        const [existingUser] = await db
+        const [existingProfile] = await db
           .select()
-          .from(users)
-          .where(eq(users.id, user.id))
+          .from(usersProfiles)
+          .where(eq(usersProfiles.userId, user.id))
           .limit(1);
 
-        // If user exists but no persona, set default (adapter should handle this via schema default, but just in case)
-        if (existingUser && !existingUser.persona) {
-          await db
-            .update(users)
-            .set({ persona: "student" })
-            .where(eq(users.id, user.id));
+        // If profile doesn't exist, create it with defaults
+        if (!existingProfile) {
+          await db.insert(usersProfiles).values({
+            userId: user.id,
+            persona: "student",
+            role: null,
+            minor: false,
+            guardianId: null,
+            onboardingCompleted: false,
+            primaryColor: null,
+            secondaryColor: null,
+          });
         }
 
         // Track invite.joined event if this is a new user with attribution

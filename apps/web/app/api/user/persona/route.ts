@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { users } from "@/db/schema";
+import { usersProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -26,9 +26,9 @@ export async function POST(request: NextRequest) {
     const validated = updatePersonaSchema.parse(body);
 
     await db
-      .update(users)
+      .update(usersProfiles)
       .set({ persona: validated.persona })
-      .where(eq(users.id, session.user.id));
+      .where(eq(usersProfiles.userId, session.user.id));
 
     return NextResponse.json({
       success: true,

@@ -6,12 +6,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, GraduationCap, Users, BookOpen, ArrowLeft } from "lucide-react";
+import { Loader2, GraduationCap, Users, BookOpen, ArrowLeft, Palette } from "lucide-react";
 import Link from "next/link";
+import { ChromePicker } from "react-color";
+import { getPersonaPrimaryColor, getPersonaSecondaryColor } from "@/lib/persona-utils";
 
 export default function ProfileSettingsPage() {
   const router = useRouter();
   const [persona, setPersona] = useState<string>("student");
+  const [primaryColor, setPrimaryColor] = useState<string | null>(null);
+  const [secondaryColor, setSecondaryColor] = useState<string | null>(null);
+  const [showPrimaryPicker, setShowPrimaryPicker] = useState(false);
+  const [showSecondaryPicker, setShowSecondaryPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,14 +27,15 @@ export default function ProfileSettingsPage() {
     // Fetch current user data
     async function fetchUserData() {
       try {
-        // We'll get persona from session via server component wrapper
-        // For now, use a simple fetch
         const response = await fetch("/api/user/me");
         if (response.ok) {
           const data = await response.json();
           if (data.persona) {
             setPersona(data.persona);
           }
+          // Set custom colors if they exist, otherwise use persona defaults
+          setPrimaryColor(data.primaryColor || null);
+          setSecondaryColor(data.secondaryColor || null);
         }
       } catch (error) {
         console.error("[ProfileSettings] Failed to fetch user data:", error);
@@ -46,7 +53,8 @@ export default function ProfileSettingsPage() {
       setError(null);
       setSuccess(false);
 
-      const response = await fetch("/api/user/persona", {
+      // Update persona
+      const personaResponse = await fetch("/api/user/persona", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -54,9 +62,26 @@ export default function ProfileSettingsPage() {
         body: JSON.stringify({ persona }),
       });
 
-      if (!response.ok) {
-        const data = await response.json();
+      if (!personaResponse.ok) {
+        const data = await personaResponse.json();
         throw new Error(data.error || "Failed to update persona");
+      }
+
+      // Update colors
+      const colorsResponse = await fetch("/api/user/colors", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          primaryColor, 
+          secondaryColor 
+        }),
+      });
+
+      if (!colorsResponse.ok) {
+        const data = await colorsResponse.json();
+        throw new Error(data.error || "Failed to update colors");
       }
 
       setSuccess(true);
@@ -64,11 +89,19 @@ export default function ProfileSettingsPage() {
         router.refresh();
       }, 1000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update persona");
+      setError(err instanceof Error ? err.message : "Failed to update settings");
     } finally {
       setIsSaving(false);
     }
   };
+
+  const resetToDefaults = () => {
+    setPrimaryColor(null);
+    setSecondaryColor(null);
+  };
+
+  const currentPrimaryColor = primaryColor || getPersonaPrimaryColor(persona as "student" | "parent" | "tutor");
+  const currentSecondaryColor = secondaryColor || getPersonaSecondaryColor(persona as "student" | "parent" | "tutor");
 
   if (isLoading) {
     return (
@@ -82,7 +115,7 @@ export default function ProfileSettingsPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button asChild variant="ghost" size="sm">
-          <Link href="/app/settings/rewards">
+          <Link href="/app/settings">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Settings
           </Link>
@@ -164,14 +197,130 @@ export default function ProfileSettingsPage() {
             </div>
           )}
 
-          <Button onClick={handleSave} disabled={isSaving}>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="h-5 w-5" />
+            Theme Colors
+          </CardTitle>
+          <CardDescription>
+            Customize your primary and secondary colors (optional)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Primary Color */}
+          <div className="space-y-3">
+            <Label>Primary Color</Label>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowPrimaryPicker(!showPrimaryPicker)}
+                className="w-20 h-10 rounded-lg border-2 border-border shadow-sm hover:shadow transition-shadow"
+                style={{ backgroundColor: currentPrimaryColor }}
+              />
+              <div className="flex-1">
+                <p className="text-sm font-mono">{currentPrimaryColor}</p>
+                {!primaryColor && (
+                  <p className="text-xs text-muted-foreground">Using persona default</p>
+                )}
+              </div>
+            </div>
+            {showPrimaryPicker && (
+              <div className="relative">
+                <div className="absolute z-10 mt-2">
+                  <div
+                    className="fixed inset-0"
+                    onClick={() => setShowPrimaryPicker(false)}
+                  />
+                  <ChromePicker
+                    color={currentPrimaryColor}
+                    onChange={(color) => setPrimaryColor(color.hex)}
+                    disableAlpha
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Secondary Color */}
+          <div className="space-y-3">
+            <Label>Secondary Color</Label>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowSecondaryPicker(!showSecondaryPicker)}
+                className="w-20 h-10 rounded-lg border-2 border-border shadow-sm hover:shadow transition-shadow"
+                style={{ backgroundColor: currentSecondaryColor }}
+              />
+              <div className="flex-1">
+                <p className="text-sm font-mono">{currentSecondaryColor}</p>
+                {!secondaryColor && (
+                  <p className="text-xs text-muted-foreground">Using persona default</p>
+                )}
+              </div>
+            </div>
+            {showSecondaryPicker && (
+              <div className="relative">
+                <div className="absolute z-10 mt-2">
+                  <div
+                    className="fixed inset-0"
+                    onClick={() => setShowSecondaryPicker(false)}
+                  />
+                  <ChromePicker
+                    color={currentSecondaryColor}
+                    onChange={(color) => setSecondaryColor(color.hex)}
+                    disableAlpha
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Preview */}
+          <div className="space-y-2">
+            <Label>Preview</Label>
+            <div
+              className="h-16 rounded-lg mb-4"
+              style={{
+                background: `linear-gradient(135deg, ${currentPrimaryColor} 0%, ${currentSecondaryColor} 100%)`,
+              }}
+            />
+            <Link href="/app/theme-demo" className="text-sm text-muted-foreground hover:text-foreground">🔗 Admin: Preview persona theme system demo &gt;</Link>
+          </div>
+
+          {/* Reset Button */}
+          {(primaryColor || secondaryColor) && (
+            <Button onClick={resetToDefaults} variant="outline" size="sm">
+              Reset to Defaults
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Save Section */}
+      <Card>
+        <CardContent className="pt-6 space-y-4">
+          {error && (
+            <div className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="rounded-lg border border-green-500 bg-green-500/10 p-3 text-sm text-green-700 dark:text-green-400">
+              Settings updated successfully! Refreshing...
+            </div>
+          )}
+
+          <Button onClick={handleSave} disabled={isSaving} className="w-full">
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Saving...
               </>
             ) : (
-              "Save Changes"
+              "Save All Changes"
             )}
           </Button>
         </CardContent>
@@ -179,4 +328,3 @@ export default function ProfileSettingsPage() {
     </div>
   );
 }
-

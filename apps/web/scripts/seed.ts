@@ -2,7 +2,7 @@ import { config } from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
 import { db } from "../db/index";
-import { users, smartLinks, results, cohorts } from "../db/schema";
+import { users, usersProfiles, smartLinks, results, cohorts } from "../db/schema";
 import { randomUUID } from "crypto";
 import { inArray } from "drizzle-orm";
 
@@ -32,7 +32,7 @@ async function seed() {
       return;
     }
 
-    // Create sample users
+    // Create sample users (auth data only)
     const studentId = randomUUID();
     const parentId = randomUUID();
     const tutorId = randomUUID();
@@ -41,36 +41,75 @@ async function seed() {
     const sampleUsers = [
       {
         id: studentId,
-        persona: "student",
-        minor: true,
-        guardianId: parentId,
+        name: "Alice Student",
+        email: "alice@example.com",
         createdAt: new Date(),
       },
       {
         id: student2Id,
-        persona: "student",
-        minor: false,
-        guardianId: null,
+        name: "Bob Student",
+        email: "bob@example.com",
         createdAt: new Date(),
       },
       {
         id: parentId,
-        persona: "parent",
-        minor: false,
-        guardianId: null,
+        name: "Carol Parent",
+        email: "carol@example.com",
         createdAt: new Date(),
       },
       {
         id: tutorId,
-        persona: "tutor",
-        minor: false,
-        guardianId: null,
+        name: "Dave Tutor",
+        email: "dave@example.com",
         createdAt: new Date(),
       },
     ];
 
     await db.insert(users).values(sampleUsers);
     console.log("✓ Created users");
+
+    // Create sample user profiles
+    const sampleProfiles = [
+      {
+        userId: studentId,
+        image: null,
+        persona: "student",
+        minor: true,
+        guardianId: parentId,
+        onboardingCompleted: true,
+        createdAt: new Date(),
+      },
+      {
+        userId: student2Id,
+        image: null,
+        persona: "student",
+        minor: false,
+        guardianId: null,
+        onboardingCompleted: true,
+        createdAt: new Date(),
+      },
+      {
+        userId: parentId,
+        image: null,
+        persona: "parent",
+        minor: false,
+        guardianId: null,
+        onboardingCompleted: true,
+        createdAt: new Date(),
+      },
+      {
+        userId: tutorId,
+        image: null,
+        persona: "tutor",
+        minor: false,
+        guardianId: null,
+        onboardingCompleted: true,
+        createdAt: new Date(),
+      },
+    ];
+
+    await db.insert(usersProfiles).values(sampleProfiles);
+    console.log("✓ Created user profiles");
 
     // Create sample results
     const sampleResults = [

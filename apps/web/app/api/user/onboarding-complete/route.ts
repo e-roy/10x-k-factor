@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { users } from "@/db/schema";
+import { usersProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -19,9 +19,9 @@ export async function POST(_request: NextRequest) {
 
     // Update user's onboarding completed flag
     await db
-      .update(users)
+      .update(usersProfiles)
       .set({ onboardingCompleted: true })
-      .where(eq(users.id, session.user.id));
+      .where(eq(usersProfiles.userId, session.user.id));
 
     return NextResponse.json({
       success: true,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/index";
-import { rewards, ledgerEntries, users } from "@/db/schema";
+import { rewards, ledgerEntries, usersProfiles } from "@/db/schema";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
@@ -55,21 +55,21 @@ export async function POST(request: NextRequest) {
       // If status is denied or pending, we'll continue to process
     }
 
-    // Get user to determine persona
-    const [user] = await db
+    // Get user profile to determine persona
+    const [profile] = await db
       .select()
-      .from(users)
-      .where(eq(users.id, userId))
+      .from(usersProfiles)
+      .where(eq(usersProfiles.userId, userId))
       .limit(1);
 
-    if (!user) {
+    if (!profile) {
       return NextResponse.json(
-        { error: "User not found" },
+        { error: "User profile not found" },
         { status: 404 }
       );
     }
 
-    const persona = (user.persona || "student") as "student" | "parent" | "tutor";
+    const persona = (profile.persona || "student") as "student" | "parent" | "tutor";
 
     // Get reward policy for this persona and trigger (on_fvm_complete)
     const policy = getRewardPolicy(persona, "on_fvm_complete");

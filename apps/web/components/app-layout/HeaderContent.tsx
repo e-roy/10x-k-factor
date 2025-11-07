@@ -24,7 +24,7 @@ export function HeaderContent({
   return (
     <>
       <CohortSwitcher userId={userId} />
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <button
           className="flex items-center gap-1.5 px-2 py-1 text-xs text-muted-foreground hover:text-foreground rounded border border-transparent hover:border-border transition-colors"
           title="Command palette (⌘K)"
@@ -33,9 +33,9 @@ export function HeaderContent({
           <kbd className="hidden sm:inline-block">⌘K</kbd>
         </button>
         <PresencePill subject={selectedCohortSubject || "algebra"} />
+        
         <UserMenu name={userName} email={userEmail} image={userImage} />
       </div>
     </>
   );
 }
-

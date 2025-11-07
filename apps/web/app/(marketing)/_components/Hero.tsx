@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "./ScrollReveal";
 import { hero } from "../_data/copy";
+import Image from "next/image";
 
 export function Hero() {
   return (
@@ -51,7 +52,7 @@ export function Hero() {
             </ul>
           </div>
           <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-            <img
+            <Image
               src="/images/hero.png"
               alt="Students and tutors celebrating learning achievements together"
               className="h-full w-full object-cover"

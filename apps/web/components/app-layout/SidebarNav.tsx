@@ -28,7 +28,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/app/results", label: "Results", icon: BarChart },
   { href: "/app/leaderboard", label: "Leaderboards", icon: Trophy },
   { href: "/app/rewards", label: "Rewards", icon: Gift },
-  { href: "/app/settings/profile", label: "Settings", icon: Settings },
+  { href: "/app/settings", label: "Settings", icon: Settings },
 ];
 
 const ADMIN_ITEMS: NavItem[] = [
