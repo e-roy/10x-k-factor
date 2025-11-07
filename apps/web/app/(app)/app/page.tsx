@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { usersProfiles, results, cohorts } from "@/db/schema";
+import { usersProfiles, results, cohorts } from "@/db/schema/index";
 import { eq, desc } from "drizzle-orm";
 import { StudentDashboard } from "@/components/dashboards/StudentDashboard";
 import { OnboardingWrapper } from "@/components/OnboardingWrapper";

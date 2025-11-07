@@ -8,11 +8,25 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "next-auth/adapters";
-import { users } from "./schema";
+
+// ============================================================================
+// Authentication Tables
+// ============================================================================
+
+// Auth-related user data only (used by NextAuth)
+export const users = pgTable("auth_users", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  name: varchar("name", { length: 255 }),
+  email: varchar("email", { length: 255 }),
+  password: varchar("password", { length: 255 }), // bcrypt hash for email/password auth
+  emailVerified: timestamp("email_verified", { withTimezone: true }),
+  image: varchar("image", { length: 255 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
 
 // Accounts table for OAuth providers
 export const accounts = pgTable(
-  "accounts",
+  "auth_accounts",
   {
     userId: varchar("user_id", { length: 36 })
       .notNull()
@@ -36,13 +50,13 @@ export const accounts = pgTable(
     compoundKey: primaryKey({
       columns: [account.provider, account.providerAccountId],
     }),
-    userIdIdx: index("account_user_id_idx").on(account.userId),
+    userIdIdx: index("idx_auth_accounts_user_id").on(account.userId),
   })
 );
 
 // Sessions table (for database sessions, optional with JWT)
 export const sessions = pgTable(
-  "sessions",
+  "auth_sessions",
   {
     sessionToken: varchar("session_token", { length: 255 }).primaryKey(),
     userId: varchar("user_id", { length: 36 })
@@ -51,13 +65,13 @@ export const sessions = pgTable(
     expires: timestamp("expires", { withTimezone: true }).notNull(),
   },
   (session) => ({
-    userIdIdx: index("session_user_id_idx").on(session.userId),
+    userIdIdx: index("idx_auth_sessions_user_id").on(session.userId),
   })
 );
 
 // Verification tokens for email verification
 export const verificationTokens = pgTable(
-  "verification_tokens",
+  "auth_verification_tokens",
   {
     identifier: varchar("identifier", { length: 255 }).notNull(),
     token: varchar("token", { length: 255 }).notNull(),

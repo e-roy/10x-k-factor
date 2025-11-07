@@ -1,5 +1,5 @@
 import { db } from "@/db/index";
-import { events } from "@/db/schema";
+import { events } from "@/db/schema/index";
 import { eq, and, gte, sql } from "drizzle-orm";
 
 /**

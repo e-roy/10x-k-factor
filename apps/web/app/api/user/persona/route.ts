@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { usersProfiles } from "@/db/schema";
+import { usersProfiles } from "@/db/schema/index";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 

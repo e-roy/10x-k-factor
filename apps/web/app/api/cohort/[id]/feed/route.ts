@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/index";
-import { events, users, smartLinks } from "@/db/schema";
+import { events, smartLinks } from "@/db/schema/index";
+import { users } from "@/db/auth-schema";
 import { eq, and, inArray, desc } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
 /**
  * GET /api/cohort/[id]/feed
- * 
+ *
  * Returns activity feed for a cohort
  * Shows invite.joined and invite.fvm events
- * 
+ *
  * Query params:
  * - subject: filter by subject
  * - createdBy: filter by cohort creator
@@ -23,7 +24,7 @@ export async function GET(
   try {
     const { id: cohortId } = await params;
     const searchParams = request.nextUrl.searchParams;
-    
+
     const subject = searchParams.get("subject");
     const createdBy = searchParams.get("createdBy");
     const limitParam = searchParams.get("limit");
@@ -67,7 +68,7 @@ export async function GET(
       .leftJoin(users, eq(events.userId, users.id))
       .where(
         and(
-          inArray(events.name, ["invite.joined", "invite.fvm"]),
+          inArray(events.name, ["invite.joined", "invite.fvm"])
           // If we have smart link codes, filter by them
           // Since props is JSONB, we'll filter after fetching
         )
@@ -130,4 +131,3 @@ export async function GET(
     );
   }
 }
-

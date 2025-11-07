@@ -55,7 +55,9 @@ export function Hero() {
             <Image
               src="/images/hero.png"
               alt="Students and tutors celebrating learning achievements together"
-              className="h-full w-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
             />
           </div>
         </div>

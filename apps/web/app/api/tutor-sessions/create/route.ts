@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { tutorSessions, challenges } from "@/db/schema";
+import { tutorSessions, challenges } from "@/db/schema/index";
 import { randomUUID } from "crypto";
 
 interface CreateSessionRequest {

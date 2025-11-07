@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/index";
-import { smartLinks } from "@/db/schema";
+import { smartLinks } from "@/db/schema/index";
 import { eq } from "drizzle-orm";
 import { verifySmartLinkSignature } from "@/lib/smart-links";
 

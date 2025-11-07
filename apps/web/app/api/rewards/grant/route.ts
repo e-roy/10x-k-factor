@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/index";
-import { rewards, ledgerEntries, usersProfiles } from "@/db/schema";
+import { rewards, ledgerEntries, usersProfiles } from "@/db/schema/index";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { eq } from "drizzle-orm";

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { results, cohorts } from "@/db/schema";
+import { results, cohorts } from "@/db/schema/index";
 import { sql } from "drizzle-orm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

@@ -1,8 +1,15 @@
 import { config } from "dotenv";
 import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
-import { db } from "../db/index";
-import { users, usersProfiles, smartLinks, results, cohorts } from "../db/schema";
+import { db } from "@/db/index";
+import {
+  usersProfiles,
+  smartLinks,
+  results,
+  cohorts,
+  type Persona,
+} from "@/db/schema/index";
+import { users } from "@/db/auth-schema";
 import { randomUUID } from "crypto";
 import { inArray } from "drizzle-orm";
 
@@ -28,7 +35,9 @@ async function seed() {
 
     if (existingSeedLinks.length > 0) {
       console.log("Seed data already exists. Skipping seed.");
-      console.log("To re-seed, delete the seed smart links (codes: abc123xyz, def456uvw) first.");
+      console.log(
+        "To re-seed, delete the seed smart links (codes: abc123xyz, def456uvw) first."
+      );
       return;
     }
 
@@ -73,7 +82,7 @@ async function seed() {
       {
         userId: studentId,
         image: null,
-        persona: "student",
+        persona: "student" as Persona,
         minor: true,
         guardianId: parentId,
         onboardingCompleted: true,
@@ -82,7 +91,7 @@ async function seed() {
       {
         userId: student2Id,
         image: null,
-        persona: "student",
+        persona: "student" as Persona,
         minor: false,
         guardianId: null,
         onboardingCompleted: true,
@@ -91,7 +100,7 @@ async function seed() {
       {
         userId: parentId,
         image: null,
-        persona: "parent",
+        persona: "parent" as Persona,
         minor: false,
         guardianId: null,
         onboardingCompleted: true,
@@ -100,7 +109,7 @@ async function seed() {
       {
         userId: tutorId,
         image: null,
-        persona: "tutor",
+        persona: "tutor" as Persona,
         minor: false,
         guardianId: null,
         onboardingCompleted: true,

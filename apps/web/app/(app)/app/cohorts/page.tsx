@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { cohorts, users } from "@/db/schema";
+import { cohorts } from "@/db/schema/index";
+import { users } from "@/db/auth-schema";
 import { desc, eq } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -90,7 +91,8 @@ export default async function CohortsPage() {
                   <div className="space-y-2">
                     {cohort.subject && (
                       <p className="text-sm text-muted-foreground">
-                        Subject: <span className="font-medium">{cohort.subject}</span>
+                        Subject:{" "}
+                        <span className="font-medium">{cohort.subject}</span>
                       </p>
                     )}
                     {cohort.creatorName && (
@@ -113,4 +115,3 @@ export default async function CohortsPage() {
     </div>
   );
 }
-

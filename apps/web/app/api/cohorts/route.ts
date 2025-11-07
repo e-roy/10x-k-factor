@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/index";
-import { cohorts } from "@/db/schema";
+import { cohorts } from "@/db/schema/index";
 import { auth } from "@/lib/auth";
 import { randomUUID } from "crypto";
 import { z } from "zod";

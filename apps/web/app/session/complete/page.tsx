@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { smartLinks } from "@/db/schema";
+import { smartLinks } from "@/db/schema/index";
 import { eq } from "drizzle-orm";
 import { parseAttribCookie } from "@/lib/smart-links/attrib";
 

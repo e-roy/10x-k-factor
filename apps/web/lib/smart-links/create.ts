@@ -2,7 +2,7 @@
 
 import { randomBytes } from "crypto";
 import { db } from "@/db/index";
-import { smartLinks } from "@/db/schema";
+import { smartLinks } from "@/db/schema/index";
 import { signSmartLink } from "./signing";
 import { eq } from "drizzle-orm";
 import {

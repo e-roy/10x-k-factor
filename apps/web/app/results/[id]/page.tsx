@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { db } from "@/db/index";
-import { results, users, usersProfiles } from "@/db/schema";
+import { results, usersProfiles } from "@/db/schema/index";
+import { users } from "@/db/auth-schema";
 import { eq } from "drizzle-orm";
 import { ShareButton } from "@/components/ShareButton";
 import { RewardBadge } from "@/components/RewardBadge";
@@ -87,12 +88,15 @@ export async function generateMetadata({
   };
 }
 
-export default async function ResultsPage({ params, searchParams }: ResultsPageProps) {
+export default async function ResultsPage({
+  params,
+  searchParams,
+}: ResultsPageProps) {
   const { id } = await params;
   const paramsData = await searchParams;
   const result = await getResult(id);
   const session = await auth();
-  
+
   // Check if share=true is in query params
   const shouldAutoShare = paramsData.share === "true";
 
@@ -115,7 +119,10 @@ export default async function ResultsPage({ params, searchParams }: ResultsPageP
       // Call orchestrator to choose loop
       const orchestratorResult = chooseLoop({
         event: "results_viewed",
-        persona: (result.persona || "student") as "student" | "parent" | "tutor",
+        persona: (result.persona || "student") as
+          | "student"
+          | "parent"
+          | "tutor",
         subject: result.subject || undefined,
         cooldowns,
       });
@@ -125,7 +132,10 @@ export default async function ResultsPage({ params, searchParams }: ResultsPageP
       // Call personalization to get copy
       const personalizeResult = compose({
         intent: "share_results",
-        persona: (result.persona || "student") as "student" | "parent" | "tutor",
+        persona: (result.persona || "student") as
+          | "student"
+          | "parent"
+          | "tutor",
         subject: result.subject || undefined,
         loop: orchestratorResult.loop,
       });
@@ -331,7 +341,8 @@ export default async function ResultsPage({ params, searchParams }: ResultsPageP
               {personalizeData.reward_preview && (
                 <div className="bg-muted p-3 rounded-lg">
                   <p className="text-sm font-medium">
-                    Reward: {personalizeData.reward_preview.description ||
+                    Reward:{" "}
+                    {personalizeData.reward_preview.description ||
                       `${personalizeData.reward_preview.type}${
                         personalizeData.reward_preview.amount
                           ? ` (${personalizeData.reward_preview.amount})`

@@ -1,7 +1,7 @@
 import { ImageResponse } from "@vercel/og";
 import { NextRequest } from "next/server";
 import { db } from "@/db/index";
-import { results, usersProfiles } from "@/db/schema";
+import { results, usersProfiles } from "@/db/schema/index";
 import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";

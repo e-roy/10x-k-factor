@@ -2,13 +2,21 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { Pool } from "pg";
 import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
-import * as schema from "./schema";
 import * as authSchema from "./auth-schema";
+import * as userSchema from "./user-schema";
+import * as viralSchema from "./viral-schema";
+import * as learningSchema from "./learning-schema";
+import * as eventsSchema from "./events-schema";
+import * as rewardsSchema from "./rewards-schema";
 
-// Combine schemas for Drizzle adapter
+// Combine all schemas for Drizzle adapter
 const combinedSchema = {
-  ...schema,
   ...authSchema,
+  ...userSchema,
+  ...viralSchema,
+  ...learningSchema,
+  ...eventsSchema,
+  ...rewardsSchema,
 };
 
 type DbInstance = ReturnType<typeof drizzle> | ReturnType<typeof drizzlePg>;
@@ -61,4 +69,12 @@ export function getDbInstance(): DbInstance {
   return getDb();
 }
 
-export { schema, authSchema, combinedSchema };
+export {
+  authSchema,
+  userSchema,
+  viralSchema,
+  learningSchema,
+  eventsSchema,
+  rewardsSchema,
+  combinedSchema,
+};

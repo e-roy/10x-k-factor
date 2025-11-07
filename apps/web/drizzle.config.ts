@@ -12,7 +12,14 @@ if (!process.env.DATABASE_URL) {
 }
 
 export default defineConfig({
-  schema: ["./db/schema.ts", "./db/auth-schema.ts"],
+  schema: [
+    "./db/auth-schema.ts",
+    "./db/user-schema.ts",
+    "./db/viral-schema.ts",
+    "./db/learning-schema.ts",
+    "./db/events-schema.ts",
+    "./db/rewards-schema.ts",
+  ],
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {

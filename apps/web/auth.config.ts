@@ -1,10 +1,17 @@
 import type { NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db, getDbInstance } from "@/db";
-import { users, usersProfiles } from "@/db/schema";
-import { accounts, sessions, verificationTokens } from "@/db/auth-schema";
+import { usersProfiles } from "@/db/schema/index";
+import {
+  users,
+  accounts,
+  sessions,
+  verificationTokens,
+} from "@/db/auth-schema";
 import { eq } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 // Lazy adapter initialization to avoid build-time DATABASE_URL requirement
 function getAdapter() {
@@ -38,6 +45,43 @@ export const authConfig = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       allowDangerousEmailAccountLinking: true, // Allow linking accounts by email
     }),
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.email, credentials.email as string))
+          .limit(1);
+
+        if (!user || !user.password) {
+          return null;
+        }
+
+        const isValid = await bcrypt.compare(
+          credentials.password as string,
+          user.password
+        );
+
+        if (!isValid) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        };
+      },
+    }),
   ],
   session: {
     strategy: "jwt",
@@ -46,16 +90,50 @@ export const authConfig = {
     async jwt({ token, user, account: _account }) {
       if (user) {
         token.id = user.id;
-        // Fetch persona and role from users_profiles if user exists
+        // When a new user signs in, ensure profile exists
         if (user.id) {
-          const [profile] = await db
-            .select()
-            .from(usersProfiles)
-            .where(eq(usersProfiles.userId, user.id))
-            .limit(1);
-          if (profile) {
-            token.persona = profile.persona;
-            token.role = profile.role || null;
+          try {
+            // Try to fetch existing profile
+            const [profile] = await db
+              .select()
+              .from(usersProfiles)
+              .where(eq(usersProfiles.userId, user.id))
+              .limit(1);
+
+            if (profile) {
+              token.persona = profile.persona;
+              token.role = profile.role || null;
+            } else {
+              // Profile doesn't exist, create it (user is guaranteed to exist at this point)
+              await db.insert(usersProfiles).values({
+                userId: user.id,
+                persona: "student",
+                role: null,
+                minor: false,
+                guardianId: null,
+                onboardingCompleted: false,
+                primaryColor: null,
+                secondaryColor: null,
+              });
+              token.persona = "student";
+              token.role = null;
+            }
+          } catch (error) {
+            // If profile creation fails (e.g., race condition), try to fetch it
+            // This handles the case where profile was created between check and insert
+            const [profile] = await db
+              .select()
+              .from(usersProfiles)
+              .where(eq(usersProfiles.userId, user.id))
+              .limit(1);
+            if (profile) {
+              token.persona = profile.persona;
+              token.role = profile.role || null;
+            } else {
+              // Fallback to defaults if profile still doesn't exist
+              token.persona = "student";
+              token.role = null;
+            }
           }
         }
       }
@@ -81,34 +159,11 @@ export const authConfig = {
       // Default to /app
       return `${baseUrl}/app`;
     },
-    async signIn({ user, account: _account, profile: _profile }) {
-      // Ensure user profile exists (adapter creates user in users table, but we need to create profile)
-      if (user.id) {
-        const [existingProfile] = await db
-          .select()
-          .from(usersProfiles)
-          .where(eq(usersProfiles.userId, user.id))
-          .limit(1);
-
-        // If profile doesn't exist, create it with defaults
-        if (!existingProfile) {
-          await db.insert(usersProfiles).values({
-            userId: user.id,
-            persona: "student",
-            role: null,
-            minor: false,
-            guardianId: null,
-            onboardingCompleted: false,
-            primaryColor: null,
-            secondaryColor: null,
-          });
-        }
-
-        // Track invite.joined event if this is a new user with attribution
-        // Note: We can't access cookies directly in signIn callback, so we'll track this
-        // in a client component or API route that runs after sign-in
-        // For now, we'll create an API route that can be called after sign-in
-      }
+    async signIn({ user: _user, account: _account, profile: _profile }) {
+      // Profile creation is handled in jwt callback after user is committed
+      // Track invite.joined event if this is a new user with attribution
+      // Note: We can't access cookies directly in signIn callback, so we'll track this
+      // in a client component or API route that runs after sign-in
       return true;
     },
   },
