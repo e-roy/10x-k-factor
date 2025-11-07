@@ -55,7 +55,6 @@ export async function POST(request: NextRequest) {
     await db.insert(usersProfiles).values({
       userId,
       persona: "student",
-      role: null,
       minor: false,
       guardianId: null,
       onboardingCompleted: false,

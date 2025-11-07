@@ -19,6 +19,7 @@ export const users = pgTable("auth_users", {
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 255 }),
   password: varchar("password", { length: 255 }), // bcrypt hash for email/password auth
+  role: varchar("role", { length: 12 }), // 'admin' or null
   emailVerified: timestamp("email_verified", { withTimezone: true }),
   image: varchar("image", { length: 255 }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),

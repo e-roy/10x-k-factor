@@ -90,10 +90,17 @@ export const authConfig = {
     async jwt({ token, user, account: _account }) {
       if (user) {
         token.id = user.id;
-        // When a new user signs in, ensure profile exists
+        // When a new user signs in, ensure profile exists and fetch role from users table
         if (user.id) {
           try {
-            // Try to fetch existing profile
+            // Fetch user from database to get role
+            const [dbUser] = await db
+              .select()
+              .from(users)
+              .where(eq(users.id, user.id))
+              .limit(1);
+
+            // Fetch existing profile for persona
             const [profile] = await db
               .select()
               .from(usersProfiles)
@@ -102,13 +109,12 @@ export const authConfig = {
 
             if (profile) {
               token.persona = profile.persona;
-              token.role = profile.role || null;
+              token.role = dbUser?.role || null;
             } else {
               // Profile doesn't exist, create it (user is guaranteed to exist at this point)
               await db.insert(usersProfiles).values({
                 userId: user.id,
                 persona: "student",
-                role: null,
                 minor: false,
                 guardianId: null,
                 onboardingCompleted: false,
@@ -116,11 +122,16 @@ export const authConfig = {
                 secondaryColor: null,
               });
               token.persona = "student";
-              token.role = null;
+              token.role = dbUser?.role || null;
             }
           } catch (error) {
             // If profile creation fails (e.g., race condition), try to fetch it
             // This handles the case where profile was created between check and insert
+            const [dbUser] = await db
+              .select()
+              .from(users)
+              .where(eq(users.id, user.id))
+              .limit(1);
             const [profile] = await db
               .select()
               .from(usersProfiles)
@@ -128,11 +139,11 @@ export const authConfig = {
               .limit(1);
             if (profile) {
               token.persona = profile.persona;
-              token.role = profile.role || null;
+              token.role = dbUser?.role || null;
             } else {
               // Fallback to defaults if profile still doesn't exist
               token.persona = "student";
-              token.role = null;
+              token.role = dbUser?.role || null;
             }
           }
         }
