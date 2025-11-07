@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "@/styles/global.css";
+import { Toaster } from "@/components/ui/toaster";
 
 const APP_NAME = "10x K Factor";
 const APP_DESCRIPTION = "PWA-first viral growth system";
@@ -47,7 +48,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             }
             `}</style>
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }

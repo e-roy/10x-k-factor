@@ -1,4 +1,4 @@
-Phase 10 — Incentives & Ledger (MVP)
+Phase 10 — Incentives & Ledger (MVP) ✅
 
 **Goal**: Rewards with budget control and anti‑abuse checks.
 

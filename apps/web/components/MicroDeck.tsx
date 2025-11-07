@@ -8,6 +8,7 @@ import type { Deck } from "@/lib/decks";
 import { RewardPreview } from "@/components/RewardPreview";
 import { track } from "@/lib/track";
 import { incrementLeaderboard } from "@/lib/leaderboard";
+import { useToast } from "@/components/ui/use-toast";
 
 interface MicroDeckProps {
   deck: Deck;
@@ -20,6 +21,7 @@ interface MicroDeckProps {
 }
 
 export function MicroDeck({ deck, attribution, onComplete }: MicroDeckProps) {
+  const { toast } = useToast();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<
     Record<number, number>
@@ -112,6 +114,51 @@ export function MicroDeck({ deck, attribution, onComplete }: MicroDeckProps) {
           }
         );
       }
+
+      // Grant reward to inviter (non-blocking)
+      try {
+        const dedupeKey = `${attribution.inviter_id}-${attribution.smart_link_code}-fvm`;
+        const response = await fetch("/api/rewards/grant", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: attribution.inviter_id,
+            rewardType: "ai_minutes",
+            amount: 15,
+            loop: attribution.loop,
+            dedupeKey,
+            metadata: {
+              smart_link_code: attribution.smart_link_code,
+              deck_id: deck.id,
+              completion_time_ms: completionTime,
+            },
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            toast({
+              title: "Reward Granted!",
+              description: `Your friend earned +15 AI minutes for completing the challenge!`,
+              variant: "success",
+            });
+          }
+        } else {
+          const errorData = await response.json();
+          if (errorData.error === "Reward denied") {
+            // Don't show toast for denied rewards (safety check failed)
+            console.warn("[MicroDeck] Reward denied:", errorData.reason);
+          } else {
+            console.error("[MicroDeck] Failed to grant reward:", errorData);
+          }
+        }
+      } catch (error) {
+        // Non-blocking - log but don't break the flow
+        console.error("[MicroDeck] Error granting reward:", error);
+      }
     } else {
       console.warn("[MicroDeck] No attribution data available for event");
     }
@@ -120,7 +167,7 @@ export function MicroDeck({ deck, attribution, onComplete }: MicroDeckProps) {
     if (onComplete) {
       onComplete(completionTime);
     }
-  }, [isCompleted, allAnswered, startTime, attribution, deck.id, deck.subject, onComplete]);
+  }, [isCompleted, allAnswered, startTime, attribution, deck.id, deck.subject, onComplete, toast]);
 
   // Keyboard navigation
   useEffect(() => {
