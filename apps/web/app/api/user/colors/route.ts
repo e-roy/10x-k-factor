@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { users } from "@/db/schema";
+import { usersProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -38,21 +38,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Update user colors in database
-    const [updatedUser] = await db
-      .update(users)
+    const [updatedProfile] = await db
+      .update(usersProfiles)
       .set({
         primaryColor: primaryColor || null,
         secondaryColor: secondaryColor || null,
       })
-      .where(eq(users.id, session.user.id))
+      .where(eq(usersProfiles.userId, session.user.id))
       .returning();
 
     return NextResponse.json(
       {
         success: true,
         user: {
-          primaryColor: updatedUser.primaryColor,
-          secondaryColor: updatedUser.secondaryColor,
+          primaryColor: updatedProfile.primaryColor,
+          secondaryColor: updatedProfile.secondaryColor,
         },
       },
       { status: 200 }

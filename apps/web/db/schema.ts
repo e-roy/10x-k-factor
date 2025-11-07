@@ -10,12 +10,22 @@ import {
   text,
 } from "drizzle-orm/pg-core";
 
+// Auth-related user data only (used by NextAuth)
 export const users = pgTable("users", {
   id: varchar("id", { length: 36 }).primaryKey(),
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 255 }),
   emailVerified: timestamp("email_verified", { withTimezone: true }),
   image: varchar("image", { length: 255 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+// User profile data (non-auth)
+export const usersProfiles = pgTable("users_profiles", {
+  userId: varchar("user_id", { length: 36 })
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  image: varchar("image", { length: 255 }), // profile image URL
   persona: varchar("persona", { length: 12 }).notNull().default("student"), // 'student'|'parent'|'tutor'
   role: varchar("role", { length: 12 }), // 'admin' or null
   minor: boolean("minor").default(false),
@@ -23,6 +33,7 @@ export const users = pgTable("users", {
   onboardingCompleted: boolean("onboarding_completed").default(false),
   primaryColor: varchar("primary_color", { length: 7 }), // #8B5CF6 (hex color)
   secondaryColor: varchar("secondary_color", { length: 7 }), // #EC4899 (hex color)
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 

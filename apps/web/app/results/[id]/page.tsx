@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { db } from "@/db/index";
-import { results, users } from "@/db/schema";
+import { results, users, usersProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ShareButton } from "@/components/ShareButton";
 import { RewardBadge } from "@/components/RewardBadge";
@@ -26,10 +26,11 @@ async function getResult(id: string) {
       score: results.score,
       metadata: results.metadata,
       createdAt: results.createdAt,
-      persona: users.persona,
+      persona: usersProfiles.persona,
     })
     .from(results)
     .leftJoin(users, eq(results.userId, users.id))
+    .leftJoin(usersProfiles, eq(results.userId, usersProfiles.userId))
     .where(eq(results.id, id))
     .limit(1);
 

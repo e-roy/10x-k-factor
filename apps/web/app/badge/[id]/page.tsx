@@ -1,12 +1,9 @@
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShareButton } from "@/components/ShareButton";
 import { chooseLoop, compose } from "@10x-k-factor/agents";
 import { getCooldowns } from "@/lib/agents/cooldowns";
-import { db } from "@/db/index";
-import { users } from "@/db/schema";
-import { eq } from "drizzle-orm";
 
 interface BadgePageProps {
   params: Promise<{ id: string }>;
@@ -20,20 +17,8 @@ export default async function BadgePage({ params }: BadgePageProps) {
     redirect("/login");
   }
 
-  // Get user persona
-  const [user] = await db
-    .select({
-      persona: users.persona,
-    })
-    .from(users)
-    .where(eq(users.id, session.user.id))
-    .limit(1);
-
-  if (!user) {
-    notFound();
-  }
-
-  const persona = (user.persona || "student") as "student" | "parent" | "tutor";
+  // Get user persona from session (already loaded in auth)
+  const persona = (session.user.persona || "student") as "student" | "parent" | "tutor";
 
   // Get cooldowns
   const cooldowns = await getCooldowns(session.user.id);

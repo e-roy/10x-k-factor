@@ -2,7 +2,7 @@
 
 import { useAgentBuddy } from "@/hooks/useAgentBuddy";
 import { useModal } from "@/components/ModalManager";
-import { X, MessageCircle } from "lucide-react";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,7 @@ interface AgentBuddyProps {
 
 export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
   const { openModal } = useModal();
-  const { currentBubble, bubbleCount, isVisible, dismissBubble, toggleVisibility } = useAgentBuddy({
+  const { currentBubble, bubbleCount } = useAgentBuddy({
     userId,
     persona,
     currentContext: {

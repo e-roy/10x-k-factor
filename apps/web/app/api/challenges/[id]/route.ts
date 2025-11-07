@@ -10,7 +10,7 @@ import { eq } from "drizzle-orm";
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -18,7 +18,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const challengeId = params.id;
+    const { id: challengeId } = await params;
 
     const [challenge] = await db
       .select()
@@ -54,7 +54,7 @@ export async function GET(
  */
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -62,7 +62,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const challengeId = params.id;
+    const { id: challengeId } = await params;
     const body = await req.json();
     const { status, score } = body;
 

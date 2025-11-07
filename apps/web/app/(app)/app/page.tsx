@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { users, results, cohorts } from "@/db/schema";
+import { usersProfiles, results, cohorts } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { StudentDashboard } from "@/components/dashboards/StudentDashboard";
 import { OnboardingWrapper } from "@/components/OnboardingWrapper";
@@ -16,11 +16,11 @@ export default async function DashboardPage() {
   const userId = session.user.id;
   const persona = session.user.persona || "student";
 
-  // Fetch user data including onboarding status
-  const [user] = await db
+  // Fetch user profile including onboarding status
+  const [profile] = await db
     .select()
-    .from(users)
-    .where(eq(users.id, userId))
+    .from(usersProfiles)
+    .where(eq(usersProfiles.userId, userId))
     .limit(1);
 
   // Fetch user's recent results
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
   const mostCommonSubject = recentResults[0]?.subject || userCohorts[0]?.subject || "algebra";
 
   // Fetch persona-specific dashboard data
-  const dashboardData = await fetchDashboardData(userId, persona, {
+  const dashboardData = await fetchDashboardData(persona, {
     recentResults,
     userCohorts,
     streak,
@@ -58,12 +58,12 @@ export default async function DashboardPage() {
       <OnboardingWrapper
         userId={userId}
         currentPersona={persona}
-        onboardingCompleted={user?.onboardingCompleted ?? false}
+        onboardingCompleted={profile?.onboardingCompleted ?? false}
       />
       
       {persona === "student" && (
         <StudentDashboard
-          user={{ id: userId, name: user?.name, persona }}
+          user={{ id: userId, name: session.user.name, persona }}
           data={dashboardData}
         />
       )}
@@ -103,15 +103,29 @@ export default async function DashboardPage() {
 
 // Helper function to fetch dashboard data based on persona
 async function fetchDashboardData(
-  userId: string, 
   persona: string,
   context: {
-    recentResults: any[];
-    userCohorts: any[];
+    recentResults: typeof results.$inferSelect[];
+    userCohorts: typeof cohorts.$inferSelect[];
     streak: number;
     mostCommonSubject: string;
   }
-) {
+): Promise<{
+  subjects: Array<{
+    name: string;
+    progress: number;
+    level: number;
+    xp: number;
+    xpToNextLevel: number;
+  }>;
+  streak: number;
+  friendsOnline: number;
+  challenges: Array<{
+    id: string;
+    subject: string;
+    from: string;
+  }>;
+}> {
   if (persona === "student") {
     // For now, return mock data
     // TODO: Build real data from context.recentResults and other DB queries
@@ -133,15 +147,12 @@ async function fetchDashboardData(
     };
   }
   
-  if (persona === "parent") {
-    // TODO: Fetch child progress data
-    return {};
-  }
-  
-  if (persona === "tutor") {
-    // TODO: Fetch student roster and session data
-    return {};
-  }
-  
-  return {};
+  // For non-student personas, return default structure
+  // TODO: Implement proper data fetching for parent/tutor personas
+  return {
+    subjects: [],
+    streak: context.streak,
+    friendsOnline: 0,
+    challenges: [],
+  };
 }

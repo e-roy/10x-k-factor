@@ -31,15 +31,15 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const showAdmin = session.user.role === "admin";
   const persona = (session.user.persona || "student") as Persona;
 
-  // Fetch user's custom colors
+  // Fetch user's custom colors from profile
   const { db } = await import("@/db/index");
-  const { users } = await import("@/db/schema");
+  const { usersProfiles } = await import("@/db/schema");
   const { eq } = await import("drizzle-orm");
   
-  const [user] = await db
+  const [profile] = await db
     .select()
-    .from(users)
-    .where(eq(users.id, session.user.id))
+    .from(usersProfiles)
+    .where(eq(usersProfiles.userId, session.user.id))
     .limit(1);
 
   // Fetch student sidebar data
@@ -48,8 +48,8 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   return (
     <PersonaProvider 
       persona={persona}
-      primaryColor={user?.primaryColor}
-      secondaryColor={user?.secondaryColor}
+      primaryColor={profile?.primaryColor}
+      secondaryColor={profile?.secondaryColor}
     >
       <CohortProvider>
         <ModalProvider>

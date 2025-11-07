@@ -23,10 +23,8 @@ interface ProudParentModalProps {
 
 export function ProudParentModal({ isOpen, onClose, studentProgress }: ProudParentModalProps) {
   const [includeDetails, setIncludeDetails] = useState(true);
-  const [shareMethod, setShareMethod] = useState<"link" | "whatsapp" | "download">();
 
   const handleShare = (method: "link" | "whatsapp" | "download") => {
-    setShareMethod(method);
     // TODO: Implement actual sharing logic
     console.log("Sharing via:", method);
   };

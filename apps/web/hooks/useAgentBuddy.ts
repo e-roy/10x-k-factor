@@ -155,8 +155,9 @@ export function useAgentBuddy(options: UseAgentBuddyOptions) {
 
   // Listen for challenge generation events
   useEffect(() => {
-    const handleChallengeGenerated = async (event: CustomEvent) => {
-      const { challengeId, subject } = event.detail;
+    const handleChallengeGenerated = async (event: Event) => {
+      const customEvent = event as CustomEvent<{ challengeId: string; subject: string }>;
+      const { challengeId, subject } = customEvent.detail;
       
       // Fetch challenge details
       try {
@@ -196,8 +197,9 @@ export function useAgentBuddy(options: UseAgentBuddyOptions) {
       }
     };
 
-    const handleChallengeCompleted = (event: CustomEvent) => {
-      const { challengeId } = event.detail;
+    const handleChallengeCompleted = (event: Event) => {
+      const customEvent = event as CustomEvent<{ challengeId: string }>;
+      const { challengeId } = customEvent.detail;
       
       // Remove the bubble for this challenge
       setSpeechBubbles((prev) => 
@@ -205,12 +207,12 @@ export function useAgentBuddy(options: UseAgentBuddyOptions) {
       );
     };
 
-    window.addEventListener("challengeGenerated", handleChallengeGenerated as EventListener);
-    window.addEventListener("challengeCompleted", handleChallengeCompleted as EventListener);
+    window.addEventListener("challengeGenerated", handleChallengeGenerated);
+    window.addEventListener("challengeCompleted", handleChallengeCompleted);
     
     return () => {
-      window.removeEventListener("challengeGenerated", handleChallengeGenerated as EventListener);
-      window.removeEventListener("challengeCompleted", handleChallengeCompleted as EventListener);
+      window.removeEventListener("challengeGenerated", handleChallengeGenerated);
+      window.removeEventListener("challengeCompleted", handleChallengeCompleted);
     };
   }, []);
 

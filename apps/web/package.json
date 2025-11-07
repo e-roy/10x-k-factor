@@ -12,7 +12,8 @@
     "drizzle:gen": "drizzle-kit generate",
     "drizzle:push": "drizzle-kit push",
     "drizzle:studio": "drizzle-kit studio",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "migrate:profiles": "tsx scripts/migrate-profiles.ts"
   },
   "dependencies": {
     "@10x-k-factor/agents": "workspace:*",

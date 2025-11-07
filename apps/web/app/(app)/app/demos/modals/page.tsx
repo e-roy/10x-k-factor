@@ -104,7 +104,7 @@ export default function ModalsDemo() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-green-500">✓</span>
-              <span><strong>Persona Colors:</strong> Uses user's primary/secondary colors for shadows & accents</span>
+              <span><strong>Persona Colors:</strong> Uses user&apos;s primary/secondary colors for shadows & accents</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-green-500">✓</span>
@@ -130,11 +130,9 @@ export default function ModalsDemo() {
       <ChallengeModal
         isOpen={challengeOpen}
         onClose={() => setChallengeOpen(false)}
-        challenge={{
-          subject: "Algebra",
-          questionCount: 10,
-          difficulty: "Medium",
-          xpReward: 100,
+        challengeId="demo-challenge-1"
+        onComplete={(id, score) => {
+          console.log(`Challenge ${id} completed with score: ${score}`);
         }}
       />
 

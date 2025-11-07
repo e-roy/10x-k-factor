@@ -8,7 +8,7 @@ import { eq, and, or } from "drizzle-orm";
  * Get all pending challenges for the current user
  * GET /api/challenges/pending
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {

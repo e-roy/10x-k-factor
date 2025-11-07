@@ -1,7 +1,7 @@
 import { ImageResponse } from "@vercel/og";
 import { NextRequest } from "next/server";
 import { db } from "@/db/index";
-import { results, users } from "@/db/schema";
+import { results, usersProfiles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -16,16 +16,16 @@ export async function GET(request: NextRequest) {
 
     // Handle tutor OG card
     if (type === "tutor" && tutorId) {
-      // Fetch tutor data (no PII - just subject, rating info)
-      const [tutor] = await db
+      // Fetch tutor profile data (no PII - just persona)
+      const [tutorProfile] = await db
         .select({
-          persona: users.persona,
+          persona: usersProfiles.persona,
         })
-        .from(users)
-        .where(eq(users.id, tutorId))
+        .from(usersProfiles)
+        .where(eq(usersProfiles.userId, tutorId))
         .limit(1);
 
-      if (!tutor || tutor.persona !== "tutor") {
+      if (!tutorProfile || tutorProfile.persona !== "tutor") {
         return new Response("Tutor not found", { status: 404 });
       }
 
