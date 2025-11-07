@@ -20,6 +20,7 @@ interface OnboardingSheetProps {
   open: boolean;
   userId: string;
   currentPersona?: string;
+  onClose: () => void;
 }
 
 const COMMON_SUBJECTS = [
@@ -35,6 +36,7 @@ export function OnboardingSheet({
   open,
   userId: _userId,
   currentPersona,
+  onClose,
 }: OnboardingSheetProps) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -120,9 +122,10 @@ export function OnboardingSheet({
         method: "POST",
       });
 
-      // Redirect to FVM with first subject or default deck
-      const deckId = selectedSubjects[0] ? `deck-${selectedSubjects[0]}` : "deck-1";
-      router.push(`/fvm/skill/${deckId}`);
+      // Close the sheet and navigate to dashboard
+      onClose();
+      router.push("/app");
+      router.refresh();
     } catch (err) {
       console.error("[OnboardingSheet] Error:", err);
       setError(
@@ -138,6 +141,8 @@ export function OnboardingSheet({
       await fetch("/api/user/onboarding-complete", {
         method: "POST",
       });
+      onClose();
+      router.push("/app");
       router.refresh();
     } catch (error) {
       console.error("[OnboardingSheet] Failed to skip:", error);

@@ -6,30 +6,29 @@ import { OnboardingSheet } from "@/components/OnboardingSheet";
 interface OnboardingWrapperProps {
   userId: string;
   currentPersona?: string;
-  hasResults: boolean;
-  hasCohorts: boolean;
+  onboardingCompleted: boolean;
 }
 
 export function OnboardingWrapper({
   userId,
   currentPersona,
-  hasResults,
-  hasCohorts,
+  onboardingCompleted,
 }: OnboardingWrapperProps) {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    // Show onboarding if user has no results and no cohorts
-    if (!hasResults && !hasCohorts) {
+    // Show onboarding if user hasn't completed it yet
+    if (!onboardingCompleted) {
       setShowOnboarding(true);
     }
-  }, [hasResults, hasCohorts]);
+  }, [onboardingCompleted]);
 
   return (
     <OnboardingSheet
       open={showOnboarding}
       userId={userId}
       currentPersona={currentPersona}
+      onClose={() => setShowOnboarding(false)}
     />
   );
 }

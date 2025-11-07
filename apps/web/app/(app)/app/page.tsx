@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { results, cohorts } from "@/db/schema";
+import { results, cohorts, users } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,13 @@ export default async function DashboardPage() {
   }
 
   const userId = session.user.id;
+
+  // Fetch user data including onboarding status
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
 
   // Fetch user's recent results
   const recentResults = await db
@@ -59,8 +66,7 @@ export default async function DashboardPage() {
       <OnboardingWrapper
         userId={userId}
         currentPersona={session.user.persona || "student"}
-        hasResults={recentResults.length > 0}
-        hasCohorts={userCohorts.length > 0}
+        onboardingCompleted={user?.onboardingCompleted ?? false}
       />
       <div className="space-y-6">
       <div>

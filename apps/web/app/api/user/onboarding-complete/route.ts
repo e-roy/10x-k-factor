@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { db } from "@/db/index";
+import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -14,10 +17,11 @@ export async function POST(_request: NextRequest) {
       );
     }
 
-    // For now, we'll use a simple approach: check if user has results or cohorts
-    // In the future, we could add an onboardingCompleted field to users table
-    // For MVP, we'll just return success - the onboarding check will be done client-side
-    // by checking if user has results/cohorts
+    // Update user's onboarding completed flag
+    await db
+      .update(users)
+      .set({ onboardingCompleted: true })
+      .where(eq(users.id, session.user.id));
 
     return NextResponse.json({
       success: true,

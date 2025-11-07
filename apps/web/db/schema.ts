@@ -20,6 +20,7 @@ export const users = pgTable("users", {
   role: varchar("role", { length: 12 }), // 'admin' or null
   minor: boolean("minor").default(false),
   guardianId: varchar("guardian_id", { length: 36 }),
+  onboardingCompleted: boolean("onboarding_completed").default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
