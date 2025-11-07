@@ -3,10 +3,14 @@
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 
-export function LoginButton() {
+interface LoginButtonProps {
+  next?: string;
+}
+
+export function LoginButton({ next = "/app" }: LoginButtonProps) {
   return (
     <Button
-      onClick={() => signIn("google", { callbackUrl: "/results" })}
+      onClick={() => signIn("google", { callbackUrl: next })}
       size="lg"
     >
       Sign in with Google

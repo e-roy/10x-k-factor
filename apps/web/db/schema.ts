@@ -17,8 +17,10 @@ export const users = pgTable("users", {
   emailVerified: timestamp("email_verified", { withTimezone: true }),
   image: varchar("image", { length: 255 }),
   persona: varchar("persona", { length: 12 }).notNull().default("student"), // 'student'|'parent'|'tutor'
+  role: varchar("role", { length: 12 }), // 'admin' or null
   minor: boolean("minor").default(false),
   guardianId: varchar("guardian_id", { length: 36 }),
+  onboardingCompleted: boolean("onboarding_completed").default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 

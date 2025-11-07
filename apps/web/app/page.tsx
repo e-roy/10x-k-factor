@@ -17,9 +17,9 @@ export default async function Page() {
     session = null;
   }
 
-  // If logged in, redirect to results/app
+  // If logged in, redirect to /app
   if (session) {
-    redirect("/results");
+    redirect("/app");
   }
 
   return (
@@ -28,7 +28,7 @@ export default async function Page() {
         <h1 className="text-4xl font-bold">10x K Factor</h1>
         <p className="text-muted-foreground">PWA-first viral growth system</p>
         <div className="pt-4">
-          <LoginButton />
+          <LoginButton next="/app" />
         </div>
       </div>
     </div>

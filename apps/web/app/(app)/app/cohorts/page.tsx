@@ -46,7 +46,7 @@ export default async function CohortsPage() {
             </p>
           </div>
           <Button asChild>
-            <Link href="/cohorts/new">
+            <Link href="/app/cohorts/new">
               <Plus className="mr-2 h-4 w-4" />
               New Cohort
             </Link>
@@ -61,7 +61,7 @@ export default async function CohortsPage() {
                   No cohorts yet. Be the first to create one!
                 </p>
                 <Button asChild>
-                  <Link href="/cohorts/new">
+                  <Link href="/app/cohorts/new">
                     <Plus className="mr-2 h-4 w-4" />
                     Create First Cohort
                   </Link>

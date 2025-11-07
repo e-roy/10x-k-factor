@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { getDeck } from "@/lib/decks";
 import { MicroDeck } from "@/components/MicroDeck";
+import { FVMCompletionHandler } from "@/components/FVMCompletionHandler";
 
 interface FVMPageProps {
   params: Promise<{ deckId: string }>;
@@ -71,9 +72,6 @@ export default async function FVMPage({ params, searchParams }: FVMPageProps) {
     }
   }
 
-  // Note: Completion handler is implemented in MicroDeck client component
-  // which calls track() directly from client-side
-
   return (
     <div className="container mx-auto p-4 md:p-8 max-w-3xl">
       <div className="mb-6">
@@ -83,10 +81,15 @@ export default async function FVMPage({ params, searchParams }: FVMPageProps) {
         </p>
       </div>
       
-      <MicroDeck
-        deck={deck}
-        attribution={attribution}
-      />
+      <FVMCompletionHandler deckId={deck.id} deckSubject={deck.subject}>
+        {(onComplete) => (
+          <MicroDeck
+            deck={deck}
+            attribution={attribution}
+            onComplete={onComplete}
+          />
+        )}
+      </FVMCompletionHandler>
     </div>
   );
 }

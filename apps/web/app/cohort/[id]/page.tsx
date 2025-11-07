@@ -5,6 +5,8 @@ import { eq } from "drizzle-orm";
 import { PresenceWidget } from "@/components/PresenceWidget";
 import { ShareButton } from "@/components/ShareButton";
 import { CohortFeed } from "@/components/CohortFeed";
+import { InviteJoinedTracker } from "@/components/InviteJoinedTracker";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
 
@@ -43,8 +45,18 @@ export default async function CohortPage({ params }: CohortPageProps) {
   const isCreator = session?.user?.id === cohort.createdBy;
 
   return (
-    <div className="container mx-auto p-4 md:p-8 max-w-4xl">
-      <div className="space-y-6">
+    <>
+      <InviteJoinedTracker />
+      <div className="container mx-auto p-4 md:p-8 max-w-4xl">
+        <div className="space-y-6">
+        {/* Breadcrumbs */}
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/app" },
+            { label: "Cohorts", href: "/app/cohorts" },
+            { label: cohort.name, href: `/cohort/${cohort.id}` },
+          ]}
+        />
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -97,6 +109,7 @@ export default async function CohortPage({ params }: CohortPageProps) {
         </Card>
       </div>
     </div>
+    </>
   );
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Share2, Check, AlertCircle, Mail } from "lucide-react";
 import { createSmartLink } from "@/lib/smart-links/create";
@@ -15,6 +15,7 @@ interface ShareButtonProps {
   loop: string; // Required: buddy_challenge, results_rally, proud_parent, tutor_spotlight
   shareCopy?: string; // Optional personalized copy from personalize agent
   tutorId?: string; // For tutor spotlight OG cards
+  autoShare?: boolean; // If true, automatically trigger share on mount
 }
 
 export function ShareButton({
@@ -26,6 +27,7 @@ export function ShareButton({
   loop,
   shareCopy,
   tutorId,
+  autoShare = false,
 }: ShareButtonProps) {
   const [isSharing, setIsSharing] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -33,13 +35,14 @@ export function ShareButton({
   const [rateLimitRemaining, setRateLimitRemaining] = useState<number | null>(
     null
   );
+  const [shouldAutoTrigger, setShouldAutoTrigger] = useState(autoShare);
 
   // Generate deckId if not provided
   // Priority: provided deckId > resultId-based > default deck
   const finalDeckId = deckId || (resultId ? `deck-${resultId.slice(0, 8)}` : "deck-default");
 
   // Loop-specific share copy and titles
-  const getLoopShareCopy = (): { title: string; text: string } => {
+  const getLoopShareCopy = useMemo(() => {
     if (shareCopy) {
       return {
         title: shareCopy,
@@ -71,7 +74,7 @@ export function ShareButton({
       title: "Check this out! 🎯",
       text: "Check this out! 🎯",
     };
-  };
+  }, [shareCopy, subject, loop]);
 
   // Check rate limit on mount
   useEffect(() => {
@@ -96,7 +99,7 @@ export function ShareButton({
     checkRateLimit();
   }, []);
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     try {
       setIsSharing(true);
       setRateLimitError(null);
@@ -135,12 +138,12 @@ export function ShareButton({
         setRateLimitRemaining(Math.max(0, rateLimitRemaining - 1));
       }
 
-      const shareCopy = getLoopShareCopy();
+      const shareCopyData = getLoopShareCopy;
 
       // For Proud Parent, try email first (mailto: fallback)
       if (loop === "proud_parent" && !navigator.share) {
-        const emailSubject = encodeURIComponent(shareCopy.title);
-        const emailBody = encodeURIComponent(`${shareCopy.text}\n\n${url}`);
+        const emailSubject = encodeURIComponent(shareCopyData.title);
+        const emailBody = encodeURIComponent(`${shareCopyData.text}\n\n${url}`);
         const mailtoUrl = `mailto:?subject=${emailSubject}&body=${emailBody}`;
         window.location.href = mailtoUrl;
         
@@ -158,8 +161,8 @@ export function ShareButton({
       if (navigator.share) {
         try {
           await navigator.share({
-            title: shareCopy.title,
-            text: shareCopy.text,
+            title: shareCopyData.title,
+            text: shareCopyData.text,
             url,
           });
 
@@ -208,7 +211,26 @@ export function ShareButton({
     } finally {
       setIsSharing(false);
     }
-  };
+  }, [resultId, userId, subject, finalDeckId, loop, tutorId, rateLimitRemaining, getLoopShareCopy]);
+
+  // Auto-trigger share if autoShare is true
+  useEffect(() => {
+    if (autoShare && !shouldAutoTrigger) {
+      setShouldAutoTrigger(true);
+    }
+  }, [autoShare, shouldAutoTrigger]);
+
+  // Trigger share when conditions are met
+  useEffect(() => {
+    if (shouldAutoTrigger && !isSharing && !copied && rateLimitError === null) {
+      // Small delay to ensure component is fully mounted and rate limit check completes
+      const timer = setTimeout(() => {
+        handleShare();
+        setShouldAutoTrigger(false); // Reset to prevent re-triggering
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldAutoTrigger, isSharing, copied, rateLimitError, handleShare]);
 
   // Get button text based on loop
   const getButtonText = (): string => {

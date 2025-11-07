@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { LoginButton } from "@/components/LoginButton";
+import { parseAttribCookie } from "@/lib/smart-links/attrib";
 
 export const metadata: Metadata = {
   title: "Login",
 };
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
   let session;
   try {
     session = await auth();
@@ -16,9 +22,41 @@ export default async function LoginPage() {
     session = null;
   }
 
-  // If already logged in, redirect to results
+  const params = await searchParams;
+  
+  // If already logged in, determine redirect destination
   if (session) {
-    redirect("/results");
+    // Priority: next param > attribution cookie > default /app
+    if (params.next) {
+      redirect(params.next);
+    }
+    
+    // Check for attribution cookie
+    const cookieStore = await cookies();
+    const attribCookie = cookieStore.get("vt_attrib");
+    const attribution = parseAttribCookie(attribCookie?.value);
+    
+    if (attribution) {
+      redirect("/session/complete");
+    }
+    
+    // Default to dashboard
+    redirect("/app");
+  }
+
+  // Determine redirect URL for login button
+  let nextUrl = "/app";
+  if (params.next) {
+    nextUrl = params.next;
+  } else {
+    // Check for attribution cookie to redirect to session/complete after login
+    const cookieStore = await cookies();
+    const attribCookie = cookieStore.get("vt_attrib");
+    const attribution = parseAttribCookie(attribCookie?.value);
+    
+    if (attribution) {
+      nextUrl = "/session/complete";
+    }
   }
 
   return (
@@ -29,7 +67,7 @@ export default async function LoginPage() {
           Sign in to continue to 10x K Factor
         </p>
         <div className="pt-4">
-          <LoginButton />
+          <LoginButton next={nextUrl} />
         </div>
       </div>
     </div>

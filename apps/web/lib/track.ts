@@ -68,8 +68,16 @@ export async function track<T extends EventName>(
     // Validate event schema
     eventSchema.parse(event);
 
+    // Determine the base URL for the API
+    // Server-side: use absolute URL from env var or construct from request
+    // Client-side: use relative URL
+    const isServer = typeof window === "undefined";
+    const apiUrl = isServer
+      ? `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/events`
+      : "/api/events";
+
     // Send to API (fire and forget)
-    fetch("/api/events", {
+    fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
