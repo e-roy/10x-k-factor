@@ -54,7 +54,7 @@ export default function NewCohortPage() {
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button asChild variant="ghost" size="sm">
-            <Link href="/cohorts">
+            <Link href="/app/cohorts">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Cohorts
             </Link>
@@ -108,7 +108,7 @@ export default function NewCohortPage() {
                   )}
                 </Button>
                 <Button type="button" variant="outline" asChild>
-                  <Link href="/cohorts">Cancel</Link>
+                  <Link href="/app/cohorts">Cancel</Link>
                 </Button>
               </div>
             </form>

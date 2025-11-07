@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
-import { LogoutButton } from "@/components/LogoutButton";
 import { db } from "@/db/index";
 import { results } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
@@ -41,13 +40,14 @@ export default async function ResultsPage() {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <Button asChild>
-              <Link href="/results/new">
-                <Plus className="mr-2 h-4 w-4" />
-                New Result
-              </Link>
-            </Button>
-            <LogoutButton />
+            {session?.user?.role === "admin" && (
+              <Button asChild>
+                <Link href="/app/admin/results/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Result
+                </Link>
+              </Button>
+            )}        
           </div>
         </div>
 
@@ -58,12 +58,14 @@ export default async function ResultsPage() {
                 <p className="text-muted-foreground mb-4">
                   You don&apos;t have any results yet.
                 </p>
-                <Button asChild>
-                  <Link href="/results/new">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create Your First Result
-                  </Link>
-                </Button>
+                {session?.user?.role === "admin" && (
+                  <Button asChild>
+                    <Link href="/app/admin/results/new">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Create Your First Result
+                    </Link>
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>

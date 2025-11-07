@@ -36,20 +36,30 @@ alwaysApply: true
 │  └─ web/                         # Next.js PWA (UI + API + worker route)
 │     ├─ app/
 │     │  ├─ (app)/                 # authed routes
-│     │  │  ├─ admin/
-│     │  │  │  ├─ metrics/         # admin metrics page
-│     │  │  │  │  ├─ page.tsx
-│     │  │  │  │  ├─ form.tsx
-│     │  │  │  │  └─ actions.ts
-│     │  │  │  └─ test-data/page.tsx
-│     │  │  ├─ cohorts/
-│     │  │  │  ├─ new/page.tsx
+│     │  │  ├─ app/                # nested app routes
+│     │  │  │  ├─ admin/
+│     │  │  │  │  ├─ metrics/      # admin metrics page
+│     │  │  │  │  │  ├─ page.tsx
+│     │  │  │  │  │  ├─ form.tsx
+│     │  │  │  │  │  └─ actions.ts
+│     │  │  │  │  ├─ results/
+│     │  │  │  │  │  └─ new/page.tsx
+│     │  │  │  │  └─ test-data/page.tsx
+│     │  │  │  ├─ cohorts/
+│     │  │  │  │  ├─ new/page.tsx
+│     │  │  │  │  └─ page.tsx
+│     │  │  │  ├─ leaderboard/
+│     │  │  │  │  ├─ [subject]/page.tsx
+│     │  │  │  │  └─ page.tsx
+│     │  │  │  ├─ results/
+│     │  │  │  │  ├─ new/
+│     │  │  │  │  └─ page.tsx
+│     │  │  │  ├─ rewards/
+│     │  │  │  │  └─ page.tsx
+│     │  │  │  ├─ settings/
+│     │  │  │  │  ├─ profile/page.tsx
+│     │  │  │  │  └─ rewards/page.tsx
 │     │  │  │  └─ page.tsx
-│     │  │  ├─ results/
-│     │  │  │  ├─ new/page.tsx
-│     │  │  │  └─ page.tsx
-│     │  │  ├─ settings/
-│     │  │  │  └─ rewards/page.tsx
 │     │  │  └─ layout.tsx
 │     │  ├─ api/
 │     │  │  ├─ attribution/track-joined/route.ts
@@ -71,28 +81,55 @@ alwaysApply: true
 │     │  │  ├─ rewards/balances/route.ts
 │     │  │  ├─ rewards/grant/route.ts
 │     │  │  ├─ rewards/ledger/route.ts
-│     │  │  └─ sl/[code]/route.ts         # smart link resolver
+│     │  │  ├─ search/
+│     │  │  │  ├─ cohorts/route.ts
+│     │  │  │  ├─ results/route.ts
+│     │  │  │  └─ subjects/route.ts
+│     │  │  └─ user/
+│     │  │     ├─ me/route.ts
+│     │  │     ├─ onboarding-complete/route.ts
+│     │  │     └─ persona/route.ts
 │     │  ├─ badge/[id]/page.tsx
 │     │  ├─ cohort/[id]/page.tsx
-│     │  ├─ fvm/skill/[deckId]/page.tsx
+│     │  ├─ fvm/skill/[deckId]/
+│     │  │  ├─ not-found.tsx
+│     │  │  └─ page.tsx
 │     │  ├─ login/page.tsx
-│     │  ├─ results/[id]/page.tsx
+│     │  ├─ results/[id]/
+│     │  │  ├─ not-found.tsx
+│     │  │  └─ page.tsx
 │     │  ├─ session/complete/page.tsx
+│     │  ├─ sl/[code]/route.ts            # smart link resolver
 │     │  ├─ ~offline/page.tsx
 │     │  ├─ layout.tsx
 │     │  ├─ page.tsx
 │     │  └─ sw.ts
 │     ├─ components/               # React components
+│     │  ├─ app-layout/            # app layout components
+│     │  │  ├─ CohortContext.tsx
+│     │  │  ├─ CommandPalette.tsx
+│     │  │  ├─ HeaderContent.tsx
+│     │  │  ├─ SidebarNav.tsx
+│     │  │  └─ UserMenu.tsx
+│     │  ├─ landing-page/          # landing page components
 │     │  ├─ ui/                    # shadcn/ui components
+│     │  ├─ Breadcrumbs.tsx
 │     │  ├─ CohortFeed.tsx
+│     │  ├─ CohortSwitcher.tsx
+│     │  ├─ FVMCompletionHandler.tsx
+│     │  ├─ InviteButton.tsx
 │     │  ├─ InviteJoinedTracker.tsx
+│     │  ├─ InviteModal.tsx
 │     │  ├─ LeaderboardWidget.tsx
 │     │  ├─ LoginButton.tsx
-│     │  ├─ LogoutButton.tsx
 │     │  ├─ MicroDeck.tsx
+│     │  ├─ OnboardingSheet.tsx
+│     │  ├─ OnboardingWrapper.tsx
+│     │  ├─ PresencePill.tsx
 │     │  ├─ PresenceWidget.tsx
 │     │  ├─ RewardBadge.tsx
 │     │  ├─ RewardPreview.tsx
+│     │  ├─ RewardsBalances.tsx
 │     │  ├─ RewardsLedger.tsx
 │     │  └─ ShareButton.tsx
 │     ├─ db/                       # Drizzle schema + client
@@ -120,6 +157,7 @@ alwaysApply: true
 │     │  ├─ presence.ts
 │     │  ├─ rate-limit.ts
 │     │  ├─ safety.ts
+│     │  ├─ streaks.ts
 │     │  ├─ track.ts
 │     │  └─ utils.ts
 │     ├─ scripts/
@@ -158,9 +196,11 @@ alwaysApply: true
 │  ├─ architecture.md
 │  ├─ spec.md
 │  ├─ sequence.md
-│  └─ phases/
+│  ├─ phases/
+│  └─ iterations/
 ├─ turbo.json
 ├─ pnpm-workspace.yaml
+├─ pnpm-lock.yaml
 ├─ .env.example
 └─ README.md
 ```

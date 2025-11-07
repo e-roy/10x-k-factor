@@ -46,7 +46,7 @@ export const authConfig = {
     async jwt({ token, user, account: _account }) {
       if (user) {
         token.id = user.id;
-        // Fetch persona from database if user exists
+        // Fetch persona and role from database if user exists
         if (user.id) {
           const [dbUser] = await db
             .select()
@@ -55,6 +55,7 @@ export const authConfig = {
             .limit(1);
           if (dbUser) {
             token.persona = dbUser.persona;
+            token.role = dbUser.role || null;
           }
         }
       }
@@ -64,8 +65,21 @@ export const authConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.persona = (token.persona as string) || "student";
+        session.user.role = (token.role as string) || null;
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // If url is a relative path, make it absolute
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      // If url is on the same origin, allow it
+      if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+      // Default to /app
+      return `${baseUrl}/app`;
     },
     async signIn({ user, account: _account, profile: _profile }) {
       // Ensure persona is set for users (adapter creates user, but we ensure persona default)

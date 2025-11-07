@@ -4,7 +4,9 @@ import { db } from "@/db/index";
 import { results, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { ShareButton } from "@/components/ShareButton";
+import { RewardBadge } from "@/components/RewardBadge";
 import { PresenceWidget } from "@/components/PresenceWidget";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
 import { chooseLoop, compose } from "@10x-k-factor/agents";
@@ -12,6 +14,7 @@ import { getCooldowns } from "@/lib/agents/cooldowns";
 
 interface ResultsPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ share?: string }>;
 }
 
 async function getResult(id: string) {
@@ -83,10 +86,14 @@ export async function generateMetadata({
   };
 }
 
-export default async function ResultsPage({ params }: ResultsPageProps) {
+export default async function ResultsPage({ params, searchParams }: ResultsPageProps) {
   const { id } = await params;
+  const paramsData = await searchParams;
   const result = await getResult(id);
   const session = await auth();
+  
+  // Check if share=true is in query params
+  const shouldAutoShare = paramsData.share === "true";
 
   if (!result) {
     notFound();
@@ -167,6 +174,17 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
   return (
     <div className="container mx-auto p-4 md:p-8 max-w-4xl">
       <div className="space-y-6">
+        {/* Breadcrumbs */}
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/app" },
+            { label: "Results", href: "/app/results" },
+            {
+              label: result.subject || "Result",
+              href: `/results/${result.id}`,
+            },
+          ]}
+        />
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -187,6 +205,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
               subject={result.subject}
               loop={loopData?.loop || "results_rally"}
               shareCopy={personalizeData?.copy}
+              autoShare={shouldAutoShare}
             />
           )}
         </div>
@@ -217,6 +236,12 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
                 </p>
               </div>
             </div>
+            {/* Reward Badge */}
+            {isOwner && (
+              <div className="mt-4 pt-4 border-t">
+                <RewardBadge />
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -266,6 +291,34 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
           </CardContent>
         </Card>
 
+        {/* Challenge a Friend CTA (only for owner) */}
+        {isOwner && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Challenge a Friend</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Share your results and challenge a friend to beat your score!
+              </p>
+              <div className="flex gap-2">
+                <ShareButton
+                  resultId={result.id}
+                  userId={result.userId}
+                  persona={result.persona || "student"}
+                  subject={result.subject}
+                  loop="buddy_challenge"
+                  shareCopy={
+                    personalizeData?.copy ||
+                    `I just scored ${result?.score ?? 0}% on ${result?.subject || "this practice"}! Can you beat my score? 🎯`
+                  }
+                  autoShare={shouldAutoShare}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Personalized Viral Loop CTA (only for owner) */}
         {isOwner && loopData && personalizeData && (
           <Card>
@@ -294,6 +347,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
                   subject={result.subject}
                   loop={loopData.loop}
                   shareCopy={personalizeData.copy}
+                  autoShare={shouldAutoShare}
                 />
               </div>
               {process.env.NODE_ENV === "development" && (

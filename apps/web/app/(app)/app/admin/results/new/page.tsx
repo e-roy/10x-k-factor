@@ -67,7 +67,7 @@ export default function NewResultPage() {
       <div className="space-y-6">
         <div className="flex items-center gap-4">
           <Button asChild variant="ghost" size="sm">
-            <Link href="/results">
+            <Link href="/app/results">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Results
             </Link>
@@ -136,7 +136,7 @@ export default function NewResultPage() {
                   )}
                 </Button>
                 <Button type="button" variant="outline" asChild>
-                  <Link href="/results">Cancel</Link>
+                  <Link href="/app/results">Cancel</Link>
                 </Button>
               </div>
             </form>

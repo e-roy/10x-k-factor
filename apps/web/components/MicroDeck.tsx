@@ -17,7 +17,7 @@ interface MicroDeckProps {
     loop: string;
     smart_link_code: string;
   };
-  onComplete?: (completionTimeMs: number) => void;
+  onComplete?: (completionTimeMs: number, correctAnswers: number, totalQuestions: number) => void;
 }
 
 export function MicroDeck({ deck, attribution, onComplete }: MicroDeckProps) {
@@ -94,6 +94,15 @@ export function MicroDeck({ deck, attribution, onComplete }: MicroDeckProps) {
     setIsCompleted(true);
     const completionTime = Date.now() - startTime;
 
+    // Calculate correct answers
+    let correctCount = 0;
+    deck.questions.forEach((question, index) => {
+      const selectedAnswer = selectedAnswers[index];
+      if (selectedAnswer !== undefined && selectedAnswer === question.correct) {
+        correctCount++;
+      }
+    });
+
     // Fire invite.fvm event
     if (attribution) {
       await track("invite.fvm", {
@@ -165,9 +174,9 @@ export function MicroDeck({ deck, attribution, onComplete }: MicroDeckProps) {
 
     // Call parent completion handler if provided
     if (onComplete) {
-      onComplete(completionTime);
+      onComplete(completionTime, correctCount, deck.questions.length);
     }
-  }, [isCompleted, allAnswered, startTime, attribution, deck.id, deck.subject, onComplete, toast]);
+  }, [isCompleted, allAnswered, startTime, attribution, deck.id, deck.subject, deck.questions, selectedAnswers, onComplete, toast]);
 
   // Keyboard navigation
   useEffect(() => {
