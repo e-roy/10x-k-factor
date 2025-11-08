@@ -12,12 +12,11 @@ interface HeaderContentProps {
 }
 
 export function HeaderContent({
-  userId,
+  // userId,
   userName,
   userEmail,
   userImage,
 }: HeaderContentProps) {
-
   return (
     <>
       {/* Placeholder for future content */}
@@ -31,7 +30,7 @@ export function HeaderContent({
           <kbd className="hidden sm:inline-block">⌘K</kbd>
         </button>
         <PresencePill />
-        
+
         <UserMenu name={userName} email={userEmail} image={userImage} />
       </div>
     </>
