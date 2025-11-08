@@ -7,6 +7,7 @@ import {
   smartLinks,
   results,
   cohorts,
+  xpWeights,
   type Persona,
 } from "@/db/schema/index";
 import { users } from "@/db/auth-schema";
@@ -201,6 +202,24 @@ async function seed() {
 
     await db.insert(smartLinks).values(sampleSmartLinks);
     console.log("✓ Created smart links");
+
+    // Create XP weight multipliers
+    const sampleXpWeights = [
+      { eventType: "challenge.completed", multiplier: 5 },
+      { eventType: "challenge.perfect", multiplier: 8 },
+      { eventType: "challenge.streak_kept", multiplier: 3 },
+      { eventType: "invite.sent", multiplier: 1 },
+      { eventType: "invite.accepted", multiplier: 20 },
+      { eventType: "invitee.fvm_reached", multiplier: 30 },
+      { eventType: "results.viewed", multiplier: 0.5 },
+      { eventType: "presence.session_minute", multiplier: 0.2 },
+      { eventType: "cohort.leaderboard_top3", multiplier: 10 },
+      { eventType: "session.tutor_5star", multiplier: 15 },
+      { eventType: "parent.recap_shared", multiplier: 6 },
+    ];
+
+    await db.insert(xpWeights).values(sampleXpWeights);
+    console.log("✓ Created XP weights");
 
     console.log("Seed completed successfully!");
   } catch (error) {

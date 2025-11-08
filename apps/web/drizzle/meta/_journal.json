@@ -15,6 +15,13 @@
       "when": 1762558419874,
       "tag": "0001_third_iceman",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762561476439,
+      "tag": "0002_mature_firedrake",
+      "breakpoints": true
     }
   ]
 }
