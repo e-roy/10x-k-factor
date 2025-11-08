@@ -13,6 +13,7 @@
     "drizzle:push": "drizzle-kit push",
     "drizzle:studio": "drizzle-kit studio",
     "seed": "tsx scripts/seed.ts",
+    "seed:subjects": "tsx scripts/seed-subjects.ts",
     "migrate:profiles": "tsx scripts/migrate-profiles.ts"
   },
   "dependencies": {

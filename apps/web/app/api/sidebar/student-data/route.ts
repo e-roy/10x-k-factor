@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { cohorts, usersProfiles } from "@/db/schema";
+import { cohorts, userSubjects, subjects } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { calculateStreak } from "@/lib/streaks";
 import { getUserXpWithLevel } from "@/lib/xp";
-import type { Persona } from "@/db/types";
+import { getPresenceCounts } from "@/lib/presence";
 
 /**
  * Fetch student sidebar data
@@ -37,14 +37,21 @@ export async function GET(_req: NextRequest) {
     // Fetch XP and level from the real system
     const xpData = await getUserXpWithLevel(userId);
 
-    // Fetch user profile to get enrolled subjects
-    const [profile] = await db
-      .select()
-      .from(usersProfiles)
-      .where(eq(usersProfiles.userId, userId))
-      .limit(1);
-
-    const enrolledSubjects = (profile?.subjects as string[]) || [];
+    // Fetch user's enrolled subjects with progress
+    const enrolledSubjects = await db
+      .select({
+        subjectId: subjects.id,
+        subjectName: subjects.name,
+        subjectSlug: subjects.slug,
+        progress: userSubjects.progress,
+        totalXp: userSubjects.totalXp,
+        currentStreak: userSubjects.currentStreak,
+        lastActivityAt: userSubjects.lastActivityAt,
+      })
+      .from(userSubjects)
+      .innerJoin(subjects, eq(userSubjects.subjectId, subjects.id))
+      .where(eq(userSubjects.userId, userId))
+      .orderBy(desc(userSubjects.lastActivityAt));
 
     // Fetch user's cohorts
     const userCohorts = await db
@@ -59,16 +66,16 @@ export async function GET(_req: NextRequest) {
     const now = new Date();
     const streakAtRisk = now.getHours() >= 20 && streak > 0; // After 8 PM
 
-    // Use enrolled subjects from profile
-    const subjects = enrolledSubjects.length > 0 
-      ? enrolledSubjects.map((subject) => ({
-          name: subject,
-          activeUsers: Math.floor(Math.random() * 20) + 1, // TODO: Get from presence system
-        }))
-      : [
-          { name: "Algebra", activeUsers: 12 },
-          { name: "Geometry", activeUsers: 8 },
-        ];
+    // Get presence counts for enrolled subjects
+    const subjectSlugs = enrolledSubjects.map((s) => s.subjectSlug);
+    const presenceCounts = await getPresenceCounts(subjectSlugs);
+
+    // Build subjects list with real presence data
+    const subjectsData = enrolledSubjects.map((subject) => ({
+      name: subject.subjectName,
+      activeUsers: presenceCounts.get(subject.subjectSlug) || 0,
+      progress: subject.progress,
+    }));
 
     return NextResponse.json({
       xp: xpData.xp,
@@ -83,7 +90,7 @@ export async function GET(_req: NextRequest) {
         { id: "5", name: "Perfect Score", icon: "💯", earnedAt: new Date() },
         { id: "6", name: "Study Buddy", icon: "🤝", earnedAt: new Date() },
       ], // TODO: Fetch from rewards system
-      subjects,
+      subjects: subjectsData,
       cohorts: userCohorts.map((cohort) => ({
         id: cohort.id,
         name: cohort.name,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { usersProfiles } from "@/db/schema";
+import { userSubjects, subjects } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -17,12 +17,16 @@ export async function GET(_request: NextRequest) {
       );
     }
 
-    // Fetch user profile to get subjects
-    const [profile] = await db
-      .select()
-      .from(usersProfiles)
-      .where(eq(usersProfiles.userId, session.user.id))
-      .limit(1);
+    // Fetch user's enrolled subjects
+    const enrolledSubjects = await db
+      .select({
+        name: subjects.name,
+        slug: subjects.slug,
+        progress: userSubjects.progress,
+      })
+      .from(userSubjects)
+      .innerJoin(subjects, eq(userSubjects.subjectId, subjects.id))
+      .where(eq(userSubjects.userId, session.user.id));
 
     return NextResponse.json({
       id: session.user.id,
@@ -30,7 +34,8 @@ export async function GET(_request: NextRequest) {
       email: session.user.email,
       persona: session.user.persona || "student",
       role: session.user.role || null,
-      subjects: profile?.subjects || [], // Return enrolled subjects
+      subjects: enrolledSubjects.map((s) => s.name), // Return subject names for backward compatibility
+      subjectsDetail: enrolledSubjects, // Include detailed subject info with progress
     });
   } catch (error) {
     console.error("[api/user/me] Error:", error);

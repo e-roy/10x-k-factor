@@ -33,16 +33,6 @@ interface StudentDashboardProps {
 export function StudentDashboard({ user, data }: StudentDashboardProps) {
   return (
     <div className="space-y-8">
-      {/* Greeting */}
-      <div>
-        <h1 className="text-3xl font-bold bg-persona-gradient bg-clip-text text-transparent">
-          Welcome back, {user.name?.split(" ")[0] || "Champion"}! 🎯
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Ready to level up today?
-        </p>
-      </div>
-
       {/* Progress Section */}
       <section>
         <h2 className="text-xl font-semibold mb-4">Your Progress</h2>

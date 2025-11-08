@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { usersProfiles, results, cohorts } from "@/db/schema/index";
+import { usersProfiles, results, cohorts, subjects, userSubjects } from "@/db/schema/index";
 import { eq, desc } from "drizzle-orm";
 import { StudentDashboard } from "@/components/dashboards/StudentDashboard";
 import { OnboardingWrapper } from "@/components/OnboardingWrapper";
@@ -45,8 +45,16 @@ export default async function DashboardPage() {
   // Get most common subject
   const mostCommonSubject = recentResults[0]?.subject || userCohorts[0]?.subject || "algebra";
 
-  // Get enrolled subjects from profile
-  const enrolledSubjects = (profile?.subjects as string[]) || [];
+  // Get enrolled subjects from user_subjects table
+  const enrolledSubjectsData = await db
+    .select({
+      name: subjects.name,
+    })
+    .from(userSubjects)
+    .innerJoin(subjects, eq(userSubjects.subjectId, subjects.id))
+    .where(eq(userSubjects.userId, userId));
+
+  const enrolledSubjects = enrolledSubjectsData.map((s) => s.name);
 
   // Fetch persona-specific dashboard data
   const dashboardData = await fetchDashboardData(persona, {
