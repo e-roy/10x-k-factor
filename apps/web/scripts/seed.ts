@@ -8,6 +8,7 @@ import {
   results,
   cohorts,
   xpWeights,
+  agentBuddies,
   type Persona,
 } from "@/db/schema/index";
 import { users } from "@/db/auth-schema";
@@ -216,6 +217,37 @@ async function seed() {
 
     await db.insert(xpWeights).values(sampleXpWeights);
     console.log("✓ Created XP weights");
+
+    // Create sample agent buddies (students only)
+    const sampleBuddies = [
+      {
+        userId: studentId,
+        archetype: "wayfinder",
+        appearance: {
+          skin: "default",
+          aura: "blue",
+        },
+        state: {
+          mood: "calm" as const,
+          energy: 100,
+        },
+      },
+      {
+        userId: student2Id,
+        archetype: "guardian",
+        appearance: {
+          skin: "cosmic",
+          aura: "purple",
+        },
+        state: {
+          mood: "fired_up" as const,
+          energy: 85,
+        },
+      },
+    ];
+
+    await db.insert(agentBuddies).values(sampleBuddies);
+    console.log("✓ Created agent buddies");
 
     console.log("Seed completed successfully!");
   } catch (error) {

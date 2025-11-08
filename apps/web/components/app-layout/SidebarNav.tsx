@@ -12,6 +12,7 @@ import {
   TrendingUp,
   PlusCircle,
   Database,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -29,6 +30,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/app/leaderboard", label: "Leaderboards", icon: Trophy },
   { href: "/app/rewards", label: "Rewards", icon: Gift },
   { href: "/app/settings", label: "Settings", icon: Settings },
+  { href: "/app/demos", label: "TEST: Demos", icon: Search },
 ];
 
 const ADMIN_ITEMS: NavItem[] = [

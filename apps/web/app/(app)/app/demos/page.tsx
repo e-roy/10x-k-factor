@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Award, Palette, FileText, MessageSquare } from "lucide-react";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Award, Palette, FileText, MessageSquare, Bot } from "lucide-react";
 
 const demos = [
   {
@@ -8,6 +8,12 @@ const demos = [
     description: "Test the XP system by manually tracking events and viewing level progression",
     href: "/app/demos/xp-tracker",
     icon: Award,
+  },
+  {
+    title: "Agent Buddy",
+    description: "View your agent buddy's status, level, mood, and appearance customization",
+    href: "/app/demos/buddy",
+    icon: Bot,
   },
   {
     title: "Theme System",
