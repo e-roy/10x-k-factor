@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { challenges } from "@/db/schema/index";
 import { eq } from "drizzle-orm";
+import { trackXpEvent } from "@/lib/xp";
+import type { Persona } from "@/db/types";
 
 /**
  * Get a specific challenge by ID
@@ -110,6 +112,37 @@ export async function PATCH(
       .from(challenges)
       .where(eq(challenges.id, challengeId))
       .limit(1);
+
+    // Create XP event when challenge is completed
+    if (status === "completed" && score !== undefined) {
+      // Determine the user's persona (default to 'student' for challenges)
+      const userPersona: Persona = "student";
+      
+      // Determine event type based on score
+      const isPerfect = score === 100;
+      const eventType = isPerfect ? "challenge.perfect" : "challenge.completed";
+      
+      // Calculate raw XP based on score (higher score = more XP)
+      const rawXp = isPerfect ? 50 : Math.max(10, Math.floor(score / 10));
+
+      try {
+        await trackXpEvent({
+          userId: session.user.id,
+          personaType: userPersona,
+          eventType,
+          referenceId: challengeId,
+          metadata: {
+            subject: challenge.subject,
+            score,
+            difficulty: challenge.difficulty,
+          },
+          rawXp,
+        });
+      } catch (xpError) {
+        console.error("[update-challenge] Failed to track XP event:", xpError);
+        // Don't fail the whole request if XP tracking fails
+      }
+    }
 
     return NextResponse.json(updatedChallenge);
   } catch (error) {

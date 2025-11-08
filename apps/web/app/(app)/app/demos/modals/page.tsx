@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChallengeModal } from "@/components/modals/ChallengeModal";
@@ -12,6 +13,7 @@ export default function ModalsDemo() {
   const [challengeOpen, setChallengeOpen] = useState(false);
   const [parentOpen, setParentOpen] = useState(false);
   const [tutorOpen, setTutorOpen] = useState(false);
+  const { data: session } = useSession();
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -131,6 +133,7 @@ export default function ModalsDemo() {
         isOpen={challengeOpen}
         onClose={() => setChallengeOpen(false)}
         challengeId="demo-challenge-1"
+        userId={session?.user?.id}
         onComplete={(id, score) => {
           console.log(`Challenge ${id} completed with score: ${score}`);
         }}

@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { TallModal } from "./TallModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Target, Loader2, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Target, Loader2, CheckCircle, XCircle, AlertCircle, Copy, Mail, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useBuddy } from "@/hooks/useBuddy";
+import { createSmartLink } from "@/lib/smart-links/create";
 
 interface Question {
   question: string;
@@ -30,6 +33,7 @@ interface ChallengeModalProps {
   isOpen: boolean;
   onClose: () => void;
   challengeId?: string;
+  userId?: string;
   onComplete?: (challengeId: string, score: number) => void;
 }
 
@@ -37,6 +41,7 @@ export function ChallengeModal({
   isOpen,
   onClose,
   challengeId,
+  userId,
   onComplete,
 }: ChallengeModalProps) {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
@@ -46,6 +51,11 @@ export function ChallengeModal({
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+
+  const { buddy } = useBuddy();
 
   const fetchChallenge = async () => {
     if (!challengeId) return;
@@ -76,6 +86,22 @@ export function ChallengeModal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, challengeId]);
+
+  // Generate share link when results are shown
+  useEffect(() => {
+    if (showResults && userId && challenge && !shareUrl) {
+      createSmartLink({
+        inviterId: userId,
+        loop: "buddy_challenge",
+        params: {
+          subject: challenge.subject,
+          challengeId: challenge.id,
+        },
+      })
+        .then(({ url }) => setShareUrl(url))
+        .catch((error) => console.error("Failed to create share link:", error));
+    }
+  }, [showResults, userId, challenge, shareUrl]);
 
   const handleAnswerSelect = (questionIndex: number, answerIndex: number) => {
     setAnswers((prev) => ({
@@ -174,9 +200,68 @@ export function ChallengeModal({
     );
   }
 
+  const handleCopyLink = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy:", error);
+    }
+  };
+
+  const handleWhatsAppShare = () => {
+    if (!shareUrl) return;
+    const message = encodeURIComponent(
+      `I just completed a ${challenge?.subject || "challenge"}! Can you beat my score? 🎯 ${shareUrl}`
+    );
+    window.open(`https://wa.me/?text=${message}`, "_blank");
+  };
+
+  const handleEmailShare = () => {
+    if (!shareUrl) return;
+    const subject = encodeURIComponent(`Challenge: ${challenge?.subject || "Try this challenge"}`);
+    const body = encodeURIComponent(
+      `I just completed a ${challenge?.subject || "challenge"}! Can you beat my score? 🎯\n\n${shareUrl}`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  const handleWebShare = async () => {
+    if (!shareUrl) return;
+    setIsSharing(true);
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `${challenge?.subject || "Challenge"} - Try to beat me!`,
+          text: `I just completed a ${challenge?.subject || "challenge"}! Can you beat my score? 🎯`,
+          url: shareUrl,
+        });
+      } else {
+        await handleCopyLink();
+      }
+    } catch (error) {
+      if ((error as Error).name !== "AbortError") {
+        console.error("Share failed:", error);
+      }
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   if (showResults) {
     const score = calculateScore();
     const correct = challenge.questions.filter((q, idx) => answers[idx] === q.correctAnswer).length;
+    const isPerfect = score === 100;
+    const isGoodScore = score >= 70;
+
+    // Buddy encouragement message
+    const getBuddyMessage = () => {
+      if (isPerfect) return "Perfect score! You&#39;re on fire! 🔥";
+      if (isGoodScore) return "Great job! Keep it up! 💪";
+      return "Let&#39;s keep practicing together! 📚";
+    };
 
     return (
       <TallModal
@@ -198,45 +283,149 @@ export function ChallengeModal({
             </CardContent>
           </Card>
 
-          {/* Question Review */}
-          <div className="space-y-3">
-            <h3 className="font-semibold">Review</h3>
-            {challenge.questions.map((q, idx) => {
-              const isCorrect = answers[idx] === q.correctAnswer;
-              return (
-                <Card key={idx} className={cn(
-                  "border-2",
-                  isCorrect ? "border-green-200 bg-green-50/50 dark:bg-green-950/10" : "border-red-200 bg-red-50/50 dark:bg-red-950/10"
-                )}>
-                  <CardContent className="pt-4 space-y-2">
-                    <div className="flex items-start gap-2">
-                      {isCorrect ? (
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <XCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      )}
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{q.question}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Your answer: {q.options[answers[idx]]}
-                        </p>
-                        {!isCorrect && (
-                          <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                            Correct answer: {q.options[q.correctAnswer]}
-                          </p>
+          {/* Buddy Encouragement */}
+          {buddy && (
+            <Card className="card-persona border-persona-primary/20">
+              <CardContent className="pt-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-persona-overlay overflow-hidden">
+                    {buddy.appearance.spriteUrl ? (
+                      <Image
+                        src={buddy.appearance.spriteUrl}
+                        alt="Buddy"
+                        width={48}
+                        height={48}
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    ) : (
+                      "🤖"
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-persona-primary">
+                      {buddy.archetype}
+                    </p>
+                    <p
+                      className="text-sm mt-1"
+                      dangerouslySetInnerHTML={{ __html: getBuddyMessage() }}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Share Card */}
+          <Card className="bg-gradient-to-br from-persona-primary/5 to-persona-primary/10 border-persona-primary/30">
+            <CardContent className="pt-6 space-y-4">
+              <div className="text-center">
+                <h3 className="font-semibold text-lg mb-2">Challenge a Friend! 🎯</h3>
+                <p className="text-sm text-muted-foreground">
+                  See if they can beat your score
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  onClick={handleCopyLink}
+                  disabled={!shareUrl}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  {copied ? (
+                    <>
+                      <CheckCircle className="h-4 w-4" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      Copy Link
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={handleWhatsAppShare}
+                  disabled={!shareUrl}
+                  variant="outline"
+                  className="gap-2 bg-green-50 hover:bg-green-100 dark:bg-green-950/20"
+                >
+                  <Share2 className="h-4 w-4" />
+                  WhatsApp
+                </Button>
+
+                <Button
+                  onClick={handleEmailShare}
+                  disabled={!shareUrl}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Mail className="h-4 w-4" />
+                  Email
+                </Button>
+
+                <Button
+                  onClick={handleWebShare}
+                  disabled={!shareUrl || isSharing}
+                  variant="outline"
+                  className="gap-2 btn-persona"
+                >
+                  <Share2 className="h-4 w-4" />
+                  {isSharing ? "Sharing..." : "Share"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Question Review - Collapsible */}
+          <details className="group">
+            <summary className="cursor-pointer list-none">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted">
+                <h3 className="font-semibold">Review Answers</h3>
+                <Badge variant="secondary">
+                  {correct}/{challenge.questions.length}
+                </Badge>
+              </div>
+            </summary>
+            <div className="space-y-3 mt-3">
+              {challenge.questions.map((q, idx) => {
+                const isCorrect = answers[idx] === q.correctAnswer;
+                return (
+                  <Card key={idx} className={cn(
+                    "border-2",
+                    isCorrect ? "border-green-200 bg-green-50/50 dark:bg-green-950/10" : "border-red-200 bg-red-50/50 dark:bg-red-950/10"
+                  )}>
+                    <CardContent className="pt-4 space-y-2">
+                      <div className="flex items-start gap-2">
+                        {isCorrect ? (
+                          <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
                         )}
-                        {q.explanation && (
-                          <p className="text-xs text-muted-foreground mt-2 italic">
-                            {q.explanation}
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{q.question}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Your answer: {q.options[answers[idx]]}
                           </p>
-                        )}
+                          {!isCorrect && (
+                            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                              Correct answer: {q.options[q.correctAnswer]}
+                            </p>
+                          )}
+                          {q.explanation && (
+                            <p className="text-xs text-muted-foreground mt-2 italic">
+                              {q.explanation}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </details>
 
           <Button onClick={onClose} className="w-full btn-persona">
             Done

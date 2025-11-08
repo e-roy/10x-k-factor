@@ -52,7 +52,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       secondaryColor={profile?.secondaryColor}
     >
       <CohortProvider>
-        <ModalProvider>
+        <ModalProvider userId={session.user.id}>
           <InviteJoinedTracker />
           <CommandPalette />
         <div className="grid grid-cols-[260px_1fr] min-h-screen">
