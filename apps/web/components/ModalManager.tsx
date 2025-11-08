@@ -20,9 +20,10 @@ export function useModal() {
 
 interface ModalProviderProps {
   children: ReactNode;
+  userId?: string;
 }
 
-export function ModalProvider({ children }: ModalProviderProps) {
+export function ModalProvider({ children, userId }: ModalProviderProps) {
   const [currentModal, setCurrentModal] = useState<string | null>(null);
   const [modalData, setModalData] = useState<Record<string, unknown>>({});
 
@@ -46,7 +47,7 @@ export function ModalProvider({ children }: ModalProviderProps) {
       })
     );
     
-    closeModal();
+    // Don't close the modal - let the user close it after seeing results
   };
 
   return (
@@ -58,6 +59,7 @@ export function ModalProvider({ children }: ModalProviderProps) {
         isOpen={currentModal === "ChallengeModal"}
         onClose={closeModal}
         challengeId={modalData.challengeId as string | undefined}
+        userId={userId}
         onComplete={handleChallengeComplete}
       />
       

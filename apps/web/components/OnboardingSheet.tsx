@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { Loader2, GraduationCap, Users, BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -42,7 +41,6 @@ export function OnboardingSheet({
   const [step, setStep] = useState(1);
   const [persona, setPersona] = useState<string>(currentPersona || "student");
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
-  const [cohortName, setCohortName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +50,6 @@ export function OnboardingSheet({
       setStep(1);
       setPersona(currentPersona || "student");
       setSelectedSubjects([]);
-      setCohortName("");
       setError(null);
     }
   }, [open, currentPersona]);
@@ -103,20 +100,6 @@ export function OnboardingSheet({
         throw new Error("Failed to update persona");
       }
 
-      // Create cohort if name provided
-      if (cohortName.trim()) {
-        await fetch("/api/cohorts", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: cohortName.trim(),
-            subject: selectedSubjects[0] || null,
-          }),
-        });
-      }
-
       // Mark onboarding as complete
       await fetch("/api/user/onboarding-complete", {
         method: "POST",
@@ -136,22 +119,9 @@ export function OnboardingSheet({
     }
   };
 
-  const handleSkip = async () => {
-    try {
-      await fetch("/api/user/onboarding-complete", {
-        method: "POST",
-      });
-      onClose();
-      router.push("/app");
-      router.refresh();
-    } catch (error) {
-      console.error("[OnboardingSheet] Failed to skip:", error);
-    }
-  };
-
   return (
     <Sheet open={open} onOpenChange={() => {}}>
-      <SheetContent className="sm:max-w-md">
+      <SheetContent className="sm:max-w-md p-6">
         <SheetHeader>
           <SheetTitle>Welcome to K-Factor!</SheetTitle>
           <SheetDescription>
@@ -159,7 +129,7 @@ export function OnboardingSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 space-y-6 px-2">
           {/* Step 1: Persona Selection */}
           {step === 1 && (
             <div className="space-y-4">
@@ -250,34 +220,6 @@ export function OnboardingSheet({
             </div>
           )}
 
-          {/* Step 3: Cohort Creation */}
-          {step === 3 && (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-base font-medium mb-3 block">
-                  Create a cohort (optional)
-                </Label>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Cohorts are study groups where you can practice together and
-                  compete on leaderboards.
-                </p>
-                <div className="space-y-2">
-                  <Label htmlFor="cohortName">Cohort Name</Label>
-                  <Input
-                    id="cohortName"
-                    value={cohortName}
-                    onChange={(e) => setCohortName(e.target.value)}
-                    placeholder="e.g., Algebra Study Group"
-                    maxLength={128}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    You can skip this and create a cohort later
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
           {error && (
             <div className="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive">
               {error}
@@ -291,35 +233,25 @@ export function OnboardingSheet({
                 Back
               </Button>
             )}
-            {step < 3 ? (
+            {step === 1 ? (
               <Button onClick={handleNext} className="flex-1">
                 Next
               </Button>
             ) : (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={handleSkip}
-                  disabled={isSubmitting}
-                  className="flex-1"
-                >
-                  Skip
-                </Button>
-                <Button
-                  onClick={handleComplete}
-                  disabled={isSubmitting}
-                  className="flex-1"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Starting...
-                    </>
-                  ) : (
-                    "Get Started"
-                  )}
-                </Button>
-              </>
+              <Button
+                onClick={handleComplete}
+                disabled={isSubmitting || selectedSubjects.length === 0}
+                className="flex-1"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Starting...
+                  </>
+                ) : (
+                  "Begin"
+                )}
+              </Button>
             )}
           </div>
         </div>

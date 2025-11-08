@@ -19,6 +19,8 @@ export default defineConfig({
     "./db/learning-schema.ts",
     "./db/events-schema.ts",
     "./db/rewards-schema.ts",
+    "./db/xp-schema.ts",
+    "./db/buddy-schema.ts",
   ],
   out: "./drizzle",
   dialect: "postgresql",

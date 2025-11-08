@@ -116,9 +116,16 @@ export async function createSmartLink(
     // Non-blocking - don't throw
   });
 
-  // Build full URL (assuming NEXT_PUBLIC_APP_URL is set, fallback to relative)
+  // Build full URL based on loop type
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const url = `${baseUrl}/sl/${code}`;
+  
+  // For buddy_challenge loop, link directly to challenge page
+  if (loop === "buddy_challenge" && linkParams?.challengeId) {
+    const url = `${baseUrl}/challenge/${linkParams.challengeId}?sl=${code}`;
+    return { code, url };
+  }
 
+  // Default: use smart link resolver
+  const url = `${baseUrl}/sl/${code}`;
   return { code, url };
 }

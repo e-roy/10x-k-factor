@@ -1,7 +1,7 @@
 import { ImageResponse } from "@vercel/og";
 import { NextRequest } from "next/server";
 import { db } from "@/db/index";
-import { results, usersProfiles } from "@/db/schema/index";
+import { results, usersProfiles, challenges } from "@/db/schema/index";
 import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -11,8 +11,206 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const resultId = searchParams.get("resultId");
     const tutorId = searchParams.get("tutorId");
-    const type = searchParams.get("type"); // "tutor" or "result" (default)
+    const challengeId = searchParams.get("challengeId");
+    const type = searchParams.get("type"); // "tutor", "result", or "challenge"
     const persona = searchParams.get("persona") || "student";
+
+    // Handle challenge OG card
+    if (type === "challenge" && challengeId) {
+      // Fetch challenge data
+      const [challenge] = await db
+        .select({
+          subject: challenges.subject,
+          difficulty: challenges.difficulty,
+          questionCount: challenges.questions,
+        })
+        .from(challenges)
+        .where(eq(challenges.id, challengeId))
+        .limit(1);
+
+      if (!challenge) {
+        return new Response("Challenge not found", { status: 404 });
+      }
+
+      const subject = challenge.subject || "Challenge";
+      const difficulty = challenge.difficulty;
+      const questionCount = Array.isArray(challenge.questionCount) 
+        ? challenge.questionCount.length 
+        : 5;
+
+      return new ImageResponse(
+        (
+          <div
+            style={{
+              height: "100%",
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "#ffffff",
+              backgroundImage:
+                "linear-gradient(to bottom right, #ec4899 0%, #f97316 100%)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                padding: "40px 60px",
+              }}
+            >
+              {/* App Title */}
+              <div
+                style={{
+                  fontSize: 32,
+                  fontWeight: 700,
+                  color: "#ffffff",
+                  marginBottom: 20,
+                  opacity: 0.9,
+                }}
+              >
+                10x K Factor
+              </div>
+
+              {/* Main Title */}
+              <div
+                style={{
+                  fontSize: 64,
+                  fontWeight: 800,
+                  color: "#ffffff",
+                  textAlign: "center",
+                  marginBottom: 16,
+                  lineHeight: 1.2,
+                }}
+              >
+                Challenge Accepted?
+              </div>
+
+              {/* Subtitle */}
+              <div
+                style={{
+                  fontSize: 28,
+                  color: "#fef3c7",
+                  textAlign: "center",
+                  marginBottom: 40,
+                }}
+              >
+                Can you beat your friend&apos;s {subject} score? 🎯
+              </div>
+
+              {/* Challenge Details */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 40,
+                  marginTop: 20,
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.2)",
+                    padding: "20px 30px",
+                    borderRadius: 16,
+                    backdropFilter: "blur(10px)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 20,
+                      color: "#fef3c7",
+                      marginBottom: 8,
+                    }}
+                  >
+                    Questions
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 48,
+                      fontWeight: 800,
+                      color: "#ffffff",
+                    }}
+                  >
+                    {questionCount}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    width: 180,
+                    height: 180,
+                    borderRadius: "50%",
+                    backgroundColor: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 80,
+                    boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+                  }}
+                >
+                  🎯
+                </div>
+
+                <div
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.2)",
+                    padding: "20px 30px",
+                    borderRadius: 16,
+                    backdropFilter: "blur(10px)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: 20,
+                      color: "#fef3c7",
+                      marginBottom: 8,
+                    }}
+                  >
+                    Level
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 32,
+                      fontWeight: 700,
+                      color: "#ffffff",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {difficulty}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 40,
+                  fontSize: 18,
+                  color: "#fef3c7",
+                }}
+              >
+                Click to accept the challenge and prove yourself
+              </div>
+            </div>
+          </div>
+        ),
+        {
+          width: 1200,
+          height: 630,
+        }
+      );
+    }
 
     // Handle tutor OG card
     if (type === "tutor" && tutorId) {

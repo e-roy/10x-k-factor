@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { hexToRgb } from "@/lib/persona-utils";
+import { hexToRgb, getPersonaPrimaryColor } from "@/lib/persona-utils";
 
 export type Persona = "student" | "parent" | "tutor";
 
@@ -37,6 +37,12 @@ export function PersonaProvider({
     // Set data-persona attribute on document element
     document.documentElement.setAttribute("data-persona", persona);
 
+    // Determine the primary color to use (user's custom color or persona default)
+    const effectivePrimaryColor = primaryColor || getPersonaPrimaryColor(persona);
+
+    // Set HTML element's color style to the primary color
+    document.documentElement.style.color = effectivePrimaryColor;
+
     // Override with custom colors if set
     if (primaryColor) {
       const rgb = hexToRgb(primaryColor);
@@ -64,6 +70,7 @@ export function PersonaProvider({
     // Cleanup on unmount or persona change
     return () => {
       document.documentElement.removeAttribute("data-persona");
+      document.documentElement.style.removeProperty("color");
       document.documentElement.style.removeProperty("--persona-primary");
       document.documentElement.style.removeProperty("--persona-secondary");
       document.documentElement.style.removeProperty("--persona-gradient-from");

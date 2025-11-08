@@ -7,6 +7,8 @@ import {
   smartLinks,
   results,
   cohorts,
+  xpWeights,
+  agentBuddies,
   type Persona,
 } from "@/db/schema/index";
 import { users } from "@/db/auth-schema";
@@ -81,7 +83,6 @@ async function seed() {
     const sampleProfiles = [
       {
         userId: studentId,
-        image: null,
         persona: "student" as Persona,
         minor: true,
         guardianId: parentId,
@@ -90,7 +91,6 @@ async function seed() {
       },
       {
         userId: student2Id,
-        image: null,
         persona: "student" as Persona,
         minor: false,
         guardianId: null,
@@ -99,7 +99,6 @@ async function seed() {
       },
       {
         userId: parentId,
-        image: null,
         persona: "parent" as Persona,
         minor: false,
         guardianId: null,
@@ -108,7 +107,6 @@ async function seed() {
       },
       {
         userId: tutorId,
-        image: null,
         persona: "tutor" as Persona,
         minor: false,
         guardianId: null,
@@ -201,6 +199,55 @@ async function seed() {
 
     await db.insert(smartLinks).values(sampleSmartLinks);
     console.log("✓ Created smart links");
+
+    // Create XP weight multipliers
+    const sampleXpWeights = [
+      { eventType: "challenge.completed", multiplier: 5 },
+      { eventType: "challenge.perfect", multiplier: 8 },
+      { eventType: "challenge.streak_kept", multiplier: 3 },
+      { eventType: "invite.sent", multiplier: 1 },
+      { eventType: "invite.accepted", multiplier: 20 },
+      { eventType: "invitee.fvm_reached", multiplier: 30 },
+      { eventType: "results.viewed", multiplier: 0.5 },
+      { eventType: "presence.session_minute", multiplier: 0.2 },
+      { eventType: "cohort.leaderboard_top3", multiplier: 10 },
+      { eventType: "session.tutor_5star", multiplier: 15 },
+      { eventType: "parent.recap_shared", multiplier: 6 },
+    ];
+
+    await db.insert(xpWeights).values(sampleXpWeights);
+    console.log("✓ Created XP weights");
+
+    // Create sample agent buddies (students only)
+    const sampleBuddies = [
+      {
+        userId: studentId,
+        archetype: "wayfinder",
+        appearance: {
+          skin: "default",
+          aura: "blue",
+        },
+        state: {
+          mood: "calm" as const,
+          energy: 100,
+        },
+      },
+      {
+        userId: student2Id,
+        archetype: "guardian",
+        appearance: {
+          skin: "cosmic",
+          aura: "purple",
+        },
+        state: {
+          mood: "fired_up" as const,
+          energy: 85,
+        },
+      },
+    ];
+
+    await db.insert(agentBuddies).values(sampleBuddies);
+    console.log("✓ Created agent buddies");
 
     console.log("Seed completed successfully!");
   } catch (error) {

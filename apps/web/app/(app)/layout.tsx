@@ -10,7 +10,8 @@ import { HeaderContent } from "@/components/app-layout/HeaderContent";
 import { CohortProvider } from "@/components/app-layout/CohortContext";
 import { PersonaProvider } from "@/components/PersonaProvider";
 import { ModalProvider } from "@/components/ModalManager";
-import { StudentSidebar } from "@/components/app-layout/StudentSidebar";
+import { StudentSidebarClient } from "@/components/app-layout/StudentSidebarClient";
+import { ChallengeModalOpener } from "@/components/ChallengeModalOpener";
 import type { Persona } from "@/lib/persona-utils";
 import { cn } from "@/lib/utils";
 
@@ -52,8 +53,9 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       secondaryColor={profile?.secondaryColor}
     >
       <CohortProvider>
-        <ModalProvider>
+        <ModalProvider userId={session.user.id}>
           <InviteJoinedTracker />
+          <ChallengeModalOpener />
           <CommandPalette />
         <div className="grid grid-cols-[260px_1fr] min-h-screen">
           {/* Left Sidebar */}
@@ -91,11 +93,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
               
               {/* Right Sidebar (Students Only) */}
               {persona === "student" && (
-                <StudentSidebar
+                <StudentSidebarClient
                   userId={session.user.id}
                   userName={session.user.name}
                   persona={persona}
-                  data={sidebarData}
+                  initialData={sidebarData}
                 />
               )}
             </div>
@@ -122,12 +124,14 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
     };
   }
 
-  // TODO: Replace with real data queries
-  // For now, return mock data
   const { db } = await import("@/db/index");
   const { cohorts, results } = await import("@/db/schema");
   const { eq, desc } = await import("drizzle-orm");
   const { calculateStreak } = await import("@/lib/streaks");
+  const { getUserXpWithLevel } = await import("@/lib/xp");
+
+  // Fetch XP and level from the real system
+  const xpData = await getUserXpWithLevel(userId);
 
   // Fetch user's cohorts
   const userCohorts = await db
@@ -165,8 +169,8 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
   }));
 
   return {
-    xp: 1250, // TODO: Calculate from results
-    level: 5, // TODO: Calculate from XP
+    xp: xpData.xp,
+    level: xpData.level,
     streak,
     streakAtRisk,
     badges: [
