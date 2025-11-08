@@ -4,21 +4,12 @@ import { usePresence } from "@/hooks/usePresence";
 import { Users } from "lucide-react";
 
 interface PresencePillProps {
-  subject: string | null | undefined;
   className?: string;
 }
 
-export function PresencePill({ subject, className }: PresencePillProps) {
-  const { count, isConnected } = usePresence(subject);
-
-  // Don't render if no subject
-  if (!subject || subject.trim().length === 0) {
-    return (
-      <div className={`text-xs text-muted-foreground ${className || ""}`}>
-        No subject selected
-      </div>
-    );
-  }
+export function PresencePill({ className }: PresencePillProps) {
+  // Use special "app" subject for whole-app presence tracking
+  const { count, isConnected } = usePresence("app");
 
   return (
     <div
@@ -27,16 +18,11 @@ export function PresencePill({ subject, className }: PresencePillProps) {
       <Users className="h-3.5 w-3.5" />
       <span>
         {count === 0
-          ? "No one practicing"
+          ? "No peers online"
           : count === 1
-            ? "1 peer practicing"
-            : `${count} peers practicing`}
+            ? "1 peer online"
+            : `${count} peers online`}
       </span>
-      {subject && (
-        <span className="text-muted-foreground/70">
-          {subject}
-        </span>
-      )}
       {!isConnected && (
         <span
           className="h-1.5 w-1.5 rounded-full bg-yellow-500"
