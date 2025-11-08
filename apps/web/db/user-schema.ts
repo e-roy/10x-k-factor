@@ -1,10 +1,4 @@
-import {
-  pgTable,
-  varchar,
-  boolean,
-  timestamp,
-  jsonb,
-} from "drizzle-orm/pg-core";
+import { pgTable, varchar, boolean, timestamp } from "drizzle-orm/pg-core";
 
 import { users } from "./auth-schema";
 import type { Persona } from "./types";
@@ -31,4 +25,3 @@ export const usersProfiles = pgTable("users_profiles", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
-
