@@ -15,19 +15,6 @@ import { Loader2, FileText, Sparkles, Target, Database, RefreshCw } from "lucide
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-// Common subjects for the demo
-const SUBJECTS = [
-  "Algebra",
-  "Geometry",
-  "Trigonometry",
-  "Calculus",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "English Literature",
-  "World History",
-];
-
 interface CachedTranscript {
   id: string;
   subject: string;
@@ -40,6 +27,8 @@ interface CachedTranscript {
 
 export default function TranscriptChallengeDemoPage() {
   const [subject, setSubject] = useState<string>("");
+  const [userSubjects, setUserSubjects] = useState<string[]>([]);
+  const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
   const [isGeneratingTranscript, setIsGeneratingTranscript] = useState(false);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [transcript, setTranscript] = useState<string>("");
@@ -51,6 +40,34 @@ export default function TranscriptChallengeDemoPage() {
   const [isLoadingCached, setIsLoadingCached] = useState(false);
   const [selectedCachedId, setSelectedCachedId] = useState<string>("");
   const [viewMode, setViewMode] = useState<"cached" | "generate">("cached");
+
+  // Load user's enrolled subjects on mount
+  useEffect(() => {
+    async function fetchUserSubjects() {
+      setIsLoadingSubjects(true);
+      try {
+        const response = await fetch("/api/user/me");
+        if (response.ok) {
+          const userData = await response.json();
+          // Get subjects from user profile, fallback to empty array
+          const subjects = userData.subjects || [];
+          setUserSubjects(subjects);
+          // Auto-select first subject if available
+          if (subjects.length > 0 && !subject) {
+            setSubject(subjects[0]);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading user subjects:", err);
+        // Fallback to default subjects if fetch fails
+        setUserSubjects(["Algebra", "Geometry", "Physics"]);
+      } finally {
+        setIsLoadingSubjects(false);
+      }
+    }
+
+    fetchUserSubjects();
+  }, [subject]);
 
   // Load cached transcripts on mount
   useEffect(() => {
@@ -314,13 +331,23 @@ export default function TranscriptChallengeDemoPage() {
                   <SelectTrigger id="subject">
                     <SelectValue placeholder="Select a subject..." />
                   </SelectTrigger>
-                  <SelectContent>
-                    {SUBJECTS.map((subj) => (
+                <SelectContent>
+                  {isLoadingSubjects ? (
+                    <SelectItem value="loading" disabled>
+                      Loading your subjects...
+                    </SelectItem>
+                  ) : userSubjects.length > 0 ? (
+                    userSubjects.map((subj) => (
                       <SelectItem key={subj} value={subj}>
                         {subj}
                       </SelectItem>
-                    ))}
-                  </SelectContent>
+                    ))
+                  ) : (
+                    <SelectItem value="none" disabled>
+                      No subjects enrolled. Update in Profile Settings.
+                    </SelectItem>
+                  )}
+                </SelectContent>
                 </Select>
               </div>
 

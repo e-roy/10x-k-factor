@@ -3,6 +3,7 @@ import {
   varchar,
   boolean,
   timestamp,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 import { users } from "./auth-schema";

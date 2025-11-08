@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, GraduationCap, Users, BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { SUBJECTS } from "@/lib/subjects";
 
 interface OnboardingSheetProps {
   open: boolean;
@@ -22,14 +23,11 @@ interface OnboardingSheetProps {
   onClose: () => void;
 }
 
-const COMMON_SUBJECTS = [
-  { id: "algebra", label: "Algebra" },
-  { id: "geometry", label: "Geometry" },
-  { id: "calculus", label: "Calculus" },
-  { id: "math", label: "Math" },
-  { id: "physics", label: "Physics" },
-  { id: "chemistry", label: "Chemistry" },
-];
+// Convert centralized subjects to format needed for checkboxes
+const COMMON_SUBJECTS = SUBJECTS.map(subject => ({
+  id: subject.toLowerCase().replace(/\s+/g, "-"),
+  label: subject,
+}));
 
 export function OnboardingSheet({
   open,
@@ -85,7 +83,12 @@ export function OnboardingSheet({
       setIsSubmitting(true);
       setError(null);
 
-      // Update persona
+      // Convert selected subject IDs back to labels
+      const subjectLabels = selectedSubjects
+        .map(id => COMMON_SUBJECTS.find(s => s.id === id)?.label)
+        .filter((label) => typeof label === "string") as string[];
+
+      // Update persona and subjects
       const personaResponse = await fetch("/api/user/persona", {
         method: "POST",
         headers: {
@@ -93,6 +96,7 @@ export function OnboardingSheet({
         },
         body: JSON.stringify({
           persona,
+          subjects: subjectLabels, // Pass subjects array
         }),
       });
 

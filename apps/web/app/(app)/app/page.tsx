@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { usersProfiles, results, cohorts } from "@/db/schema/index";
+import { usersProfiles, results, cohorts, subjects, userSubjects } from "@/db/schema/index";
 import { eq, desc } from "drizzle-orm";
 import { StudentDashboard } from "@/components/dashboards/StudentDashboard";
 import { OnboardingWrapper } from "@/components/OnboardingWrapper";
@@ -45,12 +45,24 @@ export default async function DashboardPage() {
   // Get most common subject
   const mostCommonSubject = recentResults[0]?.subject || userCohorts[0]?.subject || "algebra";
 
+  // Get enrolled subjects from user_subjects table
+  const enrolledSubjectsData = await db
+    .select({
+      name: subjects.name,
+    })
+    .from(userSubjects)
+    .innerJoin(subjects, eq(userSubjects.subjectId, subjects.id))
+    .where(eq(userSubjects.userId, userId));
+
+  const enrolledSubjects = enrolledSubjectsData.map((s) => s.name);
+
   // Fetch persona-specific dashboard data
   const dashboardData = await fetchDashboardData(persona, {
     recentResults,
     userCohorts,
     streak,
     mostCommonSubject,
+    enrolledSubjects,
   });
 
   return (
@@ -109,6 +121,7 @@ async function fetchDashboardData(
     userCohorts: typeof cohorts.$inferSelect[];
     streak: number;
     mostCommonSubject: string;
+    enrolledSubjects: string[];
   }
 ): Promise<{
   subjects: Array<{
@@ -127,19 +140,18 @@ async function fetchDashboardData(
   }>;
 }> {
   if (persona === "student") {
-    // For now, return mock data
-    // TODO: Build real data from context.recentResults and other DB queries
-    
-    // Extract unique subjects from recent results
-    const subjects = ["Algebra", "Geometry", "Calculus"]; // Mock for now
+    // Use enrolled subjects from profile, fallback to defaults if none enrolled
+    const subjects = context.enrolledSubjects.length > 0
+      ? context.enrolledSubjects
+      : ["Algebra", "Geometry"]; // Default fallback
     
     return {
       subjects: subjects.map((subject) => ({
         name: subject,
-        progress: Math.floor(Math.random() * 100),
-        level: Math.floor(Math.random() * 10) + 1,
-        xp: Math.floor(Math.random() * 500),
-        xpToNextLevel: 500,
+        progress: Math.floor(Math.random() * 100), // TODO: Calculate real progress from XP
+        level: Math.floor(Math.random() * 10) + 1, // TODO: Calculate real level from XP
+        xp: Math.floor(Math.random() * 500), // TODO: Get real XP per subject
+        xpToNextLevel: 500, // TODO: Calculate real XP to next level
       })),
       streak: context.streak,
       friendsOnline: 12, // TODO: Get from presence system

@@ -26,6 +26,7 @@ interface StudentSidebarProps {
     subjects: Array<{
       name: string;
       activeUsers: number;
+      progress?: number;
     }>;
     cohorts: Array<{
       id: string;
@@ -129,25 +130,55 @@ export function StudentSidebar({ userId, persona, data }: StudentSidebarProps) {
 
       {/* Subjects Section */}
       <div className="space-y-2">
-        <h3 className="text-sm font-semibold">My Subjects</h3>
-        <div className="space-y-1.5">
-          {data.subjects.map((subject) => (
-            <Card 
-              key={subject.name}
-              className="p-2 hover:bg-accent cursor-pointer transition-colors"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{subject.name}</span>
-                {subject.activeUsers > 0 && (
-                  <Badge variant="secondary" className="text-xs">
-                    <Users className="h-3 w-3 mr-1" />
-                    {subject.activeUsers}
-                  </Badge>
-                )}
-              </div>
-            </Card>
-          ))}
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold">My Subjects</h3>
+          <Link href="/app/settings/profile" className="text-xs text-muted-foreground hover:text-foreground">
+            Edit
+          </Link>
         </div>
+        {data.subjects.length === 0 ? (
+          <Card className="p-3 text-center">
+            <p className="text-xs text-muted-foreground mb-2">No subjects enrolled</p>
+            <Button asChild size="sm" variant="outline" className="w-full">
+              <Link href="/app/settings/profile">Add Subjects</Link>
+            </Button>
+          </Card>
+        ) : (
+          <div className="space-y-1.5">
+            {data.subjects.map((subject) => (
+              <Card 
+                key={subject.name}
+                className="p-2.5 hover:bg-accent cursor-pointer transition-colors"
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{subject.name}</span>
+                    {subject.activeUsers > 0 && (
+                      <Badge variant="secondary" className="text-xs">
+                        <Users className="h-3 w-3 mr-1" />
+                        {subject.activeUsers} online
+                      </Badge>
+                    )}
+                  </div>
+                  {subject.progress !== undefined && (
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Progress</span>
+                        <span className="font-medium">{subject.progress}%</span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-persona-primary to-persona-secondary transition-all"
+                          style={{ width: `${subject.progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Cohorts Section */}

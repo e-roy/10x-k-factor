@@ -34,6 +34,11 @@ Track modal events for analytics
 Add celebration animations
 
 
+📋 Next Steps (for later implementation)
+Subject-wide cohorts/group chats: Create cohorts linked to subjects
+Group challenges: Challenge system scoped to subjects
+Subject dashboards: Per-subject analytics and leaderboards
+Progress updates: Hook into FVM/challenge completion to update user_subjects.progress and totalXp
 
 
 ## ✅ Completed: Agent Buddy System

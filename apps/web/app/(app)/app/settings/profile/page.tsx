@@ -6,14 +6,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, GraduationCap, Users, BookOpen, ArrowLeft, Palette } from "lucide-react";
+import { Loader2, GraduationCap, Users, BookOpen, ArrowLeft, Palette, BookMarked } from "lucide-react";
 import Link from "next/link";
 import { ChromePicker } from "react-color";
+import { Checkbox } from "@/components/ui/checkbox";
 import { getPersonaPrimaryColor, getPersonaSecondaryColor } from "@/lib/persona-utils";
+import { SUBJECTS } from "@/lib/subjects";
 
 export default function ProfileSettingsPage() {
   const router = useRouter();
   const [persona, setPersona] = useState<string>("student");
+  const [subjects, setSubjects] = useState<string[]>([]);
   const [primaryColor, setPrimaryColor] = useState<string | null>(null);
   const [secondaryColor, setSecondaryColor] = useState<string | null>(null);
   const [showPrimaryPicker, setShowPrimaryPicker] = useState(false);
@@ -32,6 +35,10 @@ export default function ProfileSettingsPage() {
           const data = await response.json();
           if (data.persona) {
             setPersona(data.persona);
+          }
+          // Set subjects from user profile
+          if (data.subjects && Array.isArray(data.subjects)) {
+            setSubjects(data.subjects);
           }
           // Set custom colors if they exist, otherwise use persona defaults
           setPrimaryColor(data.primaryColor || null);
@@ -53,13 +60,16 @@ export default function ProfileSettingsPage() {
       setError(null);
       setSuccess(false);
 
-      // Update persona
+      // Update persona and subjects
       const personaResponse = await fetch("/api/user/persona", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ persona }),
+        body: JSON.stringify({ 
+          persona,
+          subjects: subjects.length > 0 ? subjects : undefined, // Only send if not empty
+        }),
       });
 
       if (!personaResponse.ok) {
@@ -98,6 +108,14 @@ export default function ProfileSettingsPage() {
   const resetToDefaults = () => {
     setPrimaryColor(null);
     setSecondaryColor(null);
+  };
+
+  const handleSubjectToggle = (subject: string) => {
+    setSubjects(prev => 
+      prev.includes(subject)
+        ? prev.filter(s => s !== subject)
+        : [...prev, subject]
+    );
   };
 
   const currentPrimaryColor = primaryColor || getPersonaPrimaryColor(persona as "student" | "parent" | "tutor");
@@ -200,6 +218,54 @@ export default function ProfileSettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Subjects Section - Only for Students */}
+      {persona === "student" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookMarked className="h-5 w-5" />
+              Enrolled Subjects
+            </CardTitle>
+            <CardDescription>
+              Select the subjects you&apos;re studying. These will appear in your dashboard and challenges.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {SUBJECTS.map((subject) => (
+                <div
+                  key={subject}
+                  className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-accent cursor-pointer"
+                  onClick={() => handleSubjectToggle(subject)}
+                >
+                  <Checkbox
+                    id={`subject-${subject}`}
+                    checked={subjects.includes(subject)}
+                    onCheckedChange={() => handleSubjectToggle(subject)}
+                  />
+                  <Label
+                    htmlFor={`subject-${subject}`}
+                    className="flex-1 cursor-pointer font-normal"
+                  >
+                    {subject}
+                  </Label>
+                </div>
+              ))}
+            </div>
+            {subjects.length === 0 && (
+              <div className="text-center py-4 text-sm text-muted-foreground">
+                No subjects selected. Select at least one subject to see personalized content.
+              </div>
+            )}
+            {subjects.length > 0 && (
+              <div className="text-sm text-muted-foreground">
+                {subjects.length} subject{subjects.length !== 1 ? 's' : ''} selected
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -286,7 +352,7 @@ export default function ProfileSettingsPage() {
                 background: `linear-gradient(135deg, ${currentPrimaryColor} 0%, ${currentSecondaryColor} 100%)`,
               }}
             />
-            <Link href="/app/theme-demo" className="text-sm text-muted-foreground hover:text-foreground">🔗 Admin: Preview persona theme system demo &gt;</Link>
+            <Link href="/app/demos/theme" className="text-sm text-muted-foreground hover:text-foreground">🔗 Admin: Preview persona theme system demo &gt;</Link>
           </div>
 
           {/* Reset Button */}

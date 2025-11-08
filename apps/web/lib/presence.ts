@@ -61,3 +61,36 @@ export async function getPresenceCount(subject: string): Promise<number> {
     return 0;
   }
 }
+
+/**
+ * Get presence counts for multiple subjects at once
+ * Returns a map of subject -> count
+ */
+export async function getPresenceCounts(
+  subjects: string[]
+): Promise<Map<string, number>> {
+  const counts = new Map<string, number>();
+
+  if (!redis) {
+    console.warn("[presence] Redis not configured, returning empty map");
+    return counts;
+  }
+
+  try {
+    // Fetch all counts in parallel
+    const promises = subjects.map(async (subject) => {
+      const count = await getPresenceCount(subject);
+      return { subject, count };
+    });
+
+    const results = await Promise.all(promises);
+    results.forEach(({ subject, count }) => {
+      counts.set(subject, count);
+    });
+
+    return counts;
+  } catch (error) {
+    console.error("[presence] Failed to get presence counts:", error);
+    return counts;
+  }
+}

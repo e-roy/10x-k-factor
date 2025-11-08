@@ -29,3 +29,6 @@ export * from "../xp-schema";
 // Export buddy schema
 export * from "../buddy-schema";
 
+// Export subjects schema
+export * from "../subjects-schema";
+
