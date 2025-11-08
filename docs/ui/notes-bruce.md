@@ -16,6 +16,7 @@
 - [ ] make search work
 - [ ] non-hardcoded badges and My Subjects (and their presences)
 - [ ] student dashboard hardcoded classes & progress (we'll seed this data for users at various stages of their journeys, and handle subject-wide cohorts and custom study groups)
+- [ ] adjust student account creation such that it requires a parent email, which sends an email to the parent to create an account, which requires them to create an account before the student account is approved (and it saves the challenge xp until then!)
 
 post-quickstart oneshot:
 💬 Ready for Next Steps?

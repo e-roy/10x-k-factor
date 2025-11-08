@@ -60,6 +60,7 @@ export const challenges = pgTable(
     id: varchar("id", { length: 36 }).primaryKey(),
     sessionId: varchar("session_id", { length: 36 }), // nullable, links to tutor_sessions
     userId: varchar("user_id", { length: 36 }).notNull(), // student who should complete this
+    invitedUserId: varchar("invited_user_id", { length: 36 }), // nullable, if this challenge was shared, who was challenged?
     subject: varchar("subject", { length: 64 }).notNull(),
     questions: jsonb("questions").$type<ChallengeQuestion[]>().notNull(),
     difficulty: varchar("difficulty", { length: 12 })
@@ -80,6 +81,7 @@ export const challenges = pgTable(
   (table) => ({
     sessionIdIdx: index("idx_challenges_session_id").on(table.sessionId),
     userIdIdx: index("idx_challenges_user_id").on(table.userId),
+    invitedUserIdIdx: index("idx_challenges_invited_user_id").on(table.invitedUserId),
     statusIdx: index("idx_challenges_status").on(table.status),
     subjectIdx: index("idx_challenges_subject").on(table.subject),
   })

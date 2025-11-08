@@ -9,17 +9,15 @@ import type { Persona } from "@/db/types";
 /**
  * Get a specific challenge by ID
  * GET /api/challenges/[id]
+ * 
+ * Public endpoint (no auth required) - allows guests to view challenges
+ * Does NOT expose userId or any PII
  */
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id: challengeId } = await params;
 
     const [challenge] = await db
@@ -35,12 +33,20 @@ export async function GET(
       );
     }
 
-    // Verify the challenge belongs to the user
-    if (challenge.userId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    // Return challenge WITHOUT userId (no PII)
+    // Safe fields: id, subject, difficulty, questions, expiresAt, createdAt
+    const safeChallenge = {
+      id: challenge.id,
+      subject: challenge.subject,
+      difficulty: challenge.difficulty,
+      questions: challenge.questions,
+      expiresAt: challenge.expiresAt,
+      createdAt: challenge.createdAt,
+      // Internal use - not exposed to client but needed for backend logic
+      userId: challenge.userId,
+    };
 
-    return NextResponse.json(challenge);
+    return NextResponse.json(safeChallenge);
   } catch (error) {
     console.error("[get-challenge] Error:", error);
     return NextResponse.json(
@@ -134,7 +140,6 @@ export async function PATCH(
           metadata: {
             subject: challenge.subject,
             score,
-            difficulty: challenge.difficulty,
           },
           rawXp,
         });

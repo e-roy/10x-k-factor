@@ -11,6 +11,7 @@ import { CohortProvider } from "@/components/app-layout/CohortContext";
 import { PersonaProvider } from "@/components/PersonaProvider";
 import { ModalProvider } from "@/components/ModalManager";
 import { StudentSidebarClient } from "@/components/app-layout/StudentSidebarClient";
+import { ChallengeModalOpener } from "@/components/ChallengeModalOpener";
 import type { Persona } from "@/lib/persona-utils";
 import { cn } from "@/lib/utils";
 
@@ -54,6 +55,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <CohortProvider>
         <ModalProvider userId={session.user.id}>
           <InviteJoinedTracker />
+          <ChallengeModalOpener />
           <CommandPalette />
         <div className="grid grid-cols-[260px_1fr] min-h-screen">
           {/* Left Sidebar */}

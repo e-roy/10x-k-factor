@@ -227,7 +227,7 @@ export async function getInventory(
 /**
  * Check if user has unlocked a feature
  */
-export async function hasUnlock(userId: string, unlockKey: string) {
+export async function hasUnlock(userId: string, _unlockKey: string) {
   const [unlock] = await db
     .select()
     .from(buddyUnlocks)

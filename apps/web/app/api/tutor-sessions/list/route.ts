@@ -8,7 +8,7 @@ import { eq, desc } from "drizzle-orm";
  * List tutor sessions (cached transcripts) for the current user
  * GET /api/tutor-sessions/list
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {

@@ -59,6 +59,40 @@ export function RegisterForm() {
         setError("Account created but login failed. Please try logging in.");
         setIsLoading(false);
       } else if (result?.ok) {
+        // Check for guest session to convert
+        const guestSessionId = localStorage.getItem("guest_session_id");
+        
+        if (guestSessionId) {
+          try {
+            // Convert guest completions to real user
+            const conversionResponse = await fetch("/api/auth/convert-guest", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ guestSessionId }),
+            });
+
+            if (conversionResponse.ok) {
+              const conversionData = await conversionResponse.json();
+              console.log("[RegisterForm] Guest conversion successful:", conversionData);
+              
+              // Clear guest data
+              localStorage.removeItem("guest_session_id");
+              localStorage.removeItem("challenge_attribution");
+              localStorage.removeItem("guest_completion_context");
+              
+              // Dispatch XP earned event for sidebar refresh
+              if (conversionData.xpEarned > 0) {
+                window.dispatchEvent(new CustomEvent("xpEarned", {
+                  detail: { amount: conversionData.xpEarned },
+                }));
+              }
+            }
+          } catch (conversionError) {
+            console.error("[RegisterForm] Guest conversion error:", conversionError);
+            // Don't block registration flow if conversion fails
+          }
+        }
+
         // Use window.location for a full page reload to avoid timeout issues
         window.location.href = "/app";
       }
