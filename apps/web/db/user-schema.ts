@@ -3,6 +3,7 @@ import {
   varchar,
   boolean,
   timestamp,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 import { users } from "./auth-schema";
@@ -24,6 +25,7 @@ export const usersProfiles = pgTable("users_profiles", {
   minor: boolean("minor").default(false),
   guardianId: varchar("guardian_id", { length: 36 }),
   onboardingCompleted: boolean("onboarding_completed").default(false),
+  subjects: jsonb("subjects").$type<string[]>().default([]), // Array of subject names student is enrolled in
   primaryColor: varchar("primary_color", { length: 7 }), // #8B5CF6 (hex color)
   secondaryColor: varchar("secondary_color", { length: 7 }), // #EC4899 (hex color)
   personalizationTheme: varchar("personalization_theme", { length: 64 }), // reward/gameplay/message flavor

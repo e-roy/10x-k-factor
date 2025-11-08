@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 const updatePersonaSchema = z.object({
   persona: z.enum(["student", "parent", "tutor"]),
+  subjects: z.array(z.string()).optional(), // Array of subject names
 });
 
 export async function POST(request: NextRequest) {
@@ -25,14 +26,24 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = updatePersonaSchema.parse(body);
 
+    const updates: Record<string, unknown> = {
+      persona: validated.persona
+    };
+
+    // Only update subjects if provided (for onboarding and profile updates)
+    if (validated.subjects) {
+      updates.subjects = validated.subjects;
+    }
+
     await db
       .update(usersProfiles)
-      .set({ persona: validated.persona })
+      .set(updates)
       .where(eq(usersProfiles.userId, session.user.id));
 
     return NextResponse.json({
       success: true,
       persona: validated.persona,
+      subjects: validated.subjects,
     });
   } catch (error) {
     console.error("[api/user/persona] Error:", error);
