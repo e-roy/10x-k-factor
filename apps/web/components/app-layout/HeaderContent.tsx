@@ -1,10 +1,8 @@
 "use client";
 
-import { CohortSwitcher } from "@/components/CohortSwitcher";
 import { PresencePill } from "@/components/PresencePill";
 import { UserMenu } from "@/components/app-layout/UserMenu";
 import { Command } from "lucide-react";
-import { useCohort } from "@/components/app-layout/CohortContext";
 
 interface HeaderContentProps {
   userId: string;
@@ -19,11 +17,11 @@ export function HeaderContent({
   userEmail,
   userImage,
 }: HeaderContentProps) {
-  const { selectedCohortSubject } = useCohort();
 
   return (
     <>
-      <CohortSwitcher userId={userId} />
+      {/* Placeholder for future content */}
+      <div className="flex items-center gap-2" />
       <div className="flex items-center gap-4">
         <button
           className="flex items-center gap-1.5 px-2 py-1 text-xs text-muted-foreground hover:text-foreground rounded border border-transparent hover:border-border transition-colors"
@@ -32,7 +30,7 @@ export function HeaderContent({
           <Command className="h-3.5 w-3.5" />
           <kbd className="hidden sm:inline-block">⌘K</kbd>
         </button>
-        <PresencePill subject={selectedCohortSubject || "algebra"} />
+        <PresencePill />
         
         <UserMenu name={userName} email={userEmail} image={userImage} />
       </div>
