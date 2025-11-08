@@ -67,7 +67,7 @@ export default function TranscriptChallengeDemoPage() {
     }
 
     fetchUserSubjects();
-  }, []);
+  }, [subject]);
 
   // Load cached transcripts on mount
   useEffect(() => {

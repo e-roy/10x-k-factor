@@ -30,7 +30,7 @@ interface StudentDashboardProps {
   };
 }
 
-export function StudentDashboard({ user, data }: StudentDashboardProps) {
+export function StudentDashboard({ data }: StudentDashboardProps) {
   return (
     <div className="space-y-8">
       {/* Progress Section */}

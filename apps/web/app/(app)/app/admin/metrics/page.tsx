@@ -252,15 +252,15 @@ export default async function MetricsPage({
                           <td className="p-2 text-center text-xs">
                             <div className="flex items-center justify-center gap-1">
                               {referral.inviter_rewarded ? (
-                                <CheckCircle2 className="h-3 w-3 text-green-600" title="Inviter rewarded" />
+                                <CheckCircle2 className="h-3 w-3 text-green-600" />
                               ) : (
-                                <XCircle className="h-3 w-3 text-gray-400" title="Inviter not rewarded" />
+                                <XCircle className="h-3 w-3 text-gray-400" />
                               )}
                               /
                               {referral.invitee_rewarded ? (
-                                <CheckCircle2 className="h-3 w-3 text-green-600" title="Invitee rewarded" />
+                                <CheckCircle2 className="h-3 w-3 text-green-600" />
                               ) : (
-                                <XCircle className="h-3 w-3 text-gray-400" title="Invitee not rewarded" />
+                                <XCircle className="h-3 w-3 text-gray-400" />
                               )}
                             </div>
                           </td>
@@ -280,4 +280,3 @@ export default async function MetricsPage({
     </div>
   );
 }
-
