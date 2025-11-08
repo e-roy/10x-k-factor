@@ -10,7 +10,7 @@ import { HeaderContent } from "@/components/app-layout/HeaderContent";
 import { CohortProvider } from "@/components/app-layout/CohortContext";
 import { PersonaProvider } from "@/components/PersonaProvider";
 import { ModalProvider } from "@/components/ModalManager";
-import { StudentSidebar } from "@/components/app-layout/StudentSidebar";
+import { StudentSidebarClient } from "@/components/app-layout/StudentSidebarClient";
 import type { Persona } from "@/lib/persona-utils";
 import { cn } from "@/lib/utils";
 
@@ -91,11 +91,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
               
               {/* Right Sidebar (Students Only) */}
               {persona === "student" && (
-                <StudentSidebar
+                <StudentSidebarClient
                   userId={session.user.id}
                   userName={session.user.name}
                   persona={persona}
-                  data={sidebarData}
+                  initialData={sidebarData}
                 />
               )}
             </div>

@@ -1,15 +1,21 @@
 - [x] cohort selection in signup
 - [x] padding/margin in signup right sheet
 - [ ] hide persona selection for users when ready2go
-- [ ] agent buddy for students
+- [x] agent buddy for students
   - [ ] eventually for tutors, maybe expose student buddys to parents? eh
 - [x] xp system
   - [x] demo page to add xp
+- [x] Challenge completion flow
+  - [x] results
+  - [x] xp awarded
+  - [x] buddy message
+  - [x] share card
+  - [ ] notification/presentation for their Tutors and Parent/Guardian
 - [ ] seed various users
 - [ ] header: remove Cohort selection there. Cohorts are for group chats / forums / group progress.
 - [ ] make search work
-- [ ] 
-
+- [ ] non-hardcoded badges and My Subjects (and their presences)
+- [ ] student dashboard hardcoded classes & progress (we'll seed this data for users at various stages of their journeys, and handle subject-wide cohorts and custom study groups)
 
 post-quickstart oneshot:
 💬 Ready for Next Steps?
