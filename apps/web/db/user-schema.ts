@@ -17,7 +17,6 @@ export const usersProfiles = pgTable("users_profiles", {
   userId: varchar("user_id", { length: 36 })
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
-  image: varchar("image", { length: 255 }), // profile image URL
   persona: varchar("persona", { length: 12 })
     .notNull()
     .default("student")

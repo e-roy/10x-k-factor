@@ -82,7 +82,6 @@ async function seed() {
     const sampleProfiles = [
       {
         userId: studentId,
-        image: null,
         persona: "student" as Persona,
         minor: true,
         guardianId: parentId,
@@ -91,7 +90,6 @@ async function seed() {
       },
       {
         userId: student2Id,
-        image: null,
         persona: "student" as Persona,
         minor: false,
         guardianId: null,
@@ -100,7 +98,6 @@ async function seed() {
       },
       {
         userId: parentId,
-        image: null,
         persona: "parent" as Persona,
         minor: false,
         guardianId: null,
@@ -109,7 +106,6 @@ async function seed() {
       },
       {
         userId: tutorId,
-        image: null,
         persona: "tutor" as Persona,
         minor: false,
         guardianId: null,

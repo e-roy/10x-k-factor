@@ -122,12 +122,14 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
     };
   }
 
-  // TODO: Replace with real data queries
-  // For now, return mock data
   const { db } = await import("@/db/index");
   const { cohorts, results } = await import("@/db/schema");
   const { eq, desc } = await import("drizzle-orm");
   const { calculateStreak } = await import("@/lib/streaks");
+  const { getUserXpWithLevel } = await import("@/lib/xp");
+
+  // Fetch XP and level from the real system
+  const xpData = await getUserXpWithLevel(userId);
 
   // Fetch user's cohorts
   const userCohorts = await db
@@ -165,8 +167,8 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
   }));
 
   return {
-    xp: 1250, // TODO: Calculate from results
-    level: 5, // TODO: Calculate from XP
+    xp: xpData.xp,
+    level: xpData.level,
     streak,
     streakAtRisk,
     badges: [
