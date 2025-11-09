@@ -7,7 +7,6 @@ import { Progress } from "@/components/ui/progress";
 import type { Deck } from "@/lib/decks";
 import { RewardPreview } from "@/components/RewardPreview";
 import { track } from "@/lib/track";
-import { incrementLeaderboard } from "@/lib/leaderboard";
 import { useToast } from "@/components/ui/use-toast";
 
 interface MicroDeckProps {
@@ -17,7 +16,11 @@ interface MicroDeckProps {
     loop: string;
     smart_link_code: string;
   };
-  onComplete?: (completionTimeMs: number, correctAnswers: number, totalQuestions: number) => void;
+  onComplete?: (
+    completionTimeMs: number,
+    correctAnswers: number,
+    totalQuestions: number
+  ) => void;
 }
 
 export function MicroDeck({ deck, attribution, onComplete }: MicroDeckProps) {
@@ -113,17 +116,6 @@ export function MicroDeck({ deck, attribution, onComplete }: MicroDeckProps) {
         completion_time_ms: completionTime,
       });
 
-      // Increment leaderboard for inviter (non-blocking)
-      // Use deck subject as the leaderboard subject
-      if (deck.subject) {
-        incrementLeaderboard(deck.subject, attribution.inviter_id, 1).catch(
-          (error) => {
-            console.error("[MicroDeck] Failed to increment leaderboard:", error);
-            // Non-blocking - don't throw
-          }
-        );
-      }
-
       // Grant reward to inviter (non-blocking)
       try {
         const dedupeKey = `${attribution.inviter_id}-${attribution.smart_link_code}-fvm`;
@@ -176,7 +168,17 @@ export function MicroDeck({ deck, attribution, onComplete }: MicroDeckProps) {
     if (onComplete) {
       onComplete(completionTime, correctCount, deck.questions.length);
     }
-  }, [isCompleted, allAnswered, startTime, attribution, deck.id, deck.subject, deck.questions, selectedAnswers, onComplete, toast]);
+  }, [
+    isCompleted,
+    allAnswered,
+    startTime,
+    attribution,
+    deck.id,
+    deck.questions,
+    selectedAnswers,
+    onComplete,
+    toast,
+  ]);
 
   // Keyboard navigation
   useEffect(() => {

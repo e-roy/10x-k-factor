@@ -1,25 +1,22 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SeedForm } from "./form";
 
 export default async function SeedPage() {
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto py-8 px-4 max-w-4xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Seed Data</h1>
+        <h1 className="text-3xl font-bold mb-2">Seed Data for Leaderboards</h1>
         <p className="text-muted-foreground">
-          Manage and seed application data
+          Create test users and results data to populate leaderboards for
+          testing and demos.
+        </p>
+        <p className="text-sm text-muted-foreground mt-2">
+          Users will be created with names like &quot;Test User 1&quot;,
+          &quot;Test User 2&quot;, etc. Results will be distributed across the
+          specified subjects with random scores within the selected range.
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Seed Data Tools</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Seed data functionality will be implemented here.
-          </p>
-        </CardContent>
-      </Card>
+      <SeedForm />
     </div>
   );
 }

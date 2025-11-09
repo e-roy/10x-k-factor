@@ -1,22 +1,7 @@
-import { Redis } from "@upstash/redis";
-
-// Initialize Redis if UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are provided
-const redis =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      })
-    : null;
-
-const LEADERBOARD_KEY_PREFIX = "leaderboard:";
-
-/**
- * Get Redis key for a subject's leaderboard
- */
-function getLeaderboardKey(subject: string): string {
-  return `${LEADERBOARD_KEY_PREFIX}${subject}`;
-}
+import { db } from "@/db/index";
+import { results } from "@/db/learning-schema";
+import { users } from "@/db/auth-schema";
+import { sql, eq, and, desc } from "drizzle-orm";
 
 /**
  * Validate and sanitize subject
@@ -37,98 +22,104 @@ function validateSubject(subject: unknown): string | null {
 
 export interface LeaderboardEntry {
   userId: string;
+  userName: string | null;
   score: number;
   rank: number;
 }
 
 /**
  * Increment leaderboard score for a user in a subject
- * Uses Redis ZSET ZINCRBY operation
+ *
+ * @deprecated Leaderboard scores are now calculated from the results table.
+ * This function is kept for backward compatibility but does nothing.
+ * Scores are automatically calculated when querying the leaderboard.
  *
  * @param subject - Subject name (e.g., "algebra", "geometry")
  * @param userId - User ID to increment score for
  * @param score - Score increment (default: 1)
- * @returns New score after increment, or null if Redis not configured
+ * @returns Always returns null (no-op)
  */
 export async function incrementLeaderboard(
   subject: string,
   userId: string,
-  score: number = 1
+  _score: number = 1
 ): Promise<number | null> {
-  if (!redis) {
-    console.warn("[leaderboard] Redis not configured, skipping increment");
-    return null;
-  }
-
-  const validatedSubject = validateSubject(subject);
-  if (!validatedSubject) {
-    console.warn("[leaderboard] Invalid subject, skipping increment:", subject);
-    return null;
-  }
-
-  try {
-    const key = getLeaderboardKey(validatedSubject);
-    const newScore = await redis.zincrby(key, score, userId);
-    return typeof newScore === "number" ? newScore : null;
-  } catch (error) {
-    console.error("[leaderboard] Failed to increment leaderboard:", error);
-    // Don't throw - leaderboard is non-critical
-    return null;
-  }
+  // No-op: leaderboard scores are now calculated from results table
+  // Parameters are kept for backward compatibility but unused
+  console.log(
+    "[leaderboard] incrementLeaderboard called but scores are now calculated from results table",
+    { subject, userId }
+  );
+  return null;
 }
 
 /**
  * Get leaderboard for a subject
  * Returns top N entries ordered by score (descending)
+ * Scores are calculated from the results table (COUNT of results per user)
  *
  * @param subject - Subject name
  * @param limit - Number of entries to return (default: 10)
- * @returns Array of leaderboard entries with rank, userId, and score
+ * @returns Array of leaderboard entries with rank, userId, userName, and score
  */
 export async function getLeaderboard(
   subject: string,
   limit: number = 10
 ): Promise<LeaderboardEntry[]> {
-  if (!redis) {
-    console.warn("[leaderboard] Redis not configured, returning empty leaderboard");
-    return [];
-  }
-
   const validatedSubject = validateSubject(subject);
   if (!validatedSubject) {
-    console.warn("[leaderboard] Invalid subject, returning empty leaderboard:", subject);
+    console.warn(
+      "[leaderboard] Invalid subject, returning empty leaderboard:",
+      subject
+    );
     return [];
   }
 
   try {
-    const key = getLeaderboardKey(validatedSubject);
-    // Use zrange with rev and withScores options for reverse range with scores
-    // Upstash Redis uses zrange with rev option instead of zrevrange
-    const results = await redis.zrange(key, 0, limit - 1, { 
-      rev: true, 
-      withScores: true 
-    });
+    // Query leaderboard using Postgres
+    // Score = COUNT(*) of results per user for the subject
+    // Rank calculated in JavaScript after ordering
+    const leaderboardData = await db
+      .select({
+        userId: results.userId,
+        userName: users.name,
+        score: sql<number>`COUNT(*)::integer`.as("score"),
+      })
+      .from(results)
+      .innerJoin(users, eq(results.userId, users.id))
+      .where(
+        and(
+          eq(results.subject, validatedSubject),
+          sql`${results.subject} IS NOT NULL`
+        )
+      )
+      .groupBy(results.userId, users.name)
+      .orderBy(desc(sql`COUNT(*)`))
+      .limit(limit);
 
-    if (!results || !Array.isArray(results)) {
-      return [];
-    }
+    // Calculate ranks (1-based, with ties getting the same rank)
+    return leaderboardData.map((entry, index) => {
+      // If scores are tied with previous entry, use the same rank
+      const prevEntry = index > 0 ? leaderboardData[index - 1] : null;
+      let rank: number;
 
-    // Results come as an array of [member, score, member, score, ...] pairs
-    const entries: LeaderboardEntry[] = [];
-    for (let i = 0; i < results.length; i += 2) {
-      const userId = results[i] as string;
-      const score = results[i + 1];
-      
-      if (userId && (typeof score === "number" || typeof score === "string")) {
-        entries.push({
-          userId,
-          score: Math.round(typeof score === "string" ? parseFloat(score) : score),
-          rank: entries.length + 1,
-        });
+      if (prevEntry && prevEntry.score === entry.score) {
+        // Find the first entry with this score to get the correct rank
+        const firstIndexWithScore = leaderboardData.findIndex(
+          (e) => e.score === entry.score
+        );
+        rank = firstIndexWithScore + 1;
+      } else {
+        rank = index + 1;
       }
-    }
 
-    return entries;
+      return {
+        userId: entry.userId,
+        userName: entry.userName,
+        score: entry.score,
+        rank,
+      };
+    });
   } catch (error) {
     console.error("[leaderboard] Failed to get leaderboard:", error);
     return [];
@@ -137,6 +128,7 @@ export async function getLeaderboard(
 
 /**
  * Get a user's rank and score for a subject
+ * Calculates rank by counting how many users have higher scores
  *
  * @param subject - Subject name
  * @param userId - User ID
@@ -146,38 +138,52 @@ export async function getUserRank(
   subject: string,
   userId: string
 ): Promise<{ rank: number; score: number } | null> {
-  if (!redis) {
-    return null;
-  }
-
   const validatedSubject = validateSubject(subject);
   if (!validatedSubject) {
     return null;
   }
 
   try {
-    const key = getLeaderboardKey(validatedSubject);
-    // Get user's score
-    const score = await redis.zscore(key, userId);
-    
-    if (score === null || typeof score !== "number") {
+    // Get user's score (count of results)
+    const userScoreData = await db
+      .select({
+        score: sql<number>`COUNT(*)::integer`.as("score"),
+      })
+      .from(results)
+      .where(
+        and(
+          eq(results.userId, userId),
+          eq(results.subject, validatedSubject),
+          sql`${results.subject} IS NOT NULL`
+        )
+      )
+      .groupBy(results.userId);
+
+    if (!userScoreData || userScoreData.length === 0) {
       return null;
     }
 
-    // Get rank (ZREVRANK returns 0-based index, so add 1)
-    const rankIndex = await redis.zrevrank(key, userId);
-    
-    if (rankIndex === null || typeof rankIndex !== "number") {
-      return null;
-    }
+    const userScore = userScoreData[0].score;
+
+    // Calculate rank by counting distinct users with higher scores
+    const rankResult = await db.execute(sql`
+      SELECT COUNT(DISTINCT r.user_id)::integer + 1 as rank
+      FROM results r
+      WHERE r.subject = ${validatedSubject}
+        AND r.subject IS NOT NULL
+        AND r.user_id != ${userId}
+      GROUP BY r.user_id
+      HAVING COUNT(*) > ${userScore}
+    `);
+
+    const rank = (rankResult as unknown as { rank: number }[])?.[0]?.rank ?? 1;
 
     return {
-      rank: rankIndex + 1,
-      score: Math.round(score),
+      rank,
+      score: userScore,
     };
   } catch (error) {
     console.error("[leaderboard] Failed to get user rank:", error);
     return null;
   }
 }
-
