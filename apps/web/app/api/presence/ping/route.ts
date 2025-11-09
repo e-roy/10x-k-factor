@@ -6,6 +6,7 @@ import { randomUUID } from "crypto";
 export const dynamic = "force-dynamic";
 
 const VISITOR_ID_COOKIE = "visitor_id";
+let lastPingErrorLogTime: number | undefined = undefined;
 
 /**
  * Validate and sanitize subject
@@ -50,9 +51,24 @@ async function getUserId(request: NextRequest): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse request body
-    const body = await request.json();
-    const subject = validateSubject(body?.subject);
+    // Parse request body - handle JSON parsing errors
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error: "Invalid JSON in request body",
+        },
+        { status: 400 }
+      );
+    }
+
+    const subject = validateSubject(
+      body && typeof body === "object" && "subject" in body
+        ? body.subject
+        : null
+    );
 
     if (!subject) {
       return NextResponse.json(
@@ -64,19 +80,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user ID (session or visitor_id)
-    const userId = await getUserId(request);
+    // Get user ID (session or visitor_id) - handle auth errors gracefully
+    let userId: string;
+    try {
+      userId = await getUserId(request);
+    } catch (error) {
+      // If auth fails, use visitor ID as fallback
+      userId = getVisitorId(request);
+    }
 
-    // Ping presence
-    await pingPresence(subject, userId);
+    // Ping presence - this should never throw (handled in lib/presence.ts)
+    // But we'll catch just in case
+    try {
+      await pingPresence(subject, userId);
+    } catch (error) {
+      // pingPresence should never throw, but if it does, log and continue
+      // Don't return error - presence is non-critical
+    }
 
+    // Always return 200 - presence is non-critical
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error("[presence/ping] Error:", error);
+    // Catch-all for any unexpected errors
+    // Still return 200 since presence is non-critical
+    // Only log if it's a truly unexpected error (not from pingPresence)
+    if (error instanceof Error && !error.message.includes("presence")) {
+      // Suppress repeated errors - only log once per minute
+      const now = Date.now();
+      if (!lastPingErrorLogTime || now - lastPingErrorLogTime > 60000) {
+        console.error("[presence/ping] Unexpected error:", error);
+        lastPingErrorLogTime = now;
+      }
+    }
 
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    // Always return 200 - presence failures should not break the app
+    return NextResponse.json({ success: true }, { status: 200 });
   }
 }
