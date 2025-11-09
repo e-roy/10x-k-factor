@@ -1,6 +1,12 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { usersProfiles, results, cohorts, subjects, userSubjects } from "@/db/schema/index";
+import {
+  usersProfiles,
+  results,
+  cohorts,
+  subjects,
+  userSubjects,
+} from "@/db/schema/index";
 import { eq, desc } from "drizzle-orm";
 import { StudentDashboard } from "@/components/dashboards/StudentDashboard";
 import { OnboardingWrapper } from "@/components/OnboardingWrapper";
@@ -8,7 +14,7 @@ import { calculateStreak } from "@/lib/streaks";
 
 export default async function DashboardPage() {
   const session = await auth();
-  
+
   if (!session?.user?.id) {
     return null; // Will be redirected by layout
   }
@@ -43,7 +49,8 @@ export default async function DashboardPage() {
   const streak = await calculateStreak(userId);
 
   // Get most common subject
-  const mostCommonSubject = recentResults[0]?.subject || userCohorts[0]?.subject || "algebra";
+  const mostCommonSubject =
+    recentResults[0]?.subject || userCohorts[0]?.subject || "algebra";
 
   // Get enrolled subjects from user_subjects table
   const enrolledSubjectsData = await db
@@ -72,14 +79,14 @@ export default async function DashboardPage() {
         currentPersona={persona}
         onboardingCompleted={profile?.onboardingCompleted ?? false}
       />
-      
+
       {persona === "student" && (
         <StudentDashboard
           user={{ id: userId, name: session.user.name, persona }}
           data={dashboardData}
         />
       )}
-      
+
       {persona === "parent" && (
         <div className="space-y-6">
           <div>
@@ -94,7 +101,7 @@ export default async function DashboardPage() {
           </div>
         </div>
       )}
-      
+
       {persona === "tutor" && (
         <div className="space-y-6">
           <div>
@@ -117,8 +124,8 @@ export default async function DashboardPage() {
 async function fetchDashboardData(
   persona: string,
   context: {
-    recentResults: typeof results.$inferSelect[];
-    userCohorts: typeof cohorts.$inferSelect[];
+    recentResults: (typeof results.$inferSelect)[];
+    userCohorts: (typeof cohorts.$inferSelect)[];
     streak: number;
     mostCommonSubject: string;
     enrolledSubjects: string[];
@@ -141,10 +148,11 @@ async function fetchDashboardData(
 }> {
   if (persona === "student") {
     // Use enrolled subjects from profile, fallback to defaults if none enrolled
-    const subjects = context.enrolledSubjects.length > 0
-      ? context.enrolledSubjects
-      : ["Algebra", "Geometry"]; // Default fallback
-    
+    const subjects =
+      context.enrolledSubjects.length > 0
+        ? context.enrolledSubjects
+        : ["Algebra", "Geometry"]; // Default fallback
+
     return {
       subjects: subjects.map((subject) => ({
         name: subject,
@@ -158,7 +166,7 @@ async function fetchDashboardData(
       challenges: [], // TODO: Get from results/challenges
     };
   }
-  
+
   // For non-student personas, return default structure
   // TODO: Implement proper data fetching for parent/tutor personas
   return {

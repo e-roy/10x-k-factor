@@ -147,6 +147,37 @@ export const authConfig = {
             }
           }
         }
+      } else if (token.id) {
+        // For existing sessions, always fetch the latest persona from database
+        // This ensures the session reflects database changes immediately
+        try {
+          const [dbUser] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, token.id as string))
+            .limit(1);
+
+          const [profile] = await db
+            .select()
+            .from(usersProfiles)
+            .where(eq(usersProfiles.userId, token.id as string))
+            .limit(1);
+
+          if (profile) {
+            token.persona = profile.persona;
+          } else {
+            // Fallback to default if profile doesn't exist
+            token.persona = "student";
+          }
+
+          if (dbUser) {
+            token.role = dbUser.role || null;
+          }
+        } catch (error) {
+          // If database query fails, keep existing token values
+          // This prevents breaking the session if there's a temporary DB issue
+          console.warn("[auth] Failed to fetch latest persona:", error);
+        }
       }
       return token;
     },
