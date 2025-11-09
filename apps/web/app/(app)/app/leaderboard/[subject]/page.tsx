@@ -3,7 +3,13 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { LeaderboardWidget } from "@/components/LeaderboardWidget";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft, Trophy } from "lucide-react";
@@ -61,8 +67,7 @@ export default async function LeaderboardSubjectPage({
     return null; // Will be redirected by layout
   }
 
-  const subjectLabel =
-    subject.charAt(0).toUpperCase() + subject.slice(1);
+  const subjectLabel = subject.charAt(0).toUpperCase() + subject.slice(1);
 
   return (
     <div className="container mx-auto p-4 md:p-8 max-w-4xl">
@@ -116,4 +121,3 @@ export default async function LeaderboardSubjectPage({
     </div>
   );
 }
-

@@ -56,7 +56,7 @@ export async function incrementLeaderboard(
 /**
  * Get leaderboard for a subject
  * Returns top N entries ordered by score (descending)
- * Scores are calculated from the results table (COUNT of results per user)
+ * Scores are calculated from the results table (AVG of scores per user)
  *
  * @param subject - Subject name
  * @param limit - Number of entries to return (default: 10)
@@ -77,24 +77,25 @@ export async function getLeaderboard(
 
   try {
     // Query leaderboard using Postgres
-    // Score = COUNT(*) of results per user for the subject
+    // Score = AVG(score) of results per user for the subject
     // Rank calculated in JavaScript after ordering
     const leaderboardData = await db
       .select({
         userId: results.userId,
         userName: users.name,
-        score: sql<number>`COUNT(*)::integer`.as("score"),
+        score: sql<number>`COALESCE(AVG(${results.score})::integer, 0)`.as("score"),
       })
       .from(results)
       .innerJoin(users, eq(results.userId, users.id))
       .where(
         and(
           eq(results.subject, validatedSubject),
-          sql`${results.subject} IS NOT NULL`
+          sql`${results.subject} IS NOT NULL`,
+          sql`${results.score} IS NOT NULL`
         )
       )
       .groupBy(results.userId, users.name)
-      .orderBy(desc(sql`COUNT(*)`))
+      .orderBy(desc(sql`AVG(${results.score})`))
       .limit(limit);
 
     // Calculate ranks (1-based, with ties getting the same rank)
@@ -128,7 +129,7 @@ export async function getLeaderboard(
 
 /**
  * Get a user's rank and score for a subject
- * Calculates rank by counting how many users have higher scores
+ * Calculates rank by counting how many users have higher average scores
  *
  * @param subject - Subject name
  * @param userId - User ID
@@ -144,17 +145,18 @@ export async function getUserRank(
   }
 
   try {
-    // Get user's score (count of results)
+    // Get user's score (average of results)
     const userScoreData = await db
       .select({
-        score: sql<number>`COUNT(*)::integer`.as("score"),
+        score: sql<number>`COALESCE(AVG(${results.score})::integer, 0)`.as("score"),
       })
       .from(results)
       .where(
         and(
           eq(results.userId, userId),
           eq(results.subject, validatedSubject),
-          sql`${results.subject} IS NOT NULL`
+          sql`${results.subject} IS NOT NULL`,
+          sql`${results.score} IS NOT NULL`
         )
       )
       .groupBy(results.userId);
@@ -165,15 +167,16 @@ export async function getUserRank(
 
     const userScore = userScoreData[0].score;
 
-    // Calculate rank by counting distinct users with higher scores
+    // Calculate rank by counting distinct users with higher average scores
     const rankResult = await db.execute(sql`
       SELECT COUNT(DISTINCT r.user_id)::integer + 1 as rank
       FROM results r
       WHERE r.subject = ${validatedSubject}
         AND r.subject IS NOT NULL
+        AND r.score IS NOT NULL
         AND r.user_id != ${userId}
       GROUP BY r.user_id
-      HAVING COUNT(*) > ${userScore}
+      HAVING AVG(r.score) > ${userScore}
     `);
 
     const rank = (rankResult as unknown as { rank: number }[])?.[0]?.rank ?? 1;

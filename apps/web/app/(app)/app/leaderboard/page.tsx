@@ -89,7 +89,7 @@ export default async function LeaderboardPage() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {allSubjects.map((subject) => (
-              <Card key={subject.name} className="hover:shadow-md transition-shadow">
+              <Card key={subject.name} className="hover:shadow-md transition-shadow flex flex-col h-full">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-primary" />
@@ -99,7 +99,7 @@ export default async function LeaderboardPage() {
                     View top performers in {subject.label.toLowerCase()}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="mt-auto">
                   <Button asChild className="w-full">
                     <Link href={`/app/leaderboard/${encodeURIComponent(subject.name)}`}>
                       <TrendingUp className="mr-2 h-4 w-4" />
