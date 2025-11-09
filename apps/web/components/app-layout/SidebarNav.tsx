@@ -10,7 +10,6 @@ import {
   Gift,
   Settings,
   TrendingUp,
-  PlusCircle,
   Database,
   Search,
 } from "lucide-react";
@@ -35,8 +34,7 @@ const NAV_ITEMS: NavItem[] = [
 
 const ADMIN_ITEMS: NavItem[] = [
   { href: "/app/admin/metrics", label: "Metrics", icon: TrendingUp },
-  { href: "/app/admin/results/new", label: "New Result", icon: PlusCircle },
-  { href: "/app/admin/test-data", label: "Test Data", icon: Database },
+  { href: "/app/admin/seed", label: "Seed Data", icon: Database },
 ];
 
 interface SidebarNavProps {
