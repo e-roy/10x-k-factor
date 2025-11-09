@@ -3,8 +3,15 @@
 import { RadialProgressWidget } from "@/components/RadialProgressWidget";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Flame, Users, Target } from "lucide-react";
 import Link from "next/link";
+import { TranscriptChallengeDemo } from "./TranscriptChallengeDemo";
 
 interface StudentDashboardProps {
   user: {
@@ -110,6 +117,22 @@ export function StudentDashboard({ data }: StudentDashboardProps) {
             </CardContent>
           </Card>
         </div>
+      </section>
+
+      {/* Transcript Challenge Demo */}
+      <section>
+        <Card className="card-persona">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="transcript-challenge" className="border-0">
+              <AccordionTrigger className="px-6 py-4">
+                <h2 className="text-xl font-semibold">Simulate VarsityTutors Transcript</h2>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-6">
+                <TranscriptChallengeDemo />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </Card>
       </section>
     </div>
   );
