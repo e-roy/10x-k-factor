@@ -22,10 +22,13 @@ interface StudentDashboardProps {
   data: {
     subjects: Array<{
       name: string;
-      progress: number;
-      level: number;
-      xp: number;
-      xpToNextLevel: number;
+      totalXp: number;
+      classesTaken: number;
+      totalClasses: number;
+      tutoringSessions: number;
+      challengesCompleted: number;
+      currentStreak: number;
+      longestStreak: number;
     }>;
     streak: number;
     friendsOnline: number;
@@ -48,10 +51,13 @@ export function StudentDashboard({ data }: StudentDashboardProps) {
             <RadialProgressWidget
               key={subject.name}
               subject={subject.name}
-              progress={subject.progress}
-              level={subject.level}
-              xp={subject.xp}
-              xpToNextLevel={subject.xpToNextLevel}
+              totalXp={subject.totalXp}
+              classesTaken={subject.classesTaken}
+              totalClasses={subject.totalClasses}
+              tutoringSessions={subject.tutoringSessions}
+              challengesCompleted={subject.challengesCompleted}
+              currentStreak={subject.currentStreak}
+              longestStreak={subject.longestStreak}
               onClick={() => {
                 // Navigate to subject practice
                 window.location.href = `/fvm/skill/deck-1?subject=${subject.name}`;
