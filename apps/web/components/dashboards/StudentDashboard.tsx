@@ -58,10 +58,6 @@ export function StudentDashboard({ data }: StudentDashboardProps) {
               challengesCompleted={subject.challengesCompleted}
               currentStreak={subject.currentStreak}
               longestStreak={subject.longestStreak}
-              onClick={() => {
-                // Navigate to subject practice
-                window.location.href = `/fvm/skill/deck-1?subject=${subject.name}`;
-              }}
             />
           ))}
         </div>

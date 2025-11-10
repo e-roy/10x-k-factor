@@ -7,6 +7,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { useModal } from "@/components/ModalManager";
 
 interface RadialProgressWidgetProps {
   subject: string;
@@ -18,7 +19,6 @@ interface RadialProgressWidgetProps {
   currentStreak: number;
   longestStreak: number;
   className?: string;
-  onClick?: () => void;
 }
 
 export function RadialProgressWidget({
@@ -31,7 +31,6 @@ export function RadialProgressWidget({
   currentStreak,
   longestStreak,
   className,
-  onClick,
 }: RadialProgressWidgetProps) {
   // Calculate stroke dash array for progress rings
   const outerRadius = 70;
@@ -48,12 +47,21 @@ export function RadialProgressWidget({
   const streakOffset = innerCircumference - (streakProgress / 100) * innerCircumference;
   
   const isBestStreak = currentStreak > 0 && currentStreak === longestStreak;
+  const { openModal } = useModal();
+
+  const handleClick = () => {
+    // Open ChallengeModal with Quick Practice deck
+    openModal("ChallengeModal", {
+      deckId: "deck-1",
+      subject: subject,
+    });
+  };
 
   return (
     <HoverCard openDelay={200} closeDelay={100}>
       <HoverCardTrigger asChild>
         <button
-          onClick={onClick}
+          onClick={handleClick}
           className={cn(
             "relative group rounded-2xl p-6 w-full",
             "border border-persona bg-persona-overlay",
