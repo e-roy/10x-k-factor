@@ -59,6 +59,8 @@ export function ModalProvider({ children, userId }: ModalProviderProps) {
         isOpen={currentModal === "ChallengeModal"}
         onClose={closeModal}
         challengeId={modalData.challengeId as string | undefined}
+        deckId={modalData.deckId as string | undefined}
+        subject={modalData.subject as string | undefined}
         userId={userId}
         onComplete={handleChallengeComplete}
       />

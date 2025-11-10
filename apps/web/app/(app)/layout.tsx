@@ -7,7 +7,6 @@ import { SidebarNav } from "@/components/app-layout/SidebarNav";
 import { CommandPalette } from "@/components/app-layout/CommandPalette";
 import { InviteButton } from "@/components/InviteButton";
 import { HeaderContent } from "@/components/app-layout/HeaderContent";
-import { CohortProvider } from "@/components/app-layout/CohortContext";
 import { PersonaProvider } from "@/components/PersonaProvider";
 import { ModalProvider } from "@/components/ModalManager";
 import { StudentSidebarClient } from "@/components/app-layout/StudentSidebarClient";
@@ -52,11 +51,10 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       primaryColor={profile?.primaryColor}
       secondaryColor={profile?.secondaryColor}
     >
-      <CohortProvider>
-        <ModalProvider userId={session.user.id}>
-          <InviteJoinedTracker />
-          <ChallengeModalOpener />
-          <CommandPalette />
+      <ModalProvider userId={session.user.id}>
+        <InviteJoinedTracker />
+        <ChallengeModalOpener />
+        <CommandPalette />
         <div className="grid grid-cols-[260px_1fr] min-h-screen">
           {/* Left Sidebar */}
           <aside className="border-r bg-background p-4 flex flex-col">
@@ -103,8 +101,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             </div>
           </div>
         </div>
-        </ModalProvider>
-      </CohortProvider>
+      </ModalProvider>
     </PersonaProvider>
   );
 }
@@ -120,29 +117,27 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
       streakAtRisk: false,
       badges: [],
       subjects: [],
-      cohorts: [],
     };
   }
 
   const { db } = await import("@/db/index");
-  const { cohorts, subjects, userSubjects } = await import("@/db/schema");
+  const { subjects, userSubjects, usersProfiles } = await import("@/db/schema");
   const { eq, desc } = await import("drizzle-orm");
-  const { calculateStreak } = await import("@/lib/streaks");
   const { getUserXpWithLevel } = await import("@/lib/xp");
   const { getPresenceCounts } = await import("@/lib/presence");
 
   // Fetch XP and level from the real system
   const xpData = await getUserXpWithLevel(userId);
 
-  // Fetch user's enrolled subjects with progress
+  // Fetch user's enrolled subjects
   const enrolledSubjects = await db
     .select({
       subjectId: subjects.id,
       subjectName: subjects.name,
       subjectSlug: subjects.slug,
-      progress: userSubjects.progress,
       totalXp: userSubjects.totalXp,
       currentStreak: userSubjects.currentStreak,
+      longestStreak: userSubjects.longestStreak,
       lastActivityAt: userSubjects.lastActivityAt,
     })
     .from(userSubjects)
@@ -150,16 +145,14 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
     .where(eq(userSubjects.userId, userId))
     .orderBy(desc(userSubjects.lastActivityAt));
 
-  // Fetch user's cohorts
-  const userCohorts = await db
-    .select()
-    .from(cohorts)
-    .where(eq(cohorts.createdBy, userId))
-    .orderBy(desc(cohorts.createdAt))
-    .limit(5);
+  // Fetch overall streak from users_profiles
+  const [profile] = await db
+    .select({ overallStreak: usersProfiles.overallStreak })
+    .from(usersProfiles)
+    .where(eq(usersProfiles.userId, userId))
+    .limit(1);
 
-  // Calculate streak
-  const streak = await calculateStreak(userId);
+  const streak = profile?.overallStreak ?? 0;
   const now = new Date();
   const streakAtRisk = now.getHours() >= 20 && streak > 0; // After 8 PM
 
@@ -171,7 +164,9 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
   const subjectsData = enrolledSubjects.map((subject) => ({
     name: subject.subjectName,
     activeUsers: presenceCounts.get(subject.subjectSlug) || 0,
-    progress: subject.progress,
+    totalXp: subject.totalXp,
+    currentStreak: subject.currentStreak,
+    longestStreak: subject.longestStreak,
   }));
 
   return {
@@ -188,11 +183,5 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
       { id: "6", name: "Study Buddy", icon: "🤝", earnedAt: new Date() },
     ],
     subjects: subjectsData,
-    cohorts: userCohorts.map((cohort) => ({
-      id: cohort.id,
-      name: cohort.name,
-      subject: cohort.subject || "General",
-      activeUsers: Math.floor(Math.random() * 10) + 1, // TODO: Get from presence system
-    })),
   };
 }

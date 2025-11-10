@@ -6,8 +6,6 @@ import {
   usersProfiles,
   smartLinks,
   results,
-  cohorts,
-  xpWeights,
   agentBuddies,
   type Persona,
 } from "@/db/schema/index";
@@ -149,30 +147,6 @@ async function seed() {
     await db.insert(results).values(sampleResults);
     console.log("✓ Created results");
 
-    // Create sample cohorts
-    const cohortId = randomUUID();
-    const cohort2Id = randomUUID();
-
-    const sampleCohorts = [
-      {
-        id: cohortId,
-        name: "Algebra Study Group",
-        subject: "algebra",
-        createdBy: tutorId,
-        createdAt: new Date(),
-      },
-      {
-        id: cohort2Id,
-        name: "Geometry Challenge",
-        subject: "geometry",
-        createdBy: tutorId,
-        createdAt: new Date(),
-      },
-    ];
-
-    await db.insert(cohorts).values(sampleCohorts);
-    console.log("✓ Created cohorts");
-
     // Create sample smart links
     // Note: In production, signatures would be generated with HMAC
     // For seed data, we'll use placeholder signatures
@@ -199,24 +173,6 @@ async function seed() {
 
     await db.insert(smartLinks).values(sampleSmartLinks);
     console.log("✓ Created smart links");
-
-    // Create XP weight multipliers
-    const sampleXpWeights = [
-      { eventType: "challenge.completed", multiplier: 5 },
-      { eventType: "challenge.perfect", multiplier: 8 },
-      { eventType: "challenge.streak_kept", multiplier: 3 },
-      { eventType: "invite.sent", multiplier: 1 },
-      { eventType: "invite.accepted", multiplier: 20 },
-      { eventType: "invitee.fvm_reached", multiplier: 30 },
-      { eventType: "results.viewed", multiplier: 0.5 },
-      { eventType: "presence.session_minute", multiplier: 0.2 },
-      { eventType: "cohort.leaderboard_top3", multiplier: 10 },
-      { eventType: "session.tutor_5star", multiplier: 15 },
-      { eventType: "parent.recap_shared", multiplier: 6 },
-    ];
-
-    await db.insert(xpWeights).values(sampleXpWeights);
-    console.log("✓ Created XP weights");
 
     // Create sample agent buddies (students only)
     const sampleBuddies = [

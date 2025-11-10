@@ -67,8 +67,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
 
     // Format label
     let label = segment;
-    if (segment === "cohorts") label = "Cohorts";
-    else if (segment === "results") label = "Results";
+    if (segment === "results") label = "Results";
     else if (segment === "leaderboard") label = "Leaderboards";
     else if (segment === "rewards") label = "Rewards";
     else if (segment === "settings") label = "Settings";

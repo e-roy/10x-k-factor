@@ -9,7 +9,7 @@ import {
   index,
 } from "drizzle-orm/pg-core";
 
-import type { RewardType, RewardStatus } from "./types";
+import type { RewardType, RewardStatus } from "@/db/types";
 
 // ============================================================================
 // Rewards & Ledger Tables

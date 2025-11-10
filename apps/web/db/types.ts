@@ -37,7 +37,6 @@ export const XP_EVENT_TYPE_VALUES = [
   "invitee.fvm_reached",
   "results.viewed",
   "presence.session_minute",
-  "cohort.leaderboard_top3",
   "reward.claimed",
   "session.tutor_5star",
   "parent.recap_shared",

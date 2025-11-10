@@ -17,12 +17,9 @@ interface StudentSidebarData {
   subjects: Array<{
     name: string;
     activeUsers: number;
-  }>;
-  cohorts: Array<{
-    id: string;
-    name: string;
-    subject: string;
-    activeUsers: number;
+    totalXp: number;
+    currentStreak: number;
+    longestStreak: number;
   }>;
 }
 
@@ -90,7 +87,7 @@ export const StudentSidebarClient = memo(function StudentSidebarClient({
       refreshData();
     };
 
-    // Listen for challenge generated (to update badges/cohorts)
+    // Listen for challenge generated (to update badges)
     const handleChallengeGenerated = () => {
       console.log("[StudentSidebarClient] Challenge generated, refreshing...");
       refreshData();

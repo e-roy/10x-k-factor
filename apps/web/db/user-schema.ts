@@ -1,7 +1,7 @@
-import { pgTable, varchar, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, varchar, boolean, timestamp, integer } from "drizzle-orm/pg-core";
 
-import { users } from "./auth-schema";
-import type { Persona } from "./types";
+import { users } from "@/db/auth-schema";
+import type { Persona } from "@/db/types";
 
 // ============================================================================
 // User & Profile Tables
@@ -22,6 +22,7 @@ export const usersProfiles = pgTable("users_profiles", {
   primaryColor: varchar("primary_color", { length: 7 }), // #8B5CF6 (hex color)
   secondaryColor: varchar("secondary_color", { length: 7 }), // #EC4899 (hex color)
   personalizationTheme: varchar("personalization_theme", { length: 64 }), // reward/gameplay/message flavor
+  overallStreak: integer("overall_streak").default(0).notNull(), // Overall streak count (incremented when student completes any challenge)
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });

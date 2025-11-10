@@ -11,7 +11,7 @@ import {
   pgView,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import type { Persona } from "./types";
+import type { Persona } from "@/db/types";
 
 // ============================================================================
 // XP System Tables

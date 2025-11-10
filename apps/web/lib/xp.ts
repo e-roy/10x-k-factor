@@ -4,7 +4,7 @@ import {
   xpWeights,
   derivedUserXp,
   derivedUserPersonaXp,
-} from "@/db/schema";
+} from "@/db/xp-schema";
 import type { Persona, XpEventType, XpEventMetadata } from "@/db/types";
 import { eq, and, desc } from "drizzle-orm";
 

@@ -1,5 +1,5 @@
-import { db } from "@/db/index";
-import { results } from "@/db/schema/index";
+import { db } from "@/db";
+import { results } from "@/db/learning-schema";
 import { sql } from "drizzle-orm";
 
 /**

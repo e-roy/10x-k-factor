@@ -5,7 +5,6 @@ import { users } from "@/db/auth-schema";
 import { usersProfiles } from "@/db/user-schema";
 import { results, tutorSessions, challenges } from "@/db/learning-schema";
 import {
-  cohorts,
   referrals,
   subjects,
   userSubjects,
@@ -782,7 +781,6 @@ const seedSchema = z.object({
   // Advanced options
   selectedUserIds: z.array(z.string()).optional(), // Specific user IDs to use for advanced options (if provided, uses existing users)
   createParents: z.boolean().default(false),
-  createCohorts: z.boolean().default(false),
   createSubjectEnrollments: z.boolean().default(false),
   createXpEvents: z.boolean().default(false),
   createReferrals: z.boolean().default(false),
@@ -790,7 +788,6 @@ const seedSchema = z.object({
   createTutoringSessions: z.boolean().default(false),
   createChallenges: z.boolean().default(false),
   // Numeric options
-  cohortsPerSubject: z.number().int().min(1).max(10).default(2),
   xpEventsPerUser: z.number().int().min(1).max(50).default(5),
   referralCount: z.number().int().min(1).max(20).default(3),
   eventsPerDay: z.number().int().min(1).max(50).default(10),
@@ -803,7 +800,6 @@ export interface SeedResult {
   usersCreated: number;
   resultsCreated: number;
   parentsCreated?: number;
-  cohortsCreated?: number;
   enrollmentsCreated?: number;
   xpEventsCreated?: number;
   referralsCreated?: number;
@@ -1289,7 +1285,6 @@ export async function seedUsersAndResults(
         usersCreated: 0,
         resultsCreated: 0,
         parentsCreated: 0,
-        cohortsCreated: 0,
         enrollmentsCreated: 0,
         xpEventsCreated: 0,
         referralsCreated: 0,
@@ -1315,7 +1310,6 @@ export async function seedUsersAndResults(
         usersCreated: 0,
         resultsCreated: 0,
         parentsCreated: 0,
-        cohortsCreated: 0,
         enrollmentsCreated: 0,
         xpEventsCreated: 0,
         referralsCreated: 0,
@@ -1359,7 +1353,6 @@ export async function seedUsersAndResults(
           usersCreated: 0,
           resultsCreated: 0,
           parentsCreated: 0,
-          cohortsCreated: 0,
           enrollmentsCreated: 0,
           xpEventsCreated: 0,
           referralsCreated: 0,
@@ -1492,7 +1485,6 @@ export async function seedUsersAndResults(
 
     // Track created counts
     let parentsCreated = 0;
-    let cohortsCreated = 0;
     let enrollmentsCreated = 0;
     let xpEventsCreated = 0;
     let referralsCreated = 0;
@@ -1504,7 +1496,6 @@ export async function seedUsersAndResults(
     if (
       studentUserIds.length === 0 &&
       (validated.createParents ||
-        validated.createCohorts ||
         validated.createSubjectEnrollments ||
         validated.createXpEvents ||
         validated.createReferrals ||
@@ -1517,7 +1508,6 @@ export async function seedUsersAndResults(
         usersCreated: usersToCreate.length,
         resultsCreated: resultsToCreate.length,
         parentsCreated: 0,
-        cohortsCreated: 0,
         enrollmentsCreated: 0,
         xpEventsCreated: 0,
         referralsCreated: 0,
@@ -1533,7 +1523,6 @@ export async function seedUsersAndResults(
         usersCreated: usersToCreate.length,
         resultsCreated: resultsToCreate.length,
         parentsCreated: 0,
-        cohortsCreated: 0,
         enrollmentsCreated: 0,
         xpEventsCreated: 0,
         referralsCreated: 0,
@@ -1550,7 +1539,6 @@ export async function seedUsersAndResults(
         usersCreated: usersToCreate.length,
         resultsCreated: resultsToCreate.length,
         parentsCreated: 0,
-        cohortsCreated: 0,
         enrollmentsCreated: 0,
         xpEventsCreated: 0,
         referralsCreated: 0,
@@ -1651,45 +1639,7 @@ export async function seedUsersAndResults(
       }
     }
 
-    // 2. Create cohorts
-    if (validated.createCohorts && studentUserIds.length > 0) {
-      const cohortsToCreate = [];
-      const cohortNames = [
-        "Study Group",
-        "Warriors",
-        "Champions",
-        "Elite Team",
-        "Masters",
-        "Aces",
-        "Stars",
-        "Leaders",
-      ];
-
-      for (const subject of subjectList) {
-        for (let i = 0; i < validated.cohortsPerSubject; i++) {
-          const cohortId = randomUUID();
-          const cohortName =
-            cohortNames[Math.floor(Math.random() * cohortNames.length)];
-          const creatorId =
-            studentUserIds[Math.floor(Math.random() * studentUserIds.length)];
-
-          cohortsToCreate.push({
-            id: cohortId,
-            name: `${subject.charAt(0).toUpperCase() + subject.slice(1)} ${cohortName}`,
-            subject,
-            createdBy: creatorId,
-            createdAt: new Date(),
-          });
-        }
-      }
-
-      if (cohortsToCreate.length > 0) {
-        await db.insert(cohorts).values(cohortsToCreate);
-        cohortsCreated = cohortsToCreate.length;
-      }
-    }
-
-    // 3. Create subject enrollments
+    // 2. Create subject enrollments
     if (validated.createSubjectEnrollments && studentUserIds.length > 0) {
       // Ensure subjects exist
       const existingSubjects = await db
@@ -1796,7 +1746,6 @@ export async function seedUsersAndResults(
         "invitee.fvm_reached",
         "results.viewed",
         "presence.session_minute",
-        "cohort.leaderboard_top3",
         "session.tutor_5star",
       ];
 
@@ -2003,7 +1952,6 @@ export async function seedUsersAndResults(
       usersCreated: usersToCreate.length,
       resultsCreated: resultsToCreate.length,
       parentsCreated,
-      cohortsCreated,
       enrollmentsCreated,
       xpEventsCreated,
       referralsCreated,
@@ -2022,7 +1970,6 @@ export async function seedUsersAndResults(
       usersCreated: 0,
       resultsCreated: 0,
       parentsCreated: 0,
-      cohortsCreated: 0,
       enrollmentsCreated: 0,
       xpEventsCreated: 0,
       referralsCreated: 0,
@@ -2051,14 +1998,12 @@ export async function quickSeed(): Promise<SeedResult> {
     scoreMax: 100,
     selectedUserIds: undefined,
     createParents: true,
-    createCohorts: true,
     createSubjectEnrollments: true,
     createXpEvents: true,
     createReferrals: true,
     createEvents: true,
     createTutoringSessions: true,
     createChallenges: true,
-    cohortsPerSubject: 2,
     xpEventsPerUser: 8,
     referralCount: 5,
     eventsPerDay: 10,

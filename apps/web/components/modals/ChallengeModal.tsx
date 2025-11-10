@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useBuddy } from "@/hooks/useBuddy";
 import { createSmartLink } from "@/lib/smart-links/create";
+import { getDeck } from "@/lib/decks";
 
 interface Question {
   question: string;
@@ -33,6 +34,8 @@ interface ChallengeModalProps {
   isOpen: boolean;
   onClose: () => void;
   challengeId?: string;
+  deckId?: string;
+  subject?: string;
   userId?: string;
   onComplete?: (challengeId: string, score: number) => void;
 }
@@ -41,6 +44,8 @@ export function ChallengeModal({
   isOpen,
   onClose,
   challengeId,
+  deckId,
+  subject,
   userId,
   onComplete,
 }: ChallengeModalProps) {
@@ -58,19 +63,44 @@ export function ChallengeModal({
   const { buddy } = useBuddy();
 
   const fetchChallenge = async () => {
-    if (!challengeId) return;
+    if (!challengeId && !deckId) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/challenges/${challengeId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch challenge");
-      }
+      // If deckId is provided, load from decks library
+      if (deckId) {
+        const deck = getDeck(deckId);
+        if (!deck) {
+          throw new Error("Deck not found");
+        }
 
-      const data = await response.json();
-      setChallenge(data);
+        // Convert Deck format to Challenge format
+        const challengeData: Challenge = {
+          id: deck.id,
+          subject: subject || deck.subject,
+          questions: deck.questions.map((q) => ({
+            question: q.question,
+            options: q.options,
+            correctAnswer: q.correct,
+            explanation: undefined,
+          })),
+          difficulty: "intermediate", // Default for Quick Practices
+          status: "pending",
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+        };
+        setChallenge(challengeData);
+      } else if (challengeId) {
+        // Fetch from API
+        const response = await fetch(`/api/challenges/${challengeId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch challenge");
+        }
+
+        const data = await response.json();
+        setChallenge(data);
+      }
     } catch (err) {
       console.error("Error fetching challenge:", err);
       setError(err instanceof Error ? err.message : "Failed to load challenge");
@@ -79,13 +109,28 @@ export function ChallengeModal({
     }
   };
 
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setChallenge(null);
+      setCurrentQuestionIndex(0);
+      setAnswers({});
+      setShowResults(false);
+      setError(null);
+      setShareUrl(null);
+      setCopied(false);
+      setIsSharing(false);
+      setLoading(true);
+    }
+  }, [isOpen]);
+
   // Fetch challenge data when modal opens
   useEffect(() => {
-    if (isOpen && challengeId) {
+    if (isOpen && (challengeId || deckId)) {
       fetchChallenge();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, challengeId]);
+  }, [isOpen, challengeId, deckId]);
 
   // Generate share link when results are shown
   useEffect(() => {
@@ -95,13 +140,13 @@ export function ChallengeModal({
         loop: "buddy_challenge",
         params: {
           subject: challenge.subject,
-          challengeId: challenge.id,
+          ...(deckId ? { deckId } : { challengeId: challenge.id }),
         },
       })
         .then(({ url }) => setShareUrl(url))
         .catch((error) => console.error("Failed to create share link:", error));
     }
-  }, [showResults, userId, challenge, shareUrl]);
+  }, [showResults, userId, challenge, shareUrl, deckId]);
 
   const handleAnswerSelect = (questionIndex: number, answerIndex: number) => {
     setAnswers((prev) => ({
@@ -126,20 +171,41 @@ export function ChallengeModal({
 
       const score = Math.round((correct / challenge.questions.length) * 100);
 
-      // Update challenge status
-      const response = await fetch(`/api/challenges/${challenge.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          status: "completed",
-          score,
-        }),
-      });
+      // If it's a deck (Quick Practice), create a result instead of updating challenge
+      if (deckId) {
+        const response = await fetch("/api/results", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            subject: challenge.subject,
+            score,
+            totalQuestions: challenge.questions.length,
+            correctAnswers: correct,
+            deckId: deckId,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to submit challenge");
+        if (!response.ok) {
+          throw new Error("Failed to submit practice");
+        }
+      } else if (challengeId) {
+        // Update challenge status for API challenges
+        const response = await fetch(`/api/challenges/${challenge.id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: "completed",
+            score,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to submit challenge");
+        }
       }
 
       setShowResults(true);
@@ -267,7 +333,7 @@ export function ChallengeModal({
       <TallModal
         isOpen={isOpen}
         onClose={onClose}
-        title="Challenge Complete! 🎉"
+        title={deckId ? "Quick Practice Complete! 🎉" : "Challenge Complete! 🎉"}
         icon={<CheckCircle className="h-6 w-6 text-green-500" />}
       >
         <div className="space-y-6">
@@ -436,11 +502,11 @@ export function ChallengeModal({
   }
 
   return (
-    <TallModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`${challenge.subject} Challenge`}
-      icon={<Target className="h-6 w-6 text-persona-primary" />}
+      <TallModal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={deckId ? `${challenge.subject} Quick Practice` : `${challenge.subject} Challenge`}
+        icon={<Target className="h-6 w-6 text-persona-primary" />}
       footer={
         <div className="flex justify-between items-center w-full">
           <div className="text-sm text-muted-foreground">

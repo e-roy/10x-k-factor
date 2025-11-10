@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/index";
-import { results, cohorts } from "@/db/schema/index";
+import { results } from "@/db/schema/index";
 import { auth } from "@/lib/auth";
 import { sql } from "drizzle-orm";
 
@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * GET /api/search/subjects
- * Search subjects from results and cohorts
+ * Search subjects from results
  * 
  * Query params:
  * - q: search query string
@@ -47,20 +47,9 @@ export async function GET(request: NextRequest) {
       )
       .limit(limit);
 
-    // Get distinct subjects from cohorts
-    const cohortsSubjects = await db
-      .selectDistinct({
-        subject: cohorts.subject,
-      })
-      .from(cohorts)
-      .where(
-        sql`${cohorts.subject} IS NOT NULL AND ${cohorts.subject} ILIKE ${searchTerm}`
-      )
-      .limit(limit);
-
-    // Combine and deduplicate
+    // Extract unique subjects
     const allSubjects = new Set<string>();
-    [...resultsSubjects, ...cohortsSubjects].forEach((row) => {
+    resultsSubjects.forEach((row) => {
       if (row.subject) {
         allSubjects.add(row.subject.toLowerCase().trim());
       }

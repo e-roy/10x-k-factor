@@ -12,6 +12,8 @@ import {
 import { Flame, Users, Target } from "lucide-react";
 import Link from "next/link";
 import { TranscriptChallengeDemo } from "./TranscriptChallengeDemo";
+import { useModal } from "@/components/ModalManager";
+import { usePresence } from "@/hooks/usePresence";
 
 interface StudentDashboardProps {
   user: {
@@ -22,10 +24,13 @@ interface StudentDashboardProps {
   data: {
     subjects: Array<{
       name: string;
-      progress: number;
-      level: number;
-      xp: number;
-      xpToNextLevel: number;
+      totalXp: number;
+      classesTaken: number;
+      totalClasses: number;
+      tutoringSessions: number;
+      challengesCompleted: number;
+      currentStreak: number;
+      longestStreak: number;
     }>;
     streak: number;
     friendsOnline: number;
@@ -38,6 +43,15 @@ interface StudentDashboardProps {
 }
 
 export function StudentDashboard({ data }: StudentDashboardProps) {
+  const { openModal } = useModal();
+  // Get site-wide peers count using "app" subject (same as PresencePill)
+  const { count: peersOnline } = usePresence("app");
+
+  const handleChallengesClick = () => {
+    // Open ChallengeModal to show pending challenges (same as Buddy challenges)
+    openModal("ChallengeModal");
+  };
+
   return (
     <div className="space-y-8">
       {/* Progress Section */}
@@ -48,14 +62,13 @@ export function StudentDashboard({ data }: StudentDashboardProps) {
             <RadialProgressWidget
               key={subject.name}
               subject={subject.name}
-              progress={subject.progress}
-              level={subject.level}
-              xp={subject.xp}
-              xpToNextLevel={subject.xpToNextLevel}
-              onClick={() => {
-                // Navigate to subject practice
-                window.location.href = `/fvm/skill/deck-1?subject=${subject.name}`;
-              }}
+              totalXp={subject.totalXp}
+              classesTaken={subject.classesTaken}
+              totalClasses={subject.totalClasses}
+              tutoringSessions={subject.tutoringSessions}
+              challengesCompleted={subject.challengesCompleted}
+              currentStreak={subject.currentStreak}
+              longestStreak={subject.longestStreak}
             />
           ))}
         </div>
@@ -85,18 +98,18 @@ export function StudentDashboard({ data }: StudentDashboardProps) {
             </CardContent>
           </Card>
 
-          {/* Study Buddies */}
+          {/* Peers Online */}
           <Card className="card-persona">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-persona-primary">
                 <Users className="h-5 w-5" />
-                {data.friendsOnline} Friends Online
+                {peersOnline} Peers Online
               </CardTitle>
               <CardDescription>Join a study session</CardDescription>
             </CardHeader>
             <CardContent>
               <Button asChild variant="outline" size="sm" className="w-full">
-                <Link href="/app/cohorts">View Cohorts</Link>
+                <Link href="/app/leaderboard">View Leaderboards</Link>
               </Button>
             </CardContent>
           </Card>
@@ -111,8 +124,8 @@ export function StudentDashboard({ data }: StudentDashboardProps) {
               <CardDescription>Waiting for you</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild variant="outline" size="sm" className="w-full">
-                <Link href="/app/results">View All</Link>
+              <Button variant="outline" size="sm" className="w-full" onClick={handleChallengesClick}>
+                Take Challenge
               </Button>
             </CardContent>
           </Card>

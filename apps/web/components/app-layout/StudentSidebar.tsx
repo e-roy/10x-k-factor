@@ -4,7 +4,7 @@ import { AgentBuddy } from "@/components/AgentBuddy";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Flame, Shield, Trophy, Users } from "lucide-react";
+import { Flame, Shield, Users, Zap, Star } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -26,13 +26,9 @@ interface StudentSidebarProps {
     subjects: Array<{
       name: string;
       activeUsers: number;
-      progress?: number;
-    }>;
-    cohorts: Array<{
-      id: string;
-      name: string;
-      subject: string;
-      activeUsers: number;
+      totalXp: number;
+      currentStreak: number;
+      longestStreak: number;
     }>;
   };
 }
@@ -103,7 +99,7 @@ export function StudentSidebar({ userId, persona, data }: StudentSidebarProps) {
       </div>
 
       {/* Badges Section */}
-      {data.badges.length > 0 && (
+      {/* {data.badges.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold flex items-center gap-2">
@@ -126,13 +122,13 @@ export function StudentSidebar({ userId, persona, data }: StudentSidebarProps) {
             ))}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Subjects Section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold">My Subjects</h3>
-          <Link href="/app/settings/profile" className="text-xs text-muted-foreground hover:text-foreground">
+          <Link href="/app/settings" className="text-xs text-muted-foreground hover:text-foreground">
             Edit
           </Link>
         </div>
@@ -140,76 +136,62 @@ export function StudentSidebar({ userId, persona, data }: StudentSidebarProps) {
           <Card className="p-3 text-center">
             <p className="text-xs text-muted-foreground mb-2">No subjects enrolled</p>
             <Button asChild size="sm" variant="outline" className="w-full">
-              <Link href="/app/settings/profile">Add Subjects</Link>
+              <Link href="/app/settings">Add Subjects</Link>
             </Button>
           </Card>
         ) : (
           <div className="space-y-1.5">
-            {data.subjects.map((subject) => (
-              <Card 
-                key={subject.name}
-                className="p-2.5 hover:bg-accent cursor-pointer transition-colors"
-              >
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{subject.name}</span>
-                    {subject.activeUsers > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        <Users className="h-3 w-3 mr-1" />
-                        {subject.activeUsers} online
-                      </Badge>
-                    )}
-                  </div>
-                  {subject.progress !== undefined && (
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Progress</span>
-                        <span className="font-medium">{subject.progress}%</span>
+            {data.subjects.map((subject) => {
+              const isBestStreak = subject.currentStreak > 0 && subject.currentStreak === subject.longestStreak;
+              
+              return (
+                <Card 
+                  key={subject.name}
+                  className={cn(
+                    "p-2.5 hover:bg-accent cursor-pointer transition-all",
+                    isBestStreak && "border-yellow-400/50 bg-gradient-to-br from-yellow-50/50 to-orange-50/50 dark:from-yellow-950/10 dark:to-orange-950/10 shadow-sm"
+                  )}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{subject.name}</span>
+                      {subject.activeUsers > 0 && (
+                        <Badge variant="secondary" className="text-xs">
+                          <Users className="h-3 w-3 mr-1" />
+                          {subject.activeUsers} online
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Zap className="h-3 w-3" />
+                        <span>{subject.totalXp.toLocaleString()} XP</span>
                       </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-persona-primary to-persona-secondary transition-all"
-                          style={{ width: `${subject.progress}%` }}
-                        />
+                      <div className={cn(
+                        "flex items-center gap-1",
+                        isBestStreak 
+                          ? "text-yellow-600 dark:text-yellow-400 font-semibold" 
+                          : "text-muted-foreground"
+                      )}>
+                        {isBestStreak && <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />}
+                        <Flame className={cn("h-3 w-3", isBestStreak && "text-yellow-600 dark:text-yellow-400")} />
+                        <span>{subject.currentStreak} streak</span>
+                        {isBestStreak && (
+                          <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0 border-yellow-400 text-yellow-600 dark:text-yellow-400">
+                            Best!
+                          </Badge>
+                        )}
                       </div>
                     </div>
-                  )}
-                </div>
-              </Card>
-            ))}
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* Cohorts Section */}
-      {data.cohorts.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold">My Cohorts</h3>
-            <Link href="/app/cohorts" className="text-xs text-muted-foreground hover:text-foreground">
-              View All
-            </Link>
-          </div>
-          <div className="space-y-1.5">
-            {data.cohorts.slice(0, 5).map((cohort) => (
-              <Link key={cohort.id} href={`/cohort/${cohort.id}`}>
-                <Card className="p-2 hover:bg-accent cursor-pointer transition-colors">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium">{cohort.name}</span>
-                    {cohort.activeUsers > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        <Users className="h-3 w-3 mr-1" />
-                        {cohort.activeUsers}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">{cohort.subject}</p>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
     </aside>
   );
 }

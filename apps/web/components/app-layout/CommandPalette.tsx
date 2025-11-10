@@ -10,10 +10,10 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Users, BarChart, Trophy, Home } from "lucide-react";
+import { BarChart, Trophy, Home } from "lucide-react";
 
 interface SearchResult {
-  type: "cohort" | "result" | "subject" | "nav";
+  type: "result" | "subject" | "nav";
   id?: string;
   title: string;
   subtitle?: string;
@@ -51,29 +51,6 @@ export function CommandPalette() {
       setLoading(true);
       try {
         const searchResults: SearchResult[] = [];
-
-        // Search cohorts
-        try {
-          const cohortsRes = await fetch(
-            `/api/search/cohorts?q=${encodeURIComponent(query)}`
-          );
-          if (cohortsRes.ok) {
-            const cohortsData = await cohortsRes.json();
-            if (cohortsData.cohorts) {
-              cohortsData.cohorts.forEach((cohort: { id: string; name: string; subject?: string }) => {
-                searchResults.push({
-                  type: "cohort",
-                  id: cohort.id,
-                  title: cohort.name,
-                  subtitle: cohort.subject ? `Subject: ${cohort.subject}` : undefined,
-                  href: `/cohort/${cohort.id}`,
-                });
-              });
-            }
-          }
-        } catch (error) {
-          console.error("[CommandPalette] Error searching cohorts:", error);
-        }
 
         // Search results
         try {
@@ -123,7 +100,6 @@ export function CommandPalette() {
         // Add navigation items if query matches
         const navItems: SearchResult[] = [
           { type: "nav", title: "Dashboard", href: "/app", subtitle: "Go to dashboard" },
-          { type: "nav", title: "Cohorts", href: "/app/cohorts", subtitle: "View all cohorts" },
           { type: "nav", title: "Results", href: "/app/results", subtitle: "View all results" },
           { type: "nav", title: "Leaderboards", href: "/app/leaderboard", subtitle: "View leaderboards" },
           { type: "nav", title: "Rewards", href: "/app/rewards", subtitle: "View rewards" },
@@ -157,8 +133,6 @@ export function CommandPalette() {
 
   const getIcon = (type: SearchResult["type"]) => {
     switch (type) {
-      case "cohort":
-        return <Users className="h-4 w-4" />;
       case "result":
         return <BarChart className="h-4 w-4" />;
       case "subject":
@@ -171,7 +145,7 @@ export function CommandPalette() {
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <CommandInput 
-        placeholder="Search cohorts, results, subjects..." 
+        placeholder="Search results, subjects..." 
         value={query}
         onValueChange={setQuery}
       />
