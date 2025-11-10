@@ -6,9 +6,13 @@ import {
   cohorts,
   subjects,
   userSubjects,
+  users,
+  derivedUserXp,
 } from "@/db/schema/index";
 import { eq, desc } from "drizzle-orm";
 import { StudentDashboard } from "@/components/dashboards/StudentDashboard";
+import { ParentDashboard } from "@/components/dashboards/ParentDashboard";
+import { TutorDashboard } from "@/components/dashboards/TutorDashboard";
 import { OnboardingWrapper } from "@/components/OnboardingWrapper";
 import { calculateStreak } from "@/lib/streaks";
 
@@ -97,33 +101,19 @@ export default async function DashboardPage() {
       )}
 
       {persona === "parent" && (
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold">Parent Dashboard</h1>
-            <p className="text-muted-foreground mt-2">
-              Track your child&apos;s learning progress
-            </p>
-          </div>
-          {/* TODO: Implement ParentDashboard component */}
-          <div className="text-center py-20 text-muted-foreground">
-            Parent dashboard coming soon...
-          </div>
-        </div>
+        <ParentDashboard
+          user={{ id: userId, name: session.user.name, persona }}
+          students={await fetchParentStudents(userId)}
+        />
       )}
 
       {persona === "tutor" && (
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold">Tutor Dashboard</h1>
-            <p className="text-muted-foreground mt-2">
-              Manage your students and sessions
-            </p>
-          </div>
-          {/* TODO: Implement TutorDashboard component */}
-          <div className="text-center py-20 text-muted-foreground">
-            Tutor dashboard coming soon...
-          </div>
-        </div>
+        <TutorDashboard
+          user={{ id: userId, name: session.user.name, persona }}
+          xp={await fetchTutorXp(userId)}
+          streak={await calculateStreak(userId)}
+          sessions={getHardcodedSessions()}
+        />
       )}
     </>
   );
@@ -221,4 +211,120 @@ async function fetchDashboardData(
     friendsOnline: 0,
     challenges: [],
   };
+}
+
+// Fetch parent's students with their progress data
+async function fetchParentStudents(parentId: string) {
+  try {
+    // Get all students where guardianId = parentId
+    const studentProfiles = await db
+      .select({
+        userId: usersProfiles.userId,
+        name: users.name,
+      })
+      .from(usersProfiles)
+      .innerJoin(users, eq(usersProfiles.userId, users.id))
+      .where(eq(usersProfiles.guardianId, parentId));
+
+    // For each student, get their subject progress and calculate stats
+    const studentsData = await Promise.all(
+      studentProfiles.map(async (student) => {
+        // Get subject progress
+        const studentSubjects = await db
+          .select({
+            name: subjects.name,
+            totalXp: userSubjects.totalXp,
+            classesTaken: userSubjects.classesTaken,
+            totalClasses: userSubjects.totalClasses,
+            currentStreak: userSubjects.currentStreak,
+            longestStreak: userSubjects.longestStreak,
+          })
+          .from(userSubjects)
+          .innerJoin(subjects, eq(userSubjects.subjectId, subjects.id))
+          .where(eq(userSubjects.userId, student.userId))
+          .orderBy(desc(userSubjects.lastActivityAt));
+
+        // Calculate overall streak
+        const overallStreak = await calculateStreak(student.userId);
+
+        // Calculate total XP (sum from userSubjects or use derivedUserXp)
+        const totalXp = studentSubjects.reduce(
+          (sum, subj) => sum + subj.totalXp,
+          0
+        );
+
+        return {
+          id: student.userId,
+          name: student.name,
+          subjects: studentSubjects,
+          overallStreak,
+          totalXp,
+        };
+      })
+    );
+
+    return studentsData;
+  } catch (error) {
+    console.error("[fetchParentStudents] Error:", error);
+    return [];
+  }
+}
+
+// Fetch tutor's total XP
+async function fetchTutorXp(tutorId: string): Promise<number> {
+  try {
+    // Try to get XP from derivedUserXp view
+    const [xpData] = await db
+      .select({
+        xp: derivedUserXp.xp,
+      })
+      .from(derivedUserXp)
+      .where(eq(derivedUserXp.userId, tutorId))
+      .limit(1);
+
+    return xpData?.xp ?? 0;
+  } catch (error) {
+    console.error("[fetchTutorXp] Error:", error);
+    // Fallback: return 0 if view doesn't exist or query fails
+    return 0;
+  }
+}
+
+// Generate hardcoded upcoming sessions for tutor
+function getHardcodedSessions() {
+  const now = new Date();
+  const sessions = [
+    {
+      id: "session-1",
+      subject: "Algebra",
+      scheduledAt: new Date(now.getTime() + 2 * 60 * 60 * 1000), // 2 hours from now
+      duration: 45,
+    },
+    {
+      id: "session-2",
+      subject: "Geometry",
+      scheduledAt: new Date(now.getTime() + 24 * 60 * 60 * 1000), // Tomorrow
+      duration: 60,
+    },
+    {
+      id: "session-3",
+      subject: "Calculus",
+      scheduledAt: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), // Day after tomorrow
+      duration: 30,
+    },
+    {
+      id: "session-4",
+      subject: "Physics",
+      scheduledAt: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+      duration: 60,
+    },
+    {
+      id: "session-5",
+      subject: "Chemistry",
+      scheduledAt: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
+      duration: 45,
+    },
+  ];
+
+  return sessions;
 }
