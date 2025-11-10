@@ -1,8 +1,8 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 /**
@@ -10,13 +10,15 @@ export function cn(...inputs: ClassValue[]) {
  * Example: "John Doe" -> "John D."
  * Example: "Jane" -> "Jane"
  */
-export function formatNameForLeaderboard(name: string | null | undefined): string {
+export function formatNameForLeaderboard(
+  name: string | null | undefined
+): string {
   if (!name || name.trim().length === 0) {
     return "";
   }
 
   const parts = name.trim().split(/\s+/);
-  
+
   if (parts.length === 1) {
     return parts[0];
   }

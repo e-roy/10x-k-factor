@@ -12,7 +12,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { seedUsersAndResults, quickSeed, type SeedResult } from "./actions";
-import { CheckCircle2, XCircle, Loader2, Zap, Users, UserPlus } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  Zap,
+  Users,
+  UserPlus,
+} from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface User {
@@ -27,11 +34,16 @@ export function SeedForm() {
   const [createLoading, setCreateLoading] = useState(false);
   const [addDataLoading, setAddDataLoading] = useState(false);
   const [result, setResult] = useState<SeedResult | null>(null);
-  
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
+
   // Users for "Add Data to Existing Users" section
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(
+    new Set()
+  );
 
   // Form data for "Create New Users"
   const [createFormData, setCreateFormData] = useState({
@@ -45,9 +57,15 @@ export function SeedForm() {
     createSubjectEnrollments: false,
     createXpEvents: false,
     createReferrals: false,
+    createEvents: false,
+    createTutoringSessions: false,
+    createChallenges: false,
     cohortsPerSubject: 2,
     xpEventsPerUser: 5,
     referralCount: 3,
+    eventsPerDay: 10,
+    tutoringSessionsPerUser: 3,
+    challengesPerUser: 5,
   });
 
   // Form data for "Add Data to Existing Users"
@@ -57,9 +75,15 @@ export function SeedForm() {
     createSubjectEnrollments: false,
     createXpEvents: false,
     createReferrals: false,
+    createEvents: false,
+    createTutoringSessions: false,
+    createChallenges: false,
     cohortsPerSubject: 2,
     xpEventsPerUser: 5,
     referralCount: 3,
+    eventsPerDay: 10,
+    tutoringSessionsPerUser: 3,
+    challengesPerUser: 5,
   });
 
   // Fetch users on mount for "Add Data to Existing Users"
@@ -82,6 +106,32 @@ export function SeedForm() {
     fetchUsers();
   }, [fetchUsers]);
 
+  /**
+   * Validate form data before submission
+   * Returns object with field names as keys and error messages as values
+   */
+  const validateForm = (
+    isCreateNew: boolean,
+    userCount: number,
+    selectedCount: number,
+    createEvents: boolean,
+    createReferrals: boolean
+  ): Record<string, string> => {
+    const errors: Record<string, string> = {};
+
+    const actualUserCount = isCreateNew ? userCount : selectedCount;
+
+    if (createEvents && actualUserCount < 2) {
+      errors.createEvents = `Requires at least 2 users. You have ${actualUserCount} user(s).`;
+    }
+
+    if (createReferrals && actualUserCount < 2) {
+      errors.createReferrals = `Requires at least 2 users. You have ${actualUserCount} user(s).`;
+    }
+
+    return errors;
+  };
+
   const handleQuickSeed = async () => {
     setQuickLoading(true);
     setResult(null);
@@ -103,6 +153,28 @@ export function SeedForm() {
 
   const handleCreateNewUsers = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Validate form
+    const errors = validateForm(
+      true,
+      createFormData.userCount,
+      0,
+      createFormData.createEvents,
+      createFormData.createReferrals
+    );
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      setResult({
+        success: false,
+        usersCreated: 0,
+        resultsCreated: 0,
+        error: Object.values(errors).join(" "),
+      });
+      return;
+    }
+
+    setValidationErrors({});
     setCreateLoading(true);
     setResult(null);
 
@@ -119,6 +191,12 @@ export function SeedForm() {
         createSubjectEnrollments: createFormData.createSubjectEnrollments,
         createXpEvents: createFormData.createXpEvents,
         createReferrals: createFormData.createReferrals,
+        createEvents: createFormData.createEvents,
+        eventsPerDay: createFormData.eventsPerDay,
+        createTutoringSessions: createFormData.createTutoringSessions,
+        createChallenges: createFormData.createChallenges,
+        tutoringSessionsPerUser: createFormData.tutoringSessionsPerUser,
+        challengesPerUser: createFormData.challengesPerUser,
         cohortsPerSubject: createFormData.cohortsPerSubject,
         xpEventsPerUser: createFormData.xpEventsPerUser,
         referralCount: createFormData.referralCount,
@@ -136,9 +214,11 @@ export function SeedForm() {
     }
   };
 
-  const handleAddToExistingUsers = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddToExistingUsers = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
-    
+
     if (selectedUserIds.size === 0) {
       setResult({
         success: false,
@@ -149,6 +229,27 @@ export function SeedForm() {
       return;
     }
 
+    // Validate form
+    const errors = validateForm(
+      false,
+      0,
+      selectedUserIds.size,
+      addDataFormData.createEvents,
+      addDataFormData.createReferrals
+    );
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      setResult({
+        success: false,
+        usersCreated: 0,
+        resultsCreated: 0,
+        error: Object.values(errors).join(" "),
+      });
+      return;
+    }
+
+    setValidationErrors({});
     setAddDataLoading(true);
     setResult(null);
 
@@ -165,6 +266,12 @@ export function SeedForm() {
         createSubjectEnrollments: addDataFormData.createSubjectEnrollments,
         createXpEvents: addDataFormData.createXpEvents,
         createReferrals: addDataFormData.createReferrals,
+        createEvents: addDataFormData.createEvents,
+        eventsPerDay: addDataFormData.eventsPerDay,
+        createTutoringSessions: addDataFormData.createTutoringSessions,
+        createChallenges: addDataFormData.createChallenges,
+        tutoringSessionsPerUser: addDataFormData.tutoringSessionsPerUser,
+        challengesPerUser: addDataFormData.challengesPerUser,
         cohortsPerSubject: addDataFormData.cohortsPerSubject,
         xpEventsPerUser: addDataFormData.xpEventsPerUser,
         referralCount: addDataFormData.referralCount,
@@ -190,9 +297,21 @@ export function SeedForm() {
       newSelection.add(userId);
     }
     setSelectedUserIds(newSelection);
+
+    // Clear validation errors when selection changes
+    if (newSelection.size >= 2) {
+      setValidationErrors((prev) => {
+        const next = { ...prev };
+        delete next.createEvents;
+        delete next.createReferrals;
+        return next;
+      });
+    }
   };
 
-  const studentUsers = users.filter((u) => u.persona === "student" || !u.persona);
+  const studentUsers = users.filter(
+    (u) => u.persona === "student" || !u.persona
+  );
 
   return (
     <div className="space-y-6">
@@ -255,12 +374,22 @@ export function SeedForm() {
                   min="1"
                   max="50"
                   value={createFormData.userCount}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const newCount = parseInt(e.target.value) || 1;
                     setCreateFormData({
                       ...createFormData,
-                      userCount: parseInt(e.target.value) || 1,
-                    })
-                  }
+                      userCount: newCount,
+                    });
+                    // Clear validation errors when user count changes
+                    if (newCount >= 2) {
+                      setValidationErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.createEvents;
+                        delete next.createReferrals;
+                        return next;
+                      });
+                    }
+                  }}
                   required
                 />
                 <p className="text-xs text-muted-foreground">
@@ -297,7 +426,10 @@ export function SeedForm() {
                 type="text"
                 value={createFormData.subjects}
                 onChange={(e) =>
-                  setCreateFormData({ ...createFormData, subjects: e.target.value })
+                  setCreateFormData({
+                    ...createFormData,
+                    subjects: e.target.value,
+                  })
                 }
                 placeholder="algebra,geometry,calculus"
                 required
@@ -347,8 +479,10 @@ export function SeedForm() {
 
             {/* Advanced Options */}
             <div className="space-y-4 pt-4 border-t">
-              <h3 className="text-sm font-semibold">Additional Data (Optional)</h3>
-              
+              <h3 className="text-sm font-semibold">
+                Additional Data (Optional)
+              </h3>
+
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -402,7 +536,9 @@ export function SeedForm() {
                     />
                   )}
                   {createFormData.createCohorts && (
-                    <span className="text-xs text-muted-foreground">per subject</span>
+                    <span className="text-xs text-muted-foreground">
+                      per subject
+                    </span>
                   )}
                 </div>
 
@@ -458,7 +594,9 @@ export function SeedForm() {
                     />
                   )}
                   {createFormData.createXpEvents && (
-                    <span className="text-xs text-muted-foreground">per user</span>
+                    <span className="text-xs text-muted-foreground">
+                      per user
+                    </span>
                   )}
                 </div>
 
@@ -466,12 +604,20 @@ export function SeedForm() {
                   <Checkbox
                     id="createReferrals"
                     checked={createFormData.createReferrals}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={(checked) => {
                       setCreateFormData({
                         ...createFormData,
                         createReferrals: checked === true,
-                      })
-                    }
+                      });
+                      // Clear validation error when checkbox changes
+                      if (checked === false) {
+                        setValidationErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.createReferrals;
+                          return next;
+                        });
+                      }
+                    }}
                   />
                   <Label
                     htmlFor="createReferrals"
@@ -497,11 +643,156 @@ export function SeedForm() {
                   {createFormData.createReferrals && (
                     <span className="text-xs text-muted-foreground">total</span>
                   )}
+                  {validationErrors.createReferrals && (
+                    <p className="text-xs text-red-600 mt-1 ml-6">
+                      {validationErrors.createReferrals}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="createEvents"
+                    checked={createFormData.createEvents}
+                    onCheckedChange={(checked) => {
+                      setCreateFormData({
+                        ...createFormData,
+                        createEvents: checked === true,
+                      });
+                      // Clear validation error when checkbox changes
+                      if (checked === false) {
+                        setValidationErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.createEvents;
+                          return next;
+                        });
+                      }
+                    }}
+                  />
+                  <Label
+                    htmlFor="createEvents"
+                    className="text-sm font-normal cursor-pointer flex-1"
+                  >
+                    Create Events for K-Factor Metrics
+                  </Label>
+                  {createFormData.createEvents && (
+                    <Input
+                      type="number"
+                      min="1"
+                      max="50"
+                      value={createFormData.eventsPerDay}
+                      onChange={(e) =>
+                        setCreateFormData({
+                          ...createFormData,
+                          eventsPerDay: parseInt(e.target.value) || 10,
+                        })
+                      }
+                      className="w-20 h-8"
+                    />
+                  )}
+                  {createFormData.createEvents && (
+                    <span className="text-xs text-muted-foreground">
+                      per day
+                    </span>
+                  )}
+                </div>
+                {validationErrors.createEvents && (
+                  <p className="text-xs text-red-600 mt-1 ml-6">
+                    {validationErrors.createEvents}
+                  </p>
+                )}
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="createTutoringSessions"
+                    checked={createFormData.createTutoringSessions}
+                    onCheckedChange={(checked) =>
+                      setCreateFormData({
+                        ...createFormData,
+                        createTutoringSessions: checked === true,
+                      })
+                    }
+                  />
+                  <Label
+                    htmlFor="createTutoringSessions"
+                    className="text-sm font-normal cursor-pointer flex-1"
+                  >
+                    Create Tutoring Sessions
+                  </Label>
+                  {createFormData.createTutoringSessions && (
+                    <Input
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={createFormData.tutoringSessionsPerUser}
+                      onChange={(e) =>
+                        setCreateFormData({
+                          ...createFormData,
+                          tutoringSessionsPerUser:
+                            parseInt(e.target.value) || 3,
+                        })
+                      }
+                      className="w-20 h-8"
+                    />
+                  )}
+                  {createFormData.createTutoringSessions && (
+                    <span className="text-xs text-muted-foreground">
+                      per user
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="createChallenges"
+                    checked={createFormData.createChallenges}
+                    onCheckedChange={(checked) =>
+                      setCreateFormData({
+                        ...createFormData,
+                        createChallenges: checked === true,
+                      })
+                    }
+                  />
+                  <Label
+                    htmlFor="createChallenges"
+                    className="text-sm font-normal cursor-pointer flex-1"
+                  >
+                    Create Challenges
+                  </Label>
+                  {createFormData.createChallenges && (
+                    <Input
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={createFormData.challengesPerUser}
+                      onChange={(e) =>
+                        setCreateFormData({
+                          ...createFormData,
+                          challengesPerUser: parseInt(e.target.value) || 5,
+                        })
+                      }
+                      className="w-20 h-8"
+                    />
+                  )}
+                  {createFormData.createChallenges && (
+                    <span className="text-xs text-muted-foreground">
+                      per user
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
-            <Button type="submit" disabled={createLoading || quickLoading || addDataLoading}>
+            <Button
+              type="submit"
+              disabled={
+                createLoading ||
+                quickLoading ||
+                addDataLoading ||
+                (createFormData.createEvents && createFormData.userCount < 2) ||
+                (createFormData.createReferrals && createFormData.userCount < 2)
+              }
+            >
               {createLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -535,7 +826,9 @@ export function SeedForm() {
             <div className="space-y-2">
               <Label>Select Users</Label>
               {loadingUsers ? (
-                <p className="text-sm text-muted-foreground">Loading users...</p>
+                <p className="text-sm text-muted-foreground">
+                  Loading users...
+                </p>
               ) : studentUsers.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   No student users found in database.
@@ -584,7 +877,7 @@ export function SeedForm() {
             {/* Advanced Options */}
             <div className="space-y-4 pt-4 border-t">
               <h3 className="text-sm font-semibold">Data to Add</h3>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -638,7 +931,9 @@ export function SeedForm() {
                     />
                   )}
                   {addDataFormData.createCohorts && (
-                    <span className="text-xs text-muted-foreground">per subject</span>
+                    <span className="text-xs text-muted-foreground">
+                      per subject
+                    </span>
                   )}
                 </div>
 
@@ -694,7 +989,9 @@ export function SeedForm() {
                     />
                   )}
                   {addDataFormData.createXpEvents && (
-                    <span className="text-xs text-muted-foreground">per user</span>
+                    <span className="text-xs text-muted-foreground">
+                      per user
+                    </span>
                   )}
                 </div>
 
@@ -702,12 +999,20 @@ export function SeedForm() {
                   <Checkbox
                     id="addData-createReferrals"
                     checked={addDataFormData.createReferrals}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={(checked) => {
                       setAddDataFormData({
                         ...addDataFormData,
                         createReferrals: checked === true,
-                      })
-                    }
+                      });
+                      // Clear validation error when checkbox changes
+                      if (checked === false) {
+                        setValidationErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.createReferrals;
+                          return next;
+                        });
+                      }
+                    }}
                   />
                   <Label
                     htmlFor="addData-createReferrals"
@@ -733,13 +1038,156 @@ export function SeedForm() {
                   {addDataFormData.createReferrals && (
                     <span className="text-xs text-muted-foreground">total</span>
                   )}
+                  {validationErrors.createReferrals && (
+                    <p className="text-xs text-red-600 mt-1 ml-6">
+                      {validationErrors.createReferrals}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="addData-createEvents"
+                    checked={addDataFormData.createEvents}
+                    onCheckedChange={(checked) => {
+                      setAddDataFormData({
+                        ...addDataFormData,
+                        createEvents: checked === true,
+                      });
+                      // Clear validation error when checkbox changes
+                      if (checked === false) {
+                        setValidationErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.createEvents;
+                          return next;
+                        });
+                      }
+                    }}
+                  />
+                  <Label
+                    htmlFor="addData-createEvents"
+                    className="text-sm font-normal cursor-pointer flex-1"
+                  >
+                    Create Events for K-Factor Metrics
+                  </Label>
+                  {addDataFormData.createEvents && (
+                    <Input
+                      type="number"
+                      min="1"
+                      max="50"
+                      value={addDataFormData.eventsPerDay}
+                      onChange={(e) =>
+                        setAddDataFormData({
+                          ...addDataFormData,
+                          eventsPerDay: parseInt(e.target.value) || 10,
+                        })
+                      }
+                      className="w-20 h-8"
+                    />
+                  )}
+                  {addDataFormData.createEvents && (
+                    <span className="text-xs text-muted-foreground">
+                      per day
+                    </span>
+                  )}
+                </div>
+                {validationErrors.createEvents && (
+                  <p className="text-xs text-red-600 mt-1 ml-6">
+                    {validationErrors.createEvents}
+                  </p>
+                )}
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="addData-createTutoringSessions"
+                    checked={addDataFormData.createTutoringSessions}
+                    onCheckedChange={(checked) =>
+                      setAddDataFormData({
+                        ...addDataFormData,
+                        createTutoringSessions: checked === true,
+                      })
+                    }
+                  />
+                  <Label
+                    htmlFor="addData-createTutoringSessions"
+                    className="text-sm font-normal cursor-pointer flex-1"
+                  >
+                    Create Tutoring Sessions
+                  </Label>
+                  {addDataFormData.createTutoringSessions && (
+                    <Input
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={addDataFormData.tutoringSessionsPerUser}
+                      onChange={(e) =>
+                        setAddDataFormData({
+                          ...addDataFormData,
+                          tutoringSessionsPerUser:
+                            parseInt(e.target.value) || 3,
+                        })
+                      }
+                      className="w-20 h-8"
+                    />
+                  )}
+                  {addDataFormData.createTutoringSessions && (
+                    <span className="text-xs text-muted-foreground">
+                      per user
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="addData-createChallenges"
+                    checked={addDataFormData.createChallenges}
+                    onCheckedChange={(checked) =>
+                      setAddDataFormData({
+                        ...addDataFormData,
+                        createChallenges: checked === true,
+                      })
+                    }
+                  />
+                  <Label
+                    htmlFor="addData-createChallenges"
+                    className="text-sm font-normal cursor-pointer flex-1"
+                  >
+                    Create Challenges
+                  </Label>
+                  {addDataFormData.createChallenges && (
+                    <Input
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={addDataFormData.challengesPerUser}
+                      onChange={(e) =>
+                        setAddDataFormData({
+                          ...addDataFormData,
+                          challengesPerUser: parseInt(e.target.value) || 5,
+                        })
+                      }
+                      className="w-20 h-8"
+                    />
+                  )}
+                  {addDataFormData.createChallenges && (
+                    <span className="text-xs text-muted-foreground">
+                      per user
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
-            <Button 
-              type="submit" 
-              disabled={addDataLoading || quickLoading || createLoading || selectedUserIds.size === 0}
+            <Button
+              type="submit"
+              disabled={
+                addDataLoading ||
+                quickLoading ||
+                createLoading ||
+                selectedUserIds.size === 0 ||
+                (addDataFormData.createEvents && selectedUserIds.size < 2) ||
+                (addDataFormData.createReferrals && selectedUserIds.size < 2)
+              }
             >
               {addDataLoading ? (
                 <>
@@ -828,9 +1276,42 @@ export function SeedForm() {
                       created
                     </p>
                   )}
-                <p className="text-xs text-muted-foreground mt-2">
-                  Check the leaderboards to see the new data!
-                </p>
+                {result.eventsCreated !== undefined &&
+                  result.eventsCreated > 0 && (
+                    <p className="text-sm">
+                      <strong>{result.eventsCreated}</strong> events created
+                    </p>
+                  )}
+                {result.tutoringSessionsCreated !== undefined &&
+                  result.tutoringSessionsCreated > 0 && (
+                    <p className="text-sm">
+                      <strong>{result.tutoringSessionsCreated}</strong> tutoring
+                      sessions created
+                    </p>
+                  )}
+                {result.challengesCreated !== undefined &&
+                  result.challengesCreated > 0 && (
+                    <p className="text-sm">
+                      <strong>{result.challengesCreated}</strong> challenges
+                      created
+                    </p>
+                  )}
+                {result.error && (
+                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <p className="text-sm text-yellow-800 font-medium">Tip:</p>
+                    <p className="text-xs text-yellow-700 mt-1">
+                      {result.error.includes("at least 2 users") &&
+                        "Select at least 2 users to create events or referrals. Events require multiple users to simulate invite flows."}
+                      {!result.error.includes("at least 2 users") &&
+                        result.error}
+                    </p>
+                  </div>
+                )}
+                {!result.error && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Check the leaderboards to see the new data!
+                  </p>
+                )}
               </div>
             ) : (
               <div className="space-y-2">
