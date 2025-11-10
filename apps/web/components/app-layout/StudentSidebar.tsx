@@ -4,7 +4,7 @@ import { AgentBuddy } from "@/components/AgentBuddy";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Flame, Shield, Trophy, Users } from "lucide-react";
+import { Flame, Shield, Trophy, Users, Zap, Star } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +26,9 @@ interface StudentSidebarProps {
     subjects: Array<{
       name: string;
       activeUsers: number;
-      progress?: number;
+      totalXp: number;
+      currentStreak: number;
+      longestStreak: number;
     }>;
     cohorts: Array<{
       id: string;
@@ -145,24 +147,53 @@ export function StudentSidebar({ userId, persona, data }: StudentSidebarProps) {
           </Card>
         ) : (
           <div className="space-y-1.5">
-            {data.subjects.map((subject) => (
-              <Card 
-                key={subject.name}
-                className="p-2.5 hover:bg-accent cursor-pointer transition-colors"
-              >
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{subject.name}</span>
-                    {subject.activeUsers > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        <Users className="h-3 w-3 mr-1" />
-                        {subject.activeUsers} online
-                      </Badge>
-                    )}
+            {data.subjects.map((subject) => {
+              const isBestStreak = subject.currentStreak > 0 && subject.currentStreak === subject.longestStreak;
+              
+              return (
+                <Card 
+                  key={subject.name}
+                  className={cn(
+                    "p-2.5 hover:bg-accent cursor-pointer transition-all",
+                    isBestStreak && "border-yellow-400/50 bg-gradient-to-br from-yellow-50/50 to-orange-50/50 dark:from-yellow-950/10 dark:to-orange-950/10 shadow-sm"
+                  )}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{subject.name}</span>
+                      {subject.activeUsers > 0 && (
+                        <Badge variant="secondary" className="text-xs">
+                          <Users className="h-3 w-3 mr-1" />
+                          {subject.activeUsers} online
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center justify-between gap-2 text-xs">
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <Zap className="h-3 w-3" />
+                        <span>{subject.totalXp.toLocaleString()} XP</span>
+                      </div>
+                      <div className={cn(
+                        "flex items-center gap-1",
+                        isBestStreak 
+                          ? "text-yellow-600 dark:text-yellow-400 font-semibold" 
+                          : "text-muted-foreground"
+                      )}>
+                        {isBestStreak && <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />}
+                        <Flame className={cn("h-3 w-3", isBestStreak && "text-yellow-600 dark:text-yellow-400")} />
+                        <span>{subject.currentStreak} streak</span>
+                        {isBestStreak && (
+                          <Badge variant="outline" className="ml-1 text-[10px] px-1 py-0 border-yellow-400 text-yellow-600 dark:text-yellow-400">
+                            Best!
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>

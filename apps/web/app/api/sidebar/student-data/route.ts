@@ -45,6 +45,7 @@ export async function GET(_req: NextRequest) {
         subjectSlug: subjects.slug,
         totalXp: userSubjects.totalXp,
         currentStreak: userSubjects.currentStreak,
+        longestStreak: userSubjects.longestStreak,
         lastActivityAt: userSubjects.lastActivityAt,
       })
       .from(userSubjects)
@@ -73,6 +74,9 @@ export async function GET(_req: NextRequest) {
     const subjectsData = enrolledSubjects.map((subject) => ({
       name: subject.subjectName,
       activeUsers: presenceCounts.get(subject.subjectSlug) || 0,
+      totalXp: subject.totalXp,
+      currentStreak: subject.currentStreak,
+      longestStreak: subject.longestStreak,
     }));
 
     return NextResponse.json({

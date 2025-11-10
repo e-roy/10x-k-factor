@@ -134,7 +134,7 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
   // Fetch XP and level from the real system
   const xpData = await getUserXpWithLevel(userId);
 
-  // Fetch user's enrolled subjects with progress
+  // Fetch user's enrolled subjects
   const enrolledSubjects = await db
     .select({
       subjectId: subjects.id,
@@ -142,6 +142,7 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
       subjectSlug: subjects.slug,
       totalXp: userSubjects.totalXp,
       currentStreak: userSubjects.currentStreak,
+      longestStreak: userSubjects.longestStreak,
       lastActivityAt: userSubjects.lastActivityAt,
     })
     .from(userSubjects)
@@ -170,6 +171,9 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
   const subjectsData = enrolledSubjects.map((subject) => ({
     name: subject.subjectName,
     activeUsers: presenceCounts.get(subject.subjectSlug) || 0,
+    totalXp: subject.totalXp,
+    currentStreak: subject.currentStreak,
+    longestStreak: subject.longestStreak,
   }));
 
   return {
