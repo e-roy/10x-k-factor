@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Medal, Award } from "lucide-react";
+import { formatNameForLeaderboard } from "@/lib/utils";
 
 interface LeaderboardEntry {
   userId: string;
@@ -154,7 +155,9 @@ export function LeaderboardWidget({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">
-                      {entry.userName || `User ${entry.userId.slice(0, 8)}`}
+                      {entry.userName
+                        ? formatNameForLeaderboard(entry.userName)
+                        : `User ${entry.userId.slice(0, 8)}`}
                       {entry.userId === currentUserId && (
                         <span className="ml-2 text-xs text-primary">(You)</span>
                       )}
