@@ -125,9 +125,8 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
   }
 
   const { db } = await import("@/db/index");
-  const { cohorts, subjects, userSubjects } = await import("@/db/schema");
+  const { cohorts, subjects, userSubjects, usersProfiles } = await import("@/db/schema");
   const { eq, desc } = await import("drizzle-orm");
-  const { calculateStreak } = await import("@/lib/streaks");
   const { getUserXpWithLevel } = await import("@/lib/xp");
   const { getPresenceCounts } = await import("@/lib/presence");
 
@@ -158,8 +157,14 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
     .orderBy(desc(cohorts.createdAt))
     .limit(5);
 
-  // Calculate streak
-  const streak = await calculateStreak(userId);
+  // Fetch overall streak from users_profiles
+  const [profile] = await db
+    .select({ overallStreak: usersProfiles.overallStreak })
+    .from(usersProfiles)
+    .where(eq(usersProfiles.userId, userId))
+    .limit(1);
+
+  const streak = profile?.overallStreak ?? 0;
   const now = new Date();
   const streakAtRisk = now.getHours() >= 20 && streak > 0; // After 8 PM
 

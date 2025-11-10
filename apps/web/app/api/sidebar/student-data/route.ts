@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { cohorts, userSubjects, subjects } from "@/db/schema";
+import { cohorts, userSubjects, subjects, usersProfiles } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { calculateStreak } from "@/lib/streaks";
 import { getUserXpWithLevel } from "@/lib/xp";
 import { getPresenceCounts } from "@/lib/presence";
 
@@ -61,8 +60,14 @@ export async function GET(_req: NextRequest) {
       .orderBy(desc(cohorts.createdAt))
       .limit(5);
 
-    // Calculate streak
-    const streak = await calculateStreak(userId);
+    // Fetch overall streak from users_profiles
+    const [profile] = await db
+      .select({ overallStreak: usersProfiles.overallStreak })
+      .from(usersProfiles)
+      .where(eq(usersProfiles.userId, userId))
+      .limit(1);
+
+    const streak = profile?.overallStreak ?? 0;
     const now = new Date();
     const streakAtRisk = now.getHours() >= 20 && streak > 0; // After 8 PM
 

@@ -4,7 +4,7 @@ import { AgentBuddy } from "@/components/AgentBuddy";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Flame, Shield, Trophy, Users, Zap, Star } from "lucide-react";
+import { Flame, Shield, Users, Zap, Star } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -105,7 +105,7 @@ export function StudentSidebar({ userId, persona, data }: StudentSidebarProps) {
       </div>
 
       {/* Badges Section */}
-      {data.badges.length > 0 && (
+      {/* {data.badges.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold flex items-center gap-2">
@@ -128,7 +128,7 @@ export function StudentSidebar({ userId, persona, data }: StudentSidebarProps) {
             ))}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Subjects Section */}
       <div className="space-y-2">

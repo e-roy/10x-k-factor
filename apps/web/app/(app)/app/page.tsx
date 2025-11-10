@@ -49,8 +49,8 @@ export default async function DashboardPage() {
     .orderBy(desc(cohorts.createdAt))
     .limit(5);
 
-  // Calculate streak
-  const streak = await calculateStreak(userId);
+  // Fetch overall streak from users_profiles
+  const streak = profile?.overallStreak ?? 0;
 
   // Get most common subject
   const mostCommonSubject =
@@ -198,7 +198,7 @@ async function fetchDashboardData(
         longestStreak: subject.longestStreak,
       })),
       streak: context.streak,
-      friendsOnline: 12, // TODO: Get from presence system
+      friendsOnline: 0, // Now fetched client-side via usePresence hook in StudentDashboard
       challenges: [], // TODO: Get from results/challenges
     };
   }
