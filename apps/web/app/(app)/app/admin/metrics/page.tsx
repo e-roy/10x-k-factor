@@ -1,7 +1,15 @@
-import { getKByLoop, getReferralMetrics, getRecentReferrals } from "./actions";
+import { 
+  getKByLoop, 
+  getReferralMetrics, 
+  getRecentReferrals,
+  getTutoringSessionsCount,
+  getChallengesMetrics,
+  getStreaksMetrics,
+  getReferralsCount
+} from "./actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricsForm } from "./form";
-import { CheckCircle2, XCircle, Clock } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, BookOpen, Target, Flame } from "lucide-react";
 
 export default async function MetricsPage({
   searchParams,
@@ -22,15 +30,57 @@ export default async function MetricsPage({
   let metrics: Awaited<ReturnType<typeof getKByLoop>> = [];
   let referralMetrics: Awaited<ReturnType<typeof getReferralMetrics>> = [];
   let recentReferrals: Awaited<ReturnType<typeof getRecentReferrals>> = [];
-  let error: string | null = null;
+  let tutoringSessionsCount = 0;
+  let challengesMetrics = { completed: 0, incomplete: 0 };
+  let streaksMetrics = { active_streaks: 0, avg_current_streak: 0, max_longest_streak: 0 };
+  let referralsCount = 0;
 
+  // Load metrics independently so one failure doesn't break others
   try {
     metrics = await getKByLoop(from, to);
+  } catch (err) {
+    // K-factor metrics require materialized view - this is expected if migration hasn't run
+    if (err instanceof Error && err.message.includes("does not exist")) {
+      console.warn("[metrics] Materialized view not found. Run migration first.");
+    } else {
+      console.error("[metrics] Failed to load K-factor data:", err);
+    }
+  }
+
+  try {
     referralMetrics = await getReferralMetrics(from, to);
+  } catch (err) {
+    console.error("[metrics] Failed to load referral metrics:", err);
+  }
+
+  try {
     recentReferrals = await getRecentReferrals(from, to, 20);
   } catch (err) {
-    error = err instanceof Error ? err.message : "Failed to load metrics";
-    console.error("[metrics] Error loading data:", err);
+    console.error("[metrics] Failed to load recent referrals:", err);
+  }
+
+  try {
+    tutoringSessionsCount = await getTutoringSessionsCount(from, to);
+  } catch (err) {
+    console.error("[metrics] Failed to load tutoring sessions count:", err);
+  }
+
+  try {
+    challengesMetrics = await getChallengesMetrics(from, to);
+  } catch (err) {
+    console.error("[metrics] Failed to load challenges metrics:", err);
+  }
+
+  try {
+    streaksMetrics = await getStreaksMetrics(from, to);
+  } catch (err) {
+    console.error("[metrics] Failed to load streaks metrics:", err);
+  }
+
+  try {
+    referralsCount = await getReferralsCount(from, to);
+  } catch (err) {
+    console.error("[metrics] Failed to load referrals count:", err);
   }
 
   // Calculate summary stats
@@ -52,12 +102,50 @@ export default async function MetricsPage({
       <MetricsForm from={from} to={to} />
 
       {/* Summary Stats */}
-      {!error && totalReferrals > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 my-6">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-2xl font-bold">{totalReferrals}</div>
+              <div className="flex items-center gap-2 mb-2">
+                <BookOpen className="h-5 w-5 text-muted-foreground" />
+                <div className="text-2xl font-bold">{tutoringSessionsCount}</div>
+              </div>
+              <p className="text-sm text-muted-foreground">Tutoring Sessions</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="h-5 w-5 text-green-600" />
+                <div className="text-2xl font-bold">{challengesMetrics.completed}</div>
+              </div>
+              <p className="text-sm text-muted-foreground">Challenges Completed</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-2">
+                <XCircle className="h-5 w-5 text-yellow-600" />
+                <div className="text-2xl font-bold">{challengesMetrics.incomplete}</div>
+              </div>
+              <p className="text-sm text-muted-foreground">Challenges Incomplete</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle2 className="h-5 w-5 text-blue-600" />
+                <div className="text-2xl font-bold">{referralsCount}</div>
+              </div>
               <p className="text-sm text-muted-foreground">Total Referrals</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-2">
+                <Flame className="h-5 w-5 text-orange-600" />
+                <div className="text-2xl font-bold">{streaksMetrics.active_streaks}</div>
+              </div>
+              <p className="text-sm text-muted-foreground">Active Streaks</p>
             </CardContent>
           </Card>
           <Card>
@@ -72,22 +160,19 @@ export default async function MetricsPage({
               <p className="text-sm text-muted-foreground">Overall Completion Rate</p>
             </CardContent>
           </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-2xl font-bold">
+                {typeof streaksMetrics.avg_current_streak === 'number' 
+                  ? streaksMetrics.avg_current_streak.toFixed(1) 
+                  : '0.0'}
+              </div>
+              <p className="text-sm text-muted-foreground">Avg Current Streak</p>
+            </CardContent>
+          </Card>
         </div>
-      )}
 
-      {error ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-destructive">
-              <p>Error: {error}</p>
-              <p className="text-sm mt-2">
-                Make sure the materialized view migration has been run.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* K-Factor Metrics */}
           {metrics.length === 0 ? (
             <Card>
@@ -276,7 +361,6 @@ export default async function MetricsPage({
             </Card>
           )}
         </div>
-      )}
     </div>
   );
 }

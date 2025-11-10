@@ -32,6 +32,17 @@ export interface RecentReferral {
   completed_at: Date | null;
 }
 
+export interface ChallengesMetrics {
+  completed: number;
+  incomplete: number;
+}
+
+export interface StreaksMetrics {
+  active_streaks: number;
+  avg_current_streak: number;
+  max_longest_streak: number;
+}
+
 /**
  * Get K-factor metrics by loop for a date range
  * 
@@ -152,6 +163,137 @@ export async function getRecentReferrals(
     return (result as unknown as RecentReferral[]) || [];
   } catch (error) {
     console.error("[metrics] Failed to fetch recent referrals:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get count of tutoring sessions completed in a date range
+ * 
+ * @param from Start date (YYYY-MM-DD format)
+ * @param to End date (YYYY-MM-DD format)
+ * @returns Total count of tutoring sessions
+ */
+export async function getTutoringSessionsCount(
+  from: string,
+  to: string
+): Promise<number> {
+  try {
+    const result = await db.execute(sql`
+      SELECT COUNT(*)::integer AS count
+      FROM tutor_sessions
+      WHERE created_at BETWEEN ${from}::timestamp AND (${to}::timestamp + INTERVAL '1 day');
+    `);
+
+    const row = (result as unknown as { count: number }[])[0];
+    return row?.count || 0;
+  } catch (error) {
+    console.error("[metrics] Failed to fetch tutoring sessions count:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get challenges metrics (completed and incomplete) for a date range
+ * 
+ * @param from Start date (YYYY-MM-DD format)
+ * @param to End date (YYYY-MM-DD format)
+ * @returns Object with completed and incomplete challenge counts
+ */
+export async function getChallengesMetrics(
+  from: string,
+  to: string
+): Promise<ChallengesMetrics> {
+  try {
+    const result = await db.execute(sql`
+      SELECT 
+        COUNT(*) FILTER (WHERE status = 'completed' AND completed_at IS NOT NULL)::integer AS completed,
+        COUNT(*) FILTER (
+          WHERE status != 'completed' 
+          OR completed_at IS NULL
+        )::integer AS incomplete
+      FROM challenges
+      WHERE created_at BETWEEN ${from}::timestamp AND (${to}::timestamp + INTERVAL '1 day');
+    `);
+
+    const row = (result as unknown as ChallengesMetrics[])[0];
+    return {
+      completed: row?.completed || 0,
+      incomplete: row?.incomplete || 0,
+    };
+  } catch (error) {
+    console.error("[metrics] Failed to fetch challenges metrics:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get streaks metrics for a date range
+ * 
+ * @param from Start date (YYYY-MM-DD format)
+ * @param to End date (YYYY-MM-DD format)
+ * @returns Object with streak statistics
+ */
+export async function getStreaksMetrics(
+  from: string,
+  to: string
+): Promise<StreaksMetrics> {
+  try {
+    const result = await db.execute(sql`
+      SELECT 
+        COUNT(*) FILTER (WHERE current_streak > 0)::integer AS active_streaks,
+        ROUND(AVG(current_streak)::numeric, 1) AS avg_current_streak,
+        MAX(longest_streak)::integer AS max_longest_streak
+      FROM user_subjects
+      WHERE last_activity_at BETWEEN ${from}::timestamp AND (${to}::timestamp + INTERVAL '1 day')
+        OR enrolled_at BETWEEN ${from}::timestamp AND (${to}::timestamp + INTERVAL '1 day');
+    `);
+
+    const row = (result as unknown as Array<{
+      active_streaks: number;
+      avg_current_streak: number | string | null;
+      max_longest_streak: number | null;
+    }>)[0];
+    
+    // Ensure avg_current_streak is always a number
+    const avgStreak = row?.avg_current_streak;
+    const avgStreakNum = typeof avgStreak === 'string' 
+      ? parseFloat(avgStreak) 
+      : (avgStreak ?? 0);
+    
+    return {
+      active_streaks: row?.active_streaks || 0,
+      avg_current_streak: isNaN(avgStreakNum) ? 0 : avgStreakNum,
+      max_longest_streak: row?.max_longest_streak || 0,
+    };
+  } catch (error) {
+    console.error("[metrics] Failed to fetch streaks metrics:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get total referrals count for a date range
+ * 
+ * @param from Start date (YYYY-MM-DD format)
+ * @param to End date (YYYY-MM-DD format)
+ * @returns Total count of referrals
+ */
+export async function getReferralsCount(
+  from: string,
+  to: string
+): Promise<number> {
+  try {
+    const result = await db.execute(sql`
+      SELECT COUNT(*)::integer AS count
+      FROM referrals
+      WHERE created_at BETWEEN ${from}::timestamp AND (${to}::timestamp + INTERVAL '1 day');
+    `);
+
+    const row = (result as unknown as { count: number }[])[0];
+    return row?.count || 0;
+  } catch (error) {
+    console.error("[metrics] Failed to fetch referrals count:", error);
     throw error;
   }
 }

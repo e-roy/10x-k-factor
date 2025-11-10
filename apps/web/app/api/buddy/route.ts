@@ -22,8 +22,8 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Agent buddies are for students only
-    if (session.user.persona !== "student") {
+    // Agent buddies are for students only (admins can also access for testing)
+    if (session.user.persona !== "student" && session.user.role !== "admin") {
       return NextResponse.json(
         { error: "Agent buddies are only available for students" },
         { status: 403 }
