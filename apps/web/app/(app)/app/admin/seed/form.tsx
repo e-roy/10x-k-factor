@@ -59,7 +59,6 @@ export function SeedForm() {
     createEvents: false,
     createTutoringSessions: false,
     createChallenges: false,
-    cohortsPerSubject: 2,
     xpEventsPerUser: 5,
     referralCount: 3,
     eventsPerDay: 10,
@@ -76,7 +75,6 @@ export function SeedForm() {
     createEvents: false,
     createTutoringSessions: false,
     createChallenges: false,
-    cohortsPerSubject: 2,
     xpEventsPerUser: 5,
     referralCount: 3,
     eventsPerDay: 10,
@@ -194,7 +192,6 @@ export function SeedForm() {
         createChallenges: createFormData.createChallenges,
         tutoringSessionsPerUser: createFormData.tutoringSessionsPerUser,
         challengesPerUser: createFormData.challengesPerUser,
-        cohortsPerSubject: createFormData.cohortsPerSubject,
         xpEventsPerUser: createFormData.xpEventsPerUser,
         referralCount: createFormData.referralCount,
       });
@@ -268,7 +265,6 @@ export function SeedForm() {
         createChallenges: addDataFormData.createChallenges,
         tutoringSessionsPerUser: addDataFormData.tutoringSessionsPerUser,
         challengesPerUser: addDataFormData.challengesPerUser,
-        cohortsPerSubject: addDataFormData.cohortsPerSubject,
         xpEventsPerUser: addDataFormData.xpEventsPerUser,
         referralCount: addDataFormData.referralCount,
       });
@@ -497,45 +493,6 @@ export function SeedForm() {
                   >
                     Create parents (1-2 students per parent)
                   </Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="createCohorts"
-                    checked={createFormData.createCohorts}
-                    onCheckedChange={(checked) =>
-                      setCreateFormData({
-                        ...createFormData,
-                        createCohorts: checked === true,
-                      })
-                    }
-                  />
-                  <Label
-                    htmlFor="createCohorts"
-                    className="text-sm font-normal cursor-pointer flex-1"
-                  >
-                    Create cohorts
-                  </Label>
-                  {createFormData.createCohorts && (
-                    <Input
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={createFormData.cohortsPerSubject}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          cohortsPerSubject: parseInt(e.target.value) || 2,
-                        })
-                      }
-                      className="w-20 h-8"
-                    />
-                  )}
-                  {createFormData.createCohorts && (
-                    <span className="text-xs text-muted-foreground">
-                      per subject
-                    </span>
-                  )}
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -892,45 +849,6 @@ export function SeedForm() {
                   >
                     Create parents (1-2 students per parent)
                   </Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="addData-createCohorts"
-                    checked={addDataFormData.createCohorts}
-                    onCheckedChange={(checked) =>
-                      setAddDataFormData({
-                        ...addDataFormData,
-                        createCohorts: checked === true,
-                      })
-                    }
-                  />
-                  <Label
-                    htmlFor="addData-createCohorts"
-                    className="text-sm font-normal cursor-pointer flex-1"
-                  >
-                    Create cohorts
-                  </Label>
-                  {addDataFormData.createCohorts && (
-                    <Input
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={addDataFormData.cohortsPerSubject}
-                      onChange={(e) =>
-                        setAddDataFormData({
-                          ...addDataFormData,
-                          cohortsPerSubject: parseInt(e.target.value) || 2,
-                        })
-                      }
-                      className="w-20 h-8"
-                    />
-                  )}
-                  {addDataFormData.createCohorts && (
-                    <span className="text-xs text-muted-foreground">
-                      per subject
-                    </span>
-                  )}
                 </div>
 
                 <div className="flex items-center space-x-2">

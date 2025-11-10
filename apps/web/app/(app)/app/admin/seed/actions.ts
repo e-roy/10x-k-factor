@@ -1496,7 +1496,6 @@ export async function seedUsersAndResults(
     if (
       studentUserIds.length === 0 &&
       (validated.createParents ||
-        validated.createCohorts ||
         validated.createSubjectEnrollments ||
         validated.createXpEvents ||
         validated.createReferrals ||
@@ -1509,7 +1508,6 @@ export async function seedUsersAndResults(
         usersCreated: usersToCreate.length,
         resultsCreated: resultsToCreate.length,
         parentsCreated: 0,
-        cohortsCreated: 0,
         enrollmentsCreated: 0,
         xpEventsCreated: 0,
         referralsCreated: 0,
@@ -1525,7 +1523,6 @@ export async function seedUsersAndResults(
         usersCreated: usersToCreate.length,
         resultsCreated: resultsToCreate.length,
         parentsCreated: 0,
-        cohortsCreated: 0,
         enrollmentsCreated: 0,
         xpEventsCreated: 0,
         referralsCreated: 0,
@@ -2007,7 +2004,6 @@ export async function quickSeed(): Promise<SeedResult> {
     createEvents: true,
     createTutoringSessions: true,
     createChallenges: true,
-    cohortsPerSubject: 2,
     xpEventsPerUser: 8,
     referralCount: 5,
     eventsPerDay: 10,
