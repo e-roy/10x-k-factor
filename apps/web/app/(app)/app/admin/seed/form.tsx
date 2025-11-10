@@ -41,11 +41,9 @@ export function SeedForm() {
     scoreMin: 60,
     scoreMax: 100,
     createParents: false,
-    createCohorts: false,
     createSubjectEnrollments: false,
     createXpEvents: false,
     createReferrals: false,
-    cohortsPerSubject: 2,
     xpEventsPerUser: 5,
     referralCount: 3,
   });
@@ -53,11 +51,9 @@ export function SeedForm() {
   // Form data for "Add Data to Existing Users"
   const [addDataFormData, setAddDataFormData] = useState({
     createParents: false,
-    createCohorts: false,
     createSubjectEnrollments: false,
     createXpEvents: false,
     createReferrals: false,
-    cohortsPerSubject: 2,
     xpEventsPerUser: 5,
     referralCount: 3,
   });
@@ -115,11 +111,9 @@ export function SeedForm() {
         scoreMax: createFormData.scoreMax,
         selectedUserIds: undefined,
         createParents: createFormData.createParents,
-        createCohorts: createFormData.createCohorts,
         createSubjectEnrollments: createFormData.createSubjectEnrollments,
         createXpEvents: createFormData.createXpEvents,
         createReferrals: createFormData.createReferrals,
-        cohortsPerSubject: createFormData.cohortsPerSubject,
         xpEventsPerUser: createFormData.xpEventsPerUser,
         referralCount: createFormData.referralCount,
       });
@@ -161,11 +155,9 @@ export function SeedForm() {
         scoreMax: 100,
         selectedUserIds: Array.from(selectedUserIds),
         createParents: addDataFormData.createParents,
-        createCohorts: addDataFormData.createCohorts,
         createSubjectEnrollments: addDataFormData.createSubjectEnrollments,
         createXpEvents: addDataFormData.createXpEvents,
         createReferrals: addDataFormData.createReferrals,
-        cohortsPerSubject: addDataFormData.cohortsPerSubject,
         xpEventsPerUser: addDataFormData.xpEventsPerUser,
         referralCount: addDataFormData.referralCount,
       });
@@ -241,7 +233,7 @@ export function SeedForm() {
           </CardTitle>
           <CardDescription>
             Create new users with test results and optional advanced data
-            (parents, cohorts, enrollments, XP events, referrals).
+            (parents, enrollments, XP events, referrals).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -371,43 +363,6 @@ export function SeedForm() {
 
                 <div className="flex items-center space-x-2">
                   <Checkbox
-                    id="createCohorts"
-                    checked={createFormData.createCohorts}
-                    onCheckedChange={(checked) =>
-                      setCreateFormData({
-                        ...createFormData,
-                        createCohorts: checked === true,
-                      })
-                    }
-                  />
-                  <Label
-                    htmlFor="createCohorts"
-                    className="text-sm font-normal cursor-pointer flex-1"
-                  >
-                    Create cohorts
-                  </Label>
-                  {createFormData.createCohorts && (
-                    <Input
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={createFormData.cohortsPerSubject}
-                      onChange={(e) =>
-                        setCreateFormData({
-                          ...createFormData,
-                          cohortsPerSubject: parseInt(e.target.value) || 2,
-                        })
-                      }
-                      className="w-20 h-8"
-                    />
-                  )}
-                  {createFormData.createCohorts && (
-                    <span className="text-xs text-muted-foreground">per subject</span>
-                  )}
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
                     id="createSubjectEnrollments"
                     checked={createFormData.createSubjectEnrollments}
                     onCheckedChange={(checked) =>
@@ -526,7 +481,7 @@ export function SeedForm() {
             Add Data to Existing Users
           </CardTitle>
           <CardDescription>
-            Add seed data (parents, cohorts, enrollments, XP events, referrals)
+            Add seed data (parents, enrollments, XP events, referrals)
             to users that already exist in the database.
           </CardDescription>
         </CardHeader>
@@ -603,43 +558,6 @@ export function SeedForm() {
                   >
                     Create parents (1-2 students per parent)
                   </Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="addData-createCohorts"
-                    checked={addDataFormData.createCohorts}
-                    onCheckedChange={(checked) =>
-                      setAddDataFormData({
-                        ...addDataFormData,
-                        createCohorts: checked === true,
-                      })
-                    }
-                  />
-                  <Label
-                    htmlFor="addData-createCohorts"
-                    className="text-sm font-normal cursor-pointer flex-1"
-                  >
-                    Create cohorts
-                  </Label>
-                  {addDataFormData.createCohorts && (
-                    <Input
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={addDataFormData.cohortsPerSubject}
-                      onChange={(e) =>
-                        setAddDataFormData({
-                          ...addDataFormData,
-                          cohortsPerSubject: parseInt(e.target.value) || 2,
-                        })
-                      }
-                      className="w-20 h-8"
-                    />
-                  )}
-                  {addDataFormData.createCohorts && (
-                    <span className="text-xs text-muted-foreground">per subject</span>
-                  )}
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -799,12 +717,6 @@ export function SeedForm() {
                   result.parentsCreated > 0 && (
                     <p className="text-sm">
                       <strong>{result.parentsCreated}</strong> parents created
-                    </p>
-                  )}
-                {result.cohortsCreated !== undefined &&
-                  result.cohortsCreated > 0 && (
-                    <p className="text-sm">
-                      <strong>{result.cohortsCreated}</strong> cohorts created
                     </p>
                   )}
                 {result.enrollmentsCreated !== undefined &&

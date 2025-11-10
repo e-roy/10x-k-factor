@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { results, cohorts } from "@/db/schema/index";
+import { results } from "@/db/schema/index";
 import { sql } from "drizzle-orm";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ export default async function LeaderboardPage() {
     return null; // Will be redirected by layout
   }
 
-  // Fetch subjects that have results or cohorts
+  // Fetch subjects that have results
   const resultsSubjects = await db
     .selectDistinct({
       subject: results.subject,
@@ -38,17 +38,9 @@ export default async function LeaderboardPage() {
     .where(sql`${results.subject} IS NOT NULL`)
     .limit(20);
 
-  const cohortsSubjects = await db
-    .selectDistinct({
-      subject: cohorts.subject,
-    })
-    .from(cohorts)
-    .where(sql`${cohorts.subject} IS NOT NULL`)
-    .limit(20);
-
   // Extract unique subjects and normalize
   const availableSubjects = new Set<string>();
-  [...resultsSubjects, ...cohortsSubjects].forEach((row) => {
+  resultsSubjects.forEach((row) => {
     if (row.subject) {
       availableSubjects.add(row.subject.toLowerCase().trim());
     }

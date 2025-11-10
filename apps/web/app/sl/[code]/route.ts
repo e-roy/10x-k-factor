@@ -28,11 +28,6 @@ function buildDeepRoute(params?: Record<string, unknown> | null): string {
     return `/fvm/skill/${params.deckId}`;
   }
 
-  // Check for cohortId -> cohort route
-  if (params.cohortId && typeof params.cohortId === "string") {
-    return `/cohort/${params.cohortId}`;
-  }
-
   // Default to home page
   return SAFE_REDIRECT;
 }

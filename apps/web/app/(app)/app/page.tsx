@@ -3,7 +3,6 @@ import { db } from "@/db/index";
 import {
   usersProfiles,
   results,
-  cohorts,
   subjects,
   userSubjects,
   users,
@@ -41,20 +40,12 @@ export default async function DashboardPage() {
     .orderBy(desc(results.createdAt))
     .limit(10);
 
-  // Fetch user's cohorts
-  const userCohorts = await db
-    .select()
-    .from(cohorts)
-    .where(eq(cohorts.createdBy, userId))
-    .orderBy(desc(cohorts.createdAt))
-    .limit(5);
-
   // Fetch overall streak from users_profiles
   const streak = profile?.overallStreak ?? 0;
 
   // Get most common subject
   const mostCommonSubject =
-    recentResults[0]?.subject || userCohorts[0]?.subject || "algebra";
+    recentResults[0]?.subject || "algebra";
 
   // Get enrolled subjects from user_subjects table with progress data
   const enrolledSubjectsData = await db
@@ -78,7 +69,6 @@ export default async function DashboardPage() {
   // Fetch persona-specific dashboard data
   const dashboardData = await fetchDashboardData(persona, {
     recentResults,
-    userCohorts,
     streak,
     mostCommonSubject,
     enrolledSubjects,
@@ -124,7 +114,6 @@ async function fetchDashboardData(
   persona: string,
   context: {
     recentResults: (typeof results.$inferSelect)[];
-    userCohorts: (typeof cohorts.$inferSelect)[];
     streak: number;
     mostCommonSubject: string;
     enrolledSubjects: string[];

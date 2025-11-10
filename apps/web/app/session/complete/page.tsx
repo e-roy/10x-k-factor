@@ -39,17 +39,13 @@ export default async function SessionCompletePage() {
 
   const params = link.params as Record<string, unknown>;
 
-  // Route based on params priority: resultId > deckId > cohortId
+  // Route based on params priority: resultId > deckId
   if (params.resultId && typeof params.resultId === "string") {
     redirect(`/results/${params.resultId}`);
   }
 
   if (params.deckId && typeof params.deckId === "string") {
     redirect(`/fvm/skill/${params.deckId}`);
-  }
-
-  if (params.cohortId && typeof params.cohortId === "string") {
-    redirect(`/cohort/${params.cohortId}`);
   }
 
   // Default fallback to dashboard

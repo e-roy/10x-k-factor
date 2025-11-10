@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
-import { cohorts, userSubjects, subjects, usersProfiles } from "@/db/schema";
+import { userSubjects, subjects, usersProfiles } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { getUserXpWithLevel } from "@/lib/xp";
 import { getPresenceCounts } from "@/lib/presence";
@@ -29,7 +29,6 @@ export async function GET(_req: NextRequest) {
         streakAtRisk: false,
         badges: [],
         subjects: [],
-        cohorts: [],
       });
     }
 
@@ -51,14 +50,6 @@ export async function GET(_req: NextRequest) {
       .innerJoin(subjects, eq(userSubjects.subjectId, subjects.id))
       .where(eq(userSubjects.userId, userId))
       .orderBy(desc(userSubjects.lastActivityAt));
-
-    // Fetch user's cohorts
-    const userCohorts = await db
-      .select()
-      .from(cohorts)
-      .where(eq(cohorts.createdBy, userId))
-      .orderBy(desc(cohorts.createdAt))
-      .limit(5);
 
     // Fetch overall streak from users_profiles
     const [profile] = await db
@@ -98,12 +89,6 @@ export async function GET(_req: NextRequest) {
         { id: "6", name: "Study Buddy", icon: "🤝", earnedAt: new Date() },
       ], // TODO: Fetch from rewards system
       subjects: subjectsData,
-      cohorts: userCohorts.map((cohort) => ({
-        id: cohort.id,
-        name: cohort.name,
-        subject: cohort.subject || "General",
-        activeUsers: Math.floor(Math.random() * 10) + 1, // TODO: Get from presence system
-      })),
     });
   } catch (error) {
     console.error("[student-sidebar-data] Error:", error);

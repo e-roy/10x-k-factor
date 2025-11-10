@@ -6,7 +6,6 @@ import {
   usersProfiles,
   smartLinks,
   results,
-  cohorts,
   agentBuddies,
   type Persona,
 } from "@/db/schema/index";
@@ -147,30 +146,6 @@ async function seed() {
 
     await db.insert(results).values(sampleResults);
     console.log("✓ Created results");
-
-    // Create sample cohorts
-    const cohortId = randomUUID();
-    const cohort2Id = randomUUID();
-
-    const sampleCohorts = [
-      {
-        id: cohortId,
-        name: "Algebra Study Group",
-        subject: "algebra",
-        createdBy: tutorId,
-        createdAt: new Date(),
-      },
-      {
-        id: cohort2Id,
-        name: "Geometry Challenge",
-        subject: "geometry",
-        createdBy: tutorId,
-        createdAt: new Date(),
-      },
-    ];
-
-    await db.insert(cohorts).values(sampleCohorts);
-    console.log("✓ Created cohorts");
 
     // Create sample smart links
     // Note: In production, signatures would be generated with HMAC

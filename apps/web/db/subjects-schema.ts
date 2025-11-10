@@ -16,7 +16,7 @@ import { users } from "@/db/auth-schema";
 
 /**
  * Subjects table - defines available subjects/classes
- * Subject-wide features: cohorts, presence, group challenges
+ * Subject-wide features: presence, group challenges
  */
 export const subjects = pgTable("subjects", {
   id: varchar("id", { length: 36 }).primaryKey(),

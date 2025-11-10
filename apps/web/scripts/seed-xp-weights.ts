@@ -27,7 +27,6 @@ const XP_WEIGHT_DEFINITIONS = [
   { eventType: "invitee.fvm_reached", multiplier: 30 },
   { eventType: "results.viewed", multiplier: 0.5 },
   { eventType: "presence.session_minute", multiplier: 0.2 },
-  { eventType: "cohort.leaderboard_top3", multiplier: 10 },
   { eventType: "session.tutor_5star", multiplier: 15 },
   { eventType: "tutoring.session_completed", multiplier: 12 },
   { eventType: "parent.recap_shared", multiplier: 6 },

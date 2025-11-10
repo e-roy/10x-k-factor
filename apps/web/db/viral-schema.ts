@@ -22,14 +22,6 @@ export const smartLinks = pgTable("smart_links", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
-export const cohorts = pgTable("cohorts", {
-  id: varchar("id", { length: 36 }).primaryKey(),
-  name: varchar("name", { length: 128 }).notNull(),
-  subject: varchar("subject", { length: 64 }),
-  createdBy: varchar("created_by", { length: 36 }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
-});
-
 /**
  * Referrals tracking table
  * Tracks viral invitations and referrals between users

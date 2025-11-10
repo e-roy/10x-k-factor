@@ -30,12 +30,6 @@ interface StudentSidebarProps {
       currentStreak: number;
       longestStreak: number;
     }>;
-    cohorts: Array<{
-      id: string;
-      name: string;
-      subject: string;
-      activeUsers: number;
-    }>;
   };
 }
 
@@ -198,35 +192,6 @@ export function StudentSidebar({ userId, persona, data }: StudentSidebarProps) {
         )}
       </div>
 
-      {/* Cohorts Section */}
-      {data.cohorts.length > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold">My Cohorts</h3>
-            <Link href="/app/cohorts" className="text-xs text-muted-foreground hover:text-foreground">
-              View All
-            </Link>
-          </div>
-          <div className="space-y-1.5">
-            {data.cohorts.slice(0, 5).map((cohort) => (
-              <Link key={cohort.id} href={`/cohort/${cohort.id}`}>
-                <Card className="p-2 hover:bg-accent cursor-pointer transition-colors">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium">{cohort.name}</span>
-                    {cohort.activeUsers > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        <Users className="h-3 w-3 mr-1" />
-                        {cohort.activeUsers}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">{cohort.subject}</p>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
     </aside>
   );
 }
