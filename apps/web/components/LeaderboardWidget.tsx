@@ -52,7 +52,9 @@ export function LeaderboardWidget({
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch leaderboard: ${response.statusText}`);
+          throw new Error(
+            `Failed to fetch leaderboard: ${response.statusText}`
+          );
         }
 
         const data = await response.json();
@@ -74,7 +76,9 @@ export function LeaderboardWidget({
         }
       } catch (err) {
         console.error("[LeaderboardWidget] Error fetching leaderboard:", err);
-        setError(err instanceof Error ? err.message : "Failed to load leaderboard");
+        setError(
+          err instanceof Error ? err.message : "Failed to load leaderboard"
+        );
       } finally {
         setLoading(false);
       }
@@ -184,8 +188,12 @@ export function LeaderboardWidget({
                       <div className="font-medium">Your rank</div>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold">{currentUserRank.score}</div>
-                      <div className="text-xs text-muted-foreground">points</div>
+                      <div className="font-semibold">
+                        {currentUserRank.score}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        points
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -196,4 +204,3 @@ export function LeaderboardWidget({
     </Card>
   );
 }
-

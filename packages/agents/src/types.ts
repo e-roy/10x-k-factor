@@ -52,3 +52,32 @@ export const personalizeOutputSchema = z.object({
 
 export type PersonalizeOutput = z.infer<typeof personalizeOutputSchema>;
 
+// Experimentation input schema
+export const experimentInputSchema = z.object({
+  user_id: z.string().min(1),
+  experiment_name: z.string().min(1), // e.g., "loop_variant_test", "reward_boost_test"
+  experiment_config: z
+    .object({
+      variants: z.array(z.string()).min(1), // e.g., ["control", "variant_a", "variant_b"]
+      traffic_splits: z.array(z.number()).optional(), // e.g., [0.5, 0.25, 0.25] - defaults to equal splits
+    })
+    .optional()
+    .default({
+      variants: ["control", "variant_a"],
+      traffic_splits: undefined, // Equal splits
+    }),
+});
+
+export type ExperimentInput = z.infer<typeof experimentInputSchema>;
+
+// Experimentation output schema
+export const experimentOutputSchema = z.object({
+  variant: z.string(), // Selected variant name
+  exposure_id: z.string(), // Unique exposure identifier for tracking
+  rationale: z.string(), // Human-readable explanation
+  features_used: z.array(z.string()).optional(), // For debugging/auditing
+  ttl_ms: z.number().optional(), // Cache TTL in milliseconds
+});
+
+export type ExperimentOutput = z.infer<typeof experimentOutputSchema>;
+
