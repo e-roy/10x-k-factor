@@ -59,14 +59,20 @@ export const userSubjects = pgTable("user_subjects", {
     .notNull()
     .references(() => subjects.id, { onDelete: "cascade" }),
   
-  // Progress tracking
-  progress: integer("progress").default(0).notNull(), // 0-100 percentage
+  // Class progress (from external service)
+  classesTaken: integer("classes_taken").default(0).notNull(), // Number of classes taken
+  totalClasses: integer("total_classes").default(0).notNull(), // Total classes for semester/year
+  
+  // Tutoring sessions (incremented when transcript is generated)
+  tutoringSessions: integer("tutoring_sessions").default(0).notNull(), // Number of tutoring sessions
+  
+  // Challenges completed (incremented when challenge is completed)
+  challengesCompleted: integer("challenges_completed").default(0).notNull(), // Number of challenges completed
   
   // Activity tracking
-  sessionsCompleted: integer("sessions_completed").default(0).notNull(),
   totalXp: integer("total_xp").default(0).notNull(),
-  currentStreak: integer("current_streak").default(0).notNull(),
-  longestStreak: integer("longest_streak").default(0).notNull(),
+  currentStreak: integer("current_streak").default(0).notNull(), // Current streak count (based on challenges completed)
+  longestStreak: integer("longest_streak").default(0).notNull(), // Longest streak achieved (based on challenges completed)
   lastActivityAt: timestamp("last_activity_at", { withTimezone: true }),
   
   // Enrollment metadata
@@ -79,7 +85,6 @@ export const userSubjects = pgTable("user_subjects", {
   pk: primaryKey({ columns: [table.userId, table.subjectId] }),
   userIdx: index("idx_user_subjects_user").on(table.userId),
   subjectIdx: index("idx_user_subjects_subject").on(table.subjectId),
-  progressIdx: index("idx_user_subjects_progress").on(table.progress),
   lastActivityIdx: index("idx_user_subjects_last_activity").on(table.lastActivityAt),
   favoriteIdx: index("idx_user_subjects_favorite").on(table.favorite),
 }));

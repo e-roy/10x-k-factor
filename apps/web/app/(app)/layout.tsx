@@ -140,7 +140,6 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
       subjectId: subjects.id,
       subjectName: subjects.name,
       subjectSlug: subjects.slug,
-      progress: userSubjects.progress,
       totalXp: userSubjects.totalXp,
       currentStreak: userSubjects.currentStreak,
       lastActivityAt: userSubjects.lastActivityAt,
@@ -171,7 +170,6 @@ async function fetchStudentSidebarData(userId: string, persona: string) {
   const subjectsData = enrolledSubjects.map((subject) => ({
     name: subject.subjectName,
     activeUsers: presenceCounts.get(subject.subjectSlug) || 0,
-    progress: subject.progress,
   }));
 
   return {

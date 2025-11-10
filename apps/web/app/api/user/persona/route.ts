@@ -50,8 +50,10 @@ export async function POST(request: NextRequest) {
         const enrollments = subjectRecords.map((subject) => ({
           userId: session.user.id!,
           subjectId: subject.id,
-          progress: 0,
-          sessionsCompleted: 0,
+          classesTaken: 0,
+          totalClasses: 0,
+          tutoringSessions: 0,
+          challengesCompleted: 0,
           totalXp: 0,
           currentStreak: 0,
           longestStreak: 0,

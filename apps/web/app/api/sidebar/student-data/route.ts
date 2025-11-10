@@ -37,13 +37,12 @@ export async function GET(_req: NextRequest) {
     // Fetch XP and level from the real system
     const xpData = await getUserXpWithLevel(userId);
 
-    // Fetch user's enrolled subjects with progress
+    // Fetch user's enrolled subjects
     const enrolledSubjects = await db
       .select({
         subjectId: subjects.id,
         subjectName: subjects.name,
         subjectSlug: subjects.slug,
-        progress: userSubjects.progress,
         totalXp: userSubjects.totalXp,
         currentStreak: userSubjects.currentStreak,
         lastActivityAt: userSubjects.lastActivityAt,
@@ -74,7 +73,6 @@ export async function GET(_req: NextRequest) {
     const subjectsData = enrolledSubjects.map((subject) => ({
       name: subject.subjectName,
       activeUsers: presenceCounts.get(subject.subjectSlug) || 0,
-      progress: subject.progress,
     }));
 
     return NextResponse.json({

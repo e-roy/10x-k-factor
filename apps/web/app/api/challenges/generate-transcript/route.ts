@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { db } from "@/db/index";
+import { userSubjects, subjects } from "@/db/schema/index";
+import { eq, sql } from "drizzle-orm";
 
 // Hard-coded flag for LLM provider
 const USE_OLLAMA = process.env.LLM_PROVIDER === "ollama";
@@ -37,6 +40,46 @@ export async function POST(req: NextRequest) {
     
     // Generate summary from transcript
     const summary = await generateSummary(transcript, subject);
+
+    // Increment tutoring sessions for this subject
+    // Find the subject by name (case-insensitive match)
+    const [subjectRecord] = await db
+      .select({ id: subjects.id })
+      .from(subjects)
+      .where(sql`LOWER(${subjects.name}) = LOWER(${subject})`)
+      .limit(1);
+
+    if (subjectRecord) {
+      // Find user's enrollment for this subject
+      const [enrollment] = await db
+        .select()
+        .from(userSubjects)
+        .where(
+          sql`${userSubjects.userId} = ${session.user.id} AND ${userSubjects.subjectId} = ${subjectRecord.id}`
+        )
+        .limit(1);
+
+      if (enrollment) {
+        // Increment tutoring sessions
+        await db
+          .update(userSubjects)
+          .set({
+            tutoringSessions: sql`${userSubjects.tutoringSessions} + 1`,
+          })
+          .where(
+            sql`${userSubjects.userId} = ${session.user.id} AND ${userSubjects.subjectId} = ${subjectRecord.id}`
+          );
+        console.log(
+          `[generate-transcript] Incremented tutoring sessions for user ${session.user.id}, subject ${subject}`
+        );
+      } else {
+        console.warn(
+          `[generate-transcript] User ${session.user.id} not enrolled in subject ${subject}`
+        );
+      }
+    } else {
+      console.warn(`[generate-transcript] Subject ${subject} not found in database`);
+    }
 
     return NextResponse.json({
       transcript,

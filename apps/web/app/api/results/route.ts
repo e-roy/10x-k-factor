@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/index";
-import { results } from "@/db/schema/index";
+import { results, userSubjects, subjects } from "@/db/schema/index";
 import { auth } from "@/lib/auth";
 import { randomUUID } from "crypto";
 import { z } from "zod";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 
 const createResultSchema = z.object({
   subject: z.string().max(64).optional(),
@@ -45,6 +45,48 @@ export async function POST(request: NextRequest) {
         createdAt: new Date(),
       })
       .returning();
+
+    // Increment challenges completed for this subject if subject is provided
+    if (validated.subject) {
+      // Find the subject by name (case-insensitive match)
+      const [subjectRecord] = await db
+        .select({ id: subjects.id })
+        .from(subjects)
+        .where(sql`LOWER(${subjects.name}) = LOWER(${validated.subject})`)
+        .limit(1);
+
+      if (subjectRecord) {
+        // Find user's enrollment for this subject
+        const [enrollment] = await db
+          .select()
+          .from(userSubjects)
+          .where(
+            sql`${userSubjects.userId} = ${session.user.id} AND ${userSubjects.subjectId} = ${subjectRecord.id}`
+          )
+          .limit(1);
+
+        if (enrollment) {
+          // Increment challenges completed
+          await db
+            .update(userSubjects)
+            .set({
+              challengesCompleted: sql`${userSubjects.challengesCompleted} + 1`,
+            })
+            .where(
+              sql`${userSubjects.userId} = ${session.user.id} AND ${userSubjects.subjectId} = ${subjectRecord.id}`
+            );
+          console.log(
+            `[results] Incremented challenges completed for user ${session.user.id}, subject ${validated.subject}`
+          );
+        } else {
+          console.warn(
+            `[results] User ${session.user.id} not enrolled in subject ${validated.subject}`
+          );
+        }
+      } else {
+        console.warn(`[results] Subject ${validated.subject} not found in database`);
+      }
+    }
 
     return NextResponse.json(
       { success: true, result },

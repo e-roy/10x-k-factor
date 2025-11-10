@@ -22,7 +22,6 @@ export async function GET(_request: NextRequest) {
       .select({
         name: subjects.name,
         slug: subjects.slug,
-        progress: userSubjects.progress,
       })
       .from(userSubjects)
       .innerJoin(subjects, eq(userSubjects.subjectId, subjects.id))

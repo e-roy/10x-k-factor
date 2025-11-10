@@ -132,7 +132,7 @@ export function StudentSidebar({ userId, persona, data }: StudentSidebarProps) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold">My Subjects</h3>
-          <Link href="/app/settings/profile" className="text-xs text-muted-foreground hover:text-foreground">
+          <Link href="/app/settings" className="text-xs text-muted-foreground hover:text-foreground">
             Edit
           </Link>
         </div>
@@ -140,7 +140,7 @@ export function StudentSidebar({ userId, persona, data }: StudentSidebarProps) {
           <Card className="p-3 text-center">
             <p className="text-xs text-muted-foreground mb-2">No subjects enrolled</p>
             <Button asChild size="sm" variant="outline" className="w-full">
-              <Link href="/app/settings/profile">Add Subjects</Link>
+              <Link href="/app/settings">Add Subjects</Link>
             </Button>
           </Card>
         ) : (
@@ -160,20 +160,6 @@ export function StudentSidebar({ userId, persona, data }: StudentSidebarProps) {
                       </Badge>
                     )}
                   </div>
-                  {subject.progress !== undefined && (
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Progress</span>
-                        <span className="font-medium">{subject.progress}%</span>
-                      </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-persona-primary to-persona-secondary transition-all"
-                          style={{ width: `${subject.progress}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
                 </div>
               </Card>
             ))}

@@ -14,6 +14,7 @@
     "drizzle:studio": "drizzle-kit studio",
     "seed": "tsx scripts/seed.ts",
     "seed:subjects": "tsx scripts/seed-subjects.ts",
+    "seed:progress": "tsx scripts/seed-progress.ts",
     "migrate:profiles": "tsx scripts/migrate-profiles.ts"
   },
   "dependencies": {
