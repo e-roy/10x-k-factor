@@ -1,7 +1,7 @@
 import { pgTable, varchar, boolean, timestamp } from "drizzle-orm/pg-core";
 
-import { users } from "./auth-schema";
-import type { Persona } from "./types";
+import { users } from "@/db/auth-schema";
+import type { Persona } from "@/db/types";
 
 // ============================================================================
 // User & Profile Tables

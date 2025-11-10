@@ -17,6 +17,9 @@ interface StudentSidebarData {
   subjects: Array<{
     name: string;
     activeUsers: number;
+    totalXp: number;
+    currentStreak: number;
+    longestStreak: number;
   }>;
   cohorts: Array<{
     id: string;

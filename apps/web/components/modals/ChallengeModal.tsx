@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useBuddy } from "@/hooks/useBuddy";
 import { createSmartLink } from "@/lib/smart-links/create";
-import { getDeck, type Deck } from "@/lib/decks";
+import { getDeck } from "@/lib/decks";
 
 interface Question {
   question: string;

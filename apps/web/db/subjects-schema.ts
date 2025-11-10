@@ -8,7 +8,7 @@ import {
   index,
   primaryKey,
 } from "drizzle-orm/pg-core";
-import { users } from "./auth-schema";
+import { users } from "@/db/auth-schema";
 
 // ============================================================================
 // Subjects & Enrollment Tables

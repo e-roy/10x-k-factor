@@ -12,7 +12,7 @@ import type {
   ChallengeQuestion,
   Difficulty,
   ChallengeStatus,
-} from "./types";
+} from "@/db/types";
 
 // ============================================================================
 // Learning & Results Tables

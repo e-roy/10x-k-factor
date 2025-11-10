@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
 import { userSubjects, subjects } from "@/db/schema/index";
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
 // Hard-coded flag for LLM provider
 const USE_OLLAMA = process.env.LLM_PROVIDER === "ollama";
