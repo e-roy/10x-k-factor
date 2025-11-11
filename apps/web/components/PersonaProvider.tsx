@@ -1,9 +1,28 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useContext, createContext } from "react";
 import { hexToRgb, getPersonaPrimaryColor } from "@/lib/persona-utils";
 
 export type Persona = "student" | "parent" | "tutor";
+
+// Create context for persona
+const PersonaContext = createContext<Persona>("student");
+
+/**
+ * Hook to get the current persona from context
+ */
+export function usePersona(): Persona {
+  const context = useContext(PersonaContext);
+  // Fallback to reading from DOM attribute if context not available
+  if (!context) {
+    if (typeof document !== "undefined") {
+      const personaAttr = document.documentElement.getAttribute("data-persona");
+      return (personaAttr as Persona) || "student";
+    }
+    return "student";
+  }
+  return context;
+}
 
 interface PersonaProviderProps {
   persona: Persona;
@@ -78,7 +97,11 @@ export function PersonaProvider({
     };
   }, [persona, primaryColor, secondaryColor]);
 
-  // This component doesn't render anything, it just manages the attribute
-  return children || null;
+  // Provide persona via context
+  return (
+    <PersonaContext.Provider value={persona}>
+      {children || null}
+    </PersonaContext.Provider>
+  );
 }
 

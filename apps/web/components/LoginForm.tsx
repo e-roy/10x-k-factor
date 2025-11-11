@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -15,12 +16,53 @@ interface LoginFormProps {
   next: string;
 }
 
+// SessionStorage keys for form state persistence
+const STORAGE_KEYS = {
+  EMAIL: "auth_form_email",
+  PASSWORD: "auth_form_password",
+  NAME: "auth_form_name",
+} as const;
+
 export function LoginForm({ next }: LoginFormProps) {
+  const searchParams = useSearchParams();
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load saved form values from sessionStorage on mount
+  useEffect(() => {
+    // Check URL params first (for direct navigation)
+    const emailParam = searchParams.get("email");
+    if (emailParam) {
+      setEmail(emailParam);
+    } else {
+      // Fall back to sessionStorage
+      const savedEmail = sessionStorage.getItem(STORAGE_KEYS.EMAIL);
+      if (savedEmail) {
+        setEmail(savedEmail);
+      }
+    }
+
+    const savedPassword = sessionStorage.getItem(STORAGE_KEYS.PASSWORD);
+    if (savedPassword) {
+      setPassword(savedPassword);
+    }
+  }, [searchParams]);
+
+  // Save form values to sessionStorage when they change
+  useEffect(() => {
+    if (email) {
+      sessionStorage.setItem(STORAGE_KEYS.EMAIL, email);
+    }
+  }, [email]);
+
+  useEffect(() => {
+    if (password) {
+      sessionStorage.setItem(STORAGE_KEYS.PASSWORD, password);
+    }
+  }, [password]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +80,11 @@ export function LoginForm({ next }: LoginFormProps) {
         setError("Invalid email or password");
         setIsLoading(false);
       } else if (result?.ok) {
+        // Clear saved form values on successful login
+        sessionStorage.removeItem(STORAGE_KEYS.EMAIL);
+        sessionStorage.removeItem(STORAGE_KEYS.PASSWORD);
+        sessionStorage.removeItem(STORAGE_KEYS.NAME);
+        
         // Use window.location for a full page reload to avoid timeout issues
         window.location.href = next;
       }
@@ -119,8 +166,17 @@ export function LoginForm({ next }: LoginFormProps) {
         <div className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
           <Link
-            href="/register"
+            href={`/register${email ? `?email=${encodeURIComponent(email)}` : ""}`}
             className="text-primary underline hover:no-underline"
+            onClick={() => {
+              // Ensure current values are saved before navigating
+              if (email) {
+                sessionStorage.setItem(STORAGE_KEYS.EMAIL, email);
+              }
+              if (password) {
+                sessionStorage.setItem(STORAGE_KEYS.PASSWORD, password);
+              }
+            }}
           >
             Sign up
           </Link>
