@@ -15,6 +15,31 @@ interface AgentBuddyProps {
   className?: string;
 }
 
+// Random encouraging messages for when there are no notifications
+const ENCOURAGING_MESSAGES = [
+  "You're doing great! Keep up the amazing work! 💪",
+  "Every step forward is progress. You've got this! 🌟",
+  "Your dedication is inspiring! Keep pushing forward! 🚀",
+  "You're on the right track! Keep learning and growing! 📚",
+  "Remember, every expert was once a beginner. Keep going! ✨",
+  "You're building something amazing. Don't stop now! 🎯",
+  "Your hard work is paying off! Keep it up! 🏆",
+  "You're stronger than you think. Keep pushing! 💎",
+  "Every challenge you face makes you stronger! 🌈",
+  "You're making progress every single day! Keep it up! ⭐",
+  "Believe in yourself - you're capable of amazing things! 🌟",
+  "Your journey is unique and valuable. Keep going! 🎨",
+];
+
+/**
+ * Get a random encouraging message
+ */
+function getRandomEncouragingMessage(): string {
+  return ENCOURAGING_MESSAGES[
+    Math.floor(Math.random() * ENCOURAGING_MESSAGES.length)
+  ];
+}
+
 export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
   const { openModal } = useModal();
   const { currentBubble, bubbleCount } = useAgentBuddy({
@@ -27,6 +52,7 @@ export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
   });
   
   const [bubbleVisible, setBubbleVisible] = useState(true);
+  const [encouragingMessage, setEncouragingMessage] = useState<string | null>(null);
 
   const handleActionClick = () => {
     if (!currentBubble?.action) return;
@@ -40,18 +66,44 @@ export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
     }
   };
 
+  const handleBuddyClick = () => {
+    // If there are notifications/challenges, toggle the bubble visibility
+    if (bubbleCount > 0) {
+      setBubbleVisible((prev) => !prev);
+      setEncouragingMessage(null);
+    } else if (persona === "student") {
+      // If no notifications, show a random encouraging message
+      if (encouragingMessage) {
+        // If already showing, hide it
+        setEncouragingMessage(null);
+        setBubbleVisible(false);
+      } else {
+        // Show new random message
+        setEncouragingMessage(getRandomEncouragingMessage());
+        setBubbleVisible(true);
+      }
+    }
+  };
+
+  // Determine what to show in the bubble
+  const bubbleContent = currentBubble || (encouragingMessage ? {
+    id: "encouraging",
+    copy: encouragingMessage,
+    priority: "low" as const,
+  } : null);
+
   return (
     <div className={cn("relative", className)}>
       {/* Agent buddy avatar - clickable to toggle bubble */}
       <button
-        onClick={() => setBubbleVisible((prev) => !prev)}
+        onClick={handleBuddyClick}
         className="relative"
-        title="Toggle Agent Buddy messages"
+        title={bubbleCount > 0 ? "Toggle Agent Buddy messages" : "Get encouragement"}
       >
         <div
           className={cn(
             "w-16 h-16 rounded-full overflow-hidden border-2 transition-all",
-            currentBubble
+            currentBubble && bubbleCount > 0
               ? "border-persona animate-pulse shadow-persona"
               : "border-muted hover:border-persona"
           )}
@@ -60,7 +112,7 @@ export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
             width={64}
             height={64}
             src={
-              currentBubble
+              currentBubble && bubbleCount > 0
                 ? "/icons/agent-buddy-active.svg"
                 : "/icons/agent-buddy-idle.svg"
             }
@@ -79,8 +131,8 @@ export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
           </Badge>
         )}
 
-        {/* Pulse indicator for new messages */}
-        {currentBubble && (
+        {/* Pulse indicator for new messages - only show for actual notifications */}
+        {currentBubble && bubbleCount > 0 && (
           <span className="absolute -top-1 -right-1 flex h-5 w-5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-persona-primary opacity-75"></span>
           </span>
@@ -88,7 +140,7 @@ export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
       </button>
 
       {/* Speech bubble */}
-      {currentBubble && bubbleVisible && (
+      {bubbleContent && bubbleVisible && (
         <div
           className={cn(
             "absolute top-0 right-full mr-3 w-72 p-4 rounded-2xl shadow-persona z-50",
@@ -105,6 +157,7 @@ export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
             onClick={(e) => {
               e.stopPropagation();
               setBubbleVisible(false);
+              setEncouragingMessage(null);
             }}
             className="absolute top-2 right-2 p-1 rounded-full hover:bg-muted transition-colors"
             title="Close (click buddy to reopen)"
@@ -114,10 +167,10 @@ export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
 
           {/* Speech bubble content */}
           <div className="space-y-3">
-            <p className="text-sm font-medium pr-6">{currentBubble.copy}</p>
+            <p className="text-sm font-medium pr-6">{bubbleContent.copy}</p>
 
-            {/* Reward preview */}
-            {currentBubble.rewardPreview && (
+            {/* Reward preview - only show for actual bubbles, not encouraging messages */}
+            {currentBubble?.rewardPreview && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/80 p-2 rounded border border-border/50">
                 <span className="text-base">
                   {currentBubble.rewardPreview.type === "streak_shield"
@@ -134,8 +187,8 @@ export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
               </div>
             )}
 
-            {/* Action button */}
-            {currentBubble.action && (
+            {/* Action button - only show for actual bubbles, not encouraging messages */}
+            {currentBubble?.action && (
               <Button
                 size="sm"
                 className="w-full btn-persona"
