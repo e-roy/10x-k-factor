@@ -305,15 +305,17 @@ async function fetchTutorSessions(tutorId: string) {
     const sessions = await db
       .select({
         id: tutorSessions.id,
-        subject: tutorSessions.subject,
+        subjectSlug: tutorSessions.subject,
         summary: tutorSessions.summary,
         transcript: tutorSessions.transcript,
         tutorNotes: tutorSessions.tutorNotes,
         duration: tutorSessions.duration,
         createdAt: tutorSessions.createdAt,
         studentId: tutorSessions.studentId,
+        subjectName: subjects.name,
       })
       .from(tutorSessions)
+      .leftJoin(subjects, eq(tutorSessions.subject, subjects.slug))
       .where(eq(tutorSessions.tutorId, tutorId))
       .orderBy(desc(tutorSessions.createdAt));
 
@@ -335,7 +337,8 @@ async function fetchTutorSessions(tutorId: string) {
 
         return {
           id: session.id,
-          subject: session.subject,
+          // Use subject name from subjects table if available, otherwise fallback to slug
+          subject: session.subjectName || session.subjectSlug,
           summary: session.summary,
           transcript: session.transcript,
           tutorNotes: session.tutorNotes,

@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
+    "start": "next dev --turbopack",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "drizzle:gen": "drizzle-kit generate",
     "drizzle:push": "drizzle-kit push",

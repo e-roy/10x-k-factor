@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface AgentBuddyProps {
   userId: string;
@@ -53,6 +53,12 @@ export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
   
   const [bubbleVisible, setBubbleVisible] = useState(true);
   const [encouragingMessage, setEncouragingMessage] = useState<string | null>(null);
+  const [buttonTitle, setButtonTitle] = useState("Toggle Agent Buddy messages");
+
+  // Update button title after hydration to avoid hydration mismatch
+  useEffect(() => {
+    setButtonTitle(bubbleCount > 0 ? "Toggle Agent Buddy messages" : "Get encouragement");
+  }, [bubbleCount]);
 
   const handleActionClick = () => {
     if (!currentBubble?.action) return;
@@ -98,7 +104,7 @@ export function AgentBuddy({ userId, persona, className }: AgentBuddyProps) {
       <button
         onClick={handleBuddyClick}
         className="relative"
-        title={bubbleCount > 0 ? "Toggle Agent Buddy messages" : "Get encouragement"}
+        title={buttonTitle}
       >
         <div
           className={cn(
