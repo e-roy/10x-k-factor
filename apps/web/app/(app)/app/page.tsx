@@ -7,8 +7,9 @@ import {
   userSubjects,
   users,
   derivedUserXp,
+  tutorSessions,
 } from "@/db/schema/index";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { StudentDashboard } from "@/components/dashboards/StudentDashboard";
 import { ParentDashboard } from "@/components/dashboards/ParentDashboard";
 import { TutorDashboard } from "@/components/dashboards/TutorDashboard";
@@ -101,8 +102,10 @@ export default async function DashboardPage() {
         <TutorDashboard
           user={{ id: userId, name: session.user.name, persona }}
           xp={await fetchTutorXp(userId)}
-          streak={await calculateStreak(userId)}
+          streak={profile?.overallStreak ?? 0}
           sessions={getHardcodedSessions()}
+          tutorSessions={await fetchTutorSessions(userId)}
+          subjects={await fetchTutorSubjects(userId)}
         />
       )}
     </>
@@ -259,23 +262,152 @@ async function fetchParentStudents(parentId: string) {
   }
 }
 
-// Fetch tutor's total XP
+// Fetch tutor's total XP (calculated like for students - sum from userSubjects)
 async function fetchTutorXp(tutorId: string): Promise<number> {
   try {
-    // Try to get XP from derivedUserXp view
-    const [xpData] = await db
+    // Calculate total XP by summing XP from all enrolled subjects (same as students)
+    const tutorSubjects = await db
       .select({
-        xp: derivedUserXp.xp,
+        totalXp: userSubjects.totalXp,
       })
-      .from(derivedUserXp)
-      .where(eq(derivedUserXp.userId, tutorId))
-      .limit(1);
+      .from(userSubjects)
+      .where(eq(userSubjects.userId, tutorId));
 
-    return xpData?.xp ?? 0;
+    const totalXp = tutorSubjects.reduce(
+      (sum, subject) => sum + (subject.totalXp ?? 0),
+      0
+    );
+
+    return totalXp;
   } catch (error) {
     console.error("[fetchTutorXp] Error:", error);
-    // Fallback: return 0 if view doesn't exist or query fails
-    return 0;
+    // Fallback: try derivedUserXp view if userSubjects query fails
+    try {
+      const [xpData] = await db
+        .select({
+          xp: derivedUserXp.xp,
+        })
+        .from(derivedUserXp)
+        .where(eq(derivedUserXp.userId, tutorId))
+        .limit(1);
+
+      return xpData?.xp ?? 0;
+    } catch (fallbackError) {
+      console.error("[fetchTutorXp] Fallback error:", fallbackError);
+      return 0;
+    }
+  }
+}
+
+// Fetch tutor's sessions from tutor_sessions table
+async function fetchTutorSessions(tutorId: string) {
+  try {
+    const sessions = await db
+      .select({
+        id: tutorSessions.id,
+        subjectSlug: tutorSessions.subject,
+        summary: tutorSessions.summary,
+        transcript: tutorSessions.transcript,
+        tutorNotes: tutorSessions.tutorNotes,
+        duration: tutorSessions.duration,
+        createdAt: tutorSessions.createdAt,
+        studentId: tutorSessions.studentId,
+        subjectName: subjects.name,
+      })
+      .from(tutorSessions)
+      .leftJoin(subjects, eq(tutorSessions.subject, subjects.slug))
+      .where(eq(tutorSessions.tutorId, tutorId))
+      .orderBy(desc(tutorSessions.createdAt));
+
+    // Fetch student names for each session
+    const sessionsWithStudents = await Promise.all(
+      sessions.map(async (session) => {
+        const [student] = await db
+          .select({
+            name: users.name,
+          })
+          .from(users)
+          .where(eq(users.id, session.studentId))
+          .limit(1);
+
+        // Parse student name (assuming format "FirstName LastName")
+        const nameParts = student?.name?.split(" ") || [];
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(" ") || "";
+
+        return {
+          id: session.id,
+          // Use subject name from subjects table if available, otherwise fallback to slug
+          subject: session.subjectName || session.subjectSlug,
+          summary: session.summary,
+          transcript: session.transcript,
+          tutorNotes: session.tutorNotes,
+          duration: session.duration,
+          createdAt: session.createdAt ?? new Date(),
+          student: {
+            firstName,
+            lastName,
+          },
+        };
+      })
+    );
+
+    return sessionsWithStudents;
+  } catch (error) {
+    console.error("[fetchTutorSessions] Error:", error);
+    return [];
+  }
+}
+
+// Fetch tutor's subjects with progress data
+async function fetchTutorSubjects(tutorId: string) {
+  try {
+    // First, get all subjects from user_subjects (primary source)
+    const enrolledSubjects = await db
+      .select({
+        subjectId: userSubjects.subjectId,
+        subjectName: subjects.name,
+        totalXp: userSubjects.totalXp,
+        currentStreak: userSubjects.currentStreak,
+        longestStreak: userSubjects.longestStreak,
+        tutoringSessions: userSubjects.tutoringSessions,
+      })
+      .from(userSubjects)
+      .innerJoin(subjects, eq(userSubjects.subjectId, subjects.id))
+      .where(eq(userSubjects.userId, tutorId))
+      .orderBy(desc(userSubjects.lastActivityAt));
+
+    // Count actual sessions from tutor_sessions for each subject
+    const subjectsData = await Promise.all(
+      enrolledSubjects.map(async (subject) => {
+        // Count sessions for this subject (by slug/name match)
+        const sessionsForSubject = await db
+          .select({ id: tutorSessions.id })
+          .from(tutorSessions)
+          .where(
+            and(
+              eq(tutorSessions.tutorId, tutorId),
+              eq(tutorSessions.subject, subject.subjectName)
+            )
+          );
+
+        const actualSessionsCount = sessionsForSubject.length;
+
+        return {
+          name: subject.subjectName,
+          totalXp: subject.totalXp ?? 0,
+          // Use the actual session count from tutor_sessions if available
+          tutoringSessions: actualSessionsCount > 0 ? actualSessionsCount : (subject.tutoringSessions ?? 0),
+          currentStreak: subject.currentStreak ?? 0,
+          longestStreak: subject.longestStreak ?? 0,
+        };
+      })
+    );
+
+    return subjectsData;
+  } catch (error) {
+    console.error("[fetchTutorSubjects] Error:", error);
+    return [];
   }
 }
 

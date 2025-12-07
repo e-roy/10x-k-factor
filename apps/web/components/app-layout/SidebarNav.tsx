@@ -27,12 +27,12 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/app/leaderboard", label: "Leaderboards", icon: Trophy },
   { href: "/app/rewards", label: "Rewards", icon: Gift },
   { href: "/app/settings", label: "Settings", icon: Settings },
-  { href: "/app/demos", label: "TEST: Demos", icon: Search },
 ];
 
 const ADMIN_ITEMS: NavItem[] = [
   { href: "/app/admin/metrics", label: "Metrics", icon: TrendingUp },
   { href: "/app/admin/seed", label: "Seed Data", icon: Database },
+  { href: "/app/demos", label: "TEST: Demos", icon: Search },
 ];
 
 interface SidebarNavProps {

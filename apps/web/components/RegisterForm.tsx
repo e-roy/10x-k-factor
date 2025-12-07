@@ -1,19 +1,73 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 
+// SessionStorage keys for form state persistence (shared with LoginForm)
+const STORAGE_KEYS = {
+  EMAIL: "auth_form_email",
+  PASSWORD: "auth_form_password",
+  NAME: "auth_form_name",
+} as const;
+
 export function RegisterForm() {
+  const searchParams = useSearchParams();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load saved form values from sessionStorage on mount
+  useEffect(() => {
+    // Check URL params first (for direct navigation)
+    const emailParam = searchParams.get("email");
+    if (emailParam) {
+      setEmail(emailParam);
+    } else {
+      // Fall back to sessionStorage
+      const savedEmail = sessionStorage.getItem(STORAGE_KEYS.EMAIL);
+      if (savedEmail) {
+        setEmail(savedEmail);
+      }
+    }
+
+    const savedName = sessionStorage.getItem(STORAGE_KEYS.NAME);
+    if (savedName) {
+      setName(savedName);
+    }
+
+    const savedPassword = sessionStorage.getItem(STORAGE_KEYS.PASSWORD);
+    if (savedPassword) {
+      setPassword(savedPassword);
+    }
+  }, [searchParams]);
+
+  // Save form values to sessionStorage when they change
+  useEffect(() => {
+    if (email) {
+      sessionStorage.setItem(STORAGE_KEYS.EMAIL, email);
+    }
+  }, [email]);
+
+  useEffect(() => {
+    if (name) {
+      sessionStorage.setItem(STORAGE_KEYS.NAME, name);
+    }
+  }, [name]);
+
+  useEffect(() => {
+    if (password) {
+      sessionStorage.setItem(STORAGE_KEYS.PASSWORD, password);
+    }
+  }, [password]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +113,11 @@ export function RegisterForm() {
         setError("Account created but login failed. Please try logging in.");
         setIsLoading(false);
       } else if (result?.ok) {
+        // Clear saved form values on successful registration
+        sessionStorage.removeItem(STORAGE_KEYS.EMAIL);
+        sessionStorage.removeItem(STORAGE_KEYS.PASSWORD);
+        sessionStorage.removeItem(STORAGE_KEYS.NAME);
+        
         // Check for guest session to convert
         const guestSessionId = localStorage.getItem("guest_session_id");
         
@@ -174,6 +233,27 @@ export function RegisterForm() {
           "Create Account"
         )}
       </Button>
+      <div className="text-center text-sm text-muted-foreground">
+        Already have an account?{" "}
+        <Link
+          href={`/login${email ? `?email=${encodeURIComponent(email)}` : ""}`}
+          className="text-primary underline hover:no-underline"
+          onClick={() => {
+            // Ensure current values are saved before navigating
+            if (email) {
+              sessionStorage.setItem(STORAGE_KEYS.EMAIL, email);
+            }
+            if (name) {
+              sessionStorage.setItem(STORAGE_KEYS.NAME, name);
+            }
+            if (password) {
+              sessionStorage.setItem(STORAGE_KEYS.PASSWORD, password);
+            }
+          }}
+        >
+          Sign in
+        </Link>
+      </div>
     </form>
   );
 }
